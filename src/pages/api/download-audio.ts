@@ -82,8 +82,6 @@ export const POST: APIRoute = async ({ request }) => {
       description: '',
       publishDate: '',
       coverImage: '',
-      walletAddress: '',
-      mnemonic: ''
     }
     
     if (options.video) {
@@ -120,8 +118,6 @@ export const POST: APIRoute = async ({ request }) => {
         description: '',
         publishDate: formattedDate,
         coverImage: thumbnail,
-        walletAddress: '',
-        mnemonic: ''
       }
     } else {
       l(`${pre} Processing local file: ${filePath}`)
@@ -139,8 +135,6 @@ export const POST: APIRoute = async ({ request }) => {
         description: '',
         publishDate: new Date().toISOString().split('T')[0],
         coverImage: '',
-        walletAddress: '',
-        mnemonic: ''
       }
     }
     
@@ -273,7 +267,6 @@ export const POST: APIRoute = async ({ request }) => {
       title: metadata.title,
       publishDate: metadata.publishDate,
       frontmatter: frontMatter,
-      walletAddress: options['walletAddress'] || '',
       showLink: metadata.showLink || '',
       channel: metadata.channel || '',
       channelURL: metadata.channelURL || '',

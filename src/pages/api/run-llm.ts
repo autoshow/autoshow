@@ -103,9 +103,7 @@ export const POST: APIRoute = async ({ request }) => {
       channel: metadata.channel,
       channelURL: metadata.channelURL,
       description: metadata.description,
-      coverImage: metadata.coverImage,
-      walletAddress: options['walletAddress'] as string || metadata.walletAddress,
-      mnemonic: options['mnemonic'] as string || metadata.mnemonic
+      coverImage: metadata.coverImage
     }
     
     l(`${pre} Final metadata prepared: ${JSON.stringify({ ...finalMetadata, mnemonic: '***REDACTED***' })}`)

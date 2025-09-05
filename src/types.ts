@@ -158,8 +158,6 @@ export interface ShowNoteType {
   prompt?: string
   transcript?: string
   llmOutput?: string
-  walletAddress?: string
-  mnemonic?: string
   llmService?: string
   llmModel?: string
   llmCost?: number
@@ -177,8 +175,6 @@ export type ShowNoteMetadata = {
   description?: string
   publishDate: string
   coverImage?: string
-  walletAddress?: string
-  mnemonic?: string
 }
 export type ProcessingOptions = {
   video?: string

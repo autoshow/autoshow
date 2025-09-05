@@ -20,7 +20,7 @@ export default defineConfig({
   prefetch: true,
 
   adapter: node({
-    mode: "middleware",
+    mode: "standalone",
   }),
 
   vite: {

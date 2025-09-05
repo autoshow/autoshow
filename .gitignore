@@ -20,7 +20,6 @@ spec.log
 
 setup-*.log
 setup.log
-dash-examples
 
 # build output
 dist/

@@ -39,8 +39,6 @@ class S3ShowNotesService {
       prompt: metadata.prompt,
       transcript: metadata.transcript,
       llmOutput: metadata.llmOutput,
-      walletAddress: metadata.walletAddress,
-      mnemonic: metadata.mnemonic,
       llmService: metadata.llmService,
       llmModel: metadata.llmModel,
       llmCost: metadata.llmCost,

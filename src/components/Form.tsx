@@ -1,7 +1,6 @@
 // src/components/Form.tsx
 
 import { createSignal } from 'solid-js'
-import { WalletStep } from './groups/Wallet'
 import { ProcessTypeStep } from './groups/ProcessType'
 import { TranscriptionStep } from './groups/TranscriptionService'
 import { LLMServiceStep } from './groups/LLMService'
@@ -20,10 +19,6 @@ export default function Form(props: FormProps) {
   const pre = '[Form]'
   const [currentStep, setCurrentStep] = createSignal(1)
   l(`${pre} Initial currentStep: ${currentStep()}`)
-  const [walletAddress, setWalletAddress] = createSignal('yhGfbjKDuTnJyx8wzje7n9wsoWC51WH7Y5')
-  l(`${pre} Initial walletAddress: ${walletAddress()}`)
-  const [mnemonic, setMnemonic] = createSignal('tip punch promote click scheme guitar skirt lucky hamster clip denial ecology')
-  l(`${pre} Initial mnemonic set (redacted)`)
   const [processType, setProcessType] = createSignal<ProcessTypeEnum>('video')
   l(`${pre} Initial processType: ${processType()}`)
   const [url, setUrl] = createSignal('https://www.youtube.com/watch?v=MORMZXEaONk')
@@ -68,27 +63,11 @@ export default function Form(props: FormProps) {
   l(`${pre} Initial error: null`)
   const [isLoading, setIsLoading] = createSignal(false)
   l(`${pre} Initial isLoading: false`)
-  const [dashBalance, setDashBalance] = createSignal<number | null>(null)
-  l(`${pre} Initial dashBalance: null`)
   const [showNoteId, setShowNoteId] = createSignal<number>(0)
   l(`${pre} Initial showNoteId: 0`)
   l(`${pre} Rendering Form for step: ${currentStep()}`)
   return (
     <div class="max-w-full bg-card rounded-lg p-6 mb-8">
-      {currentStep() === 0 && (
-        <WalletStep
-          isLoading={isLoading()}
-          setIsLoading={setIsLoading}
-          setError={setError}
-          walletAddress={walletAddress()}
-          setWalletAddress={setWalletAddress}
-          mnemonic={mnemonic()}
-          setMnemonic={setMnemonic}
-          dashBalance={dashBalance()}
-          setDashBalance={setDashBalance}
-          setCurrentStep={setCurrentStep}
-        />
-      )}
       {currentStep() === 1 && (
         <ProcessTypeStep
           isLoading={isLoading()}
