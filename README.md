@@ -1,17 +1,3 @@
-Hey Jace, thanks for checking out the project! The OS constraint is actually not super important on this repo, that's mostly a legacy thing from when the CLI was still integrated with this repo.
-
-I've updated the setup script to try and make it more OS agnostic. I don't have a Windows machine so I can't really test it, but if you hit errors let me know what you got and we can work through them. Are you trying to run Windows proper or WSL?
-
-Also, just a heads up that this repo is not currently receiving as much active development relative to the other parts of the AutoShow project. Currently there's three pieces:
-
-- [`autoshow-cli`](https://github.com/autoshow/autoshow-cli) which provides the widest set of functionality including text, image, speech, music, and video generation capabilities.
-- [`autoshow.app`](https://autoshow.app/) which provides a paid product version of the AutoShow CLI functionality (with some modalities currently in development) and doesn't require technical expertise to use.
-- [`autoshow`](https://github.com/autoshow/autoshow) which is the repo you're on now that splits the difference and gives an open source, local development experience that also has a frontend UI that you can host yourself.
-
-The whole AutoShow project started with this repo and eventually split off into the dedicated CLI repo and the private repo behind the product.
-
-I would like to eventually upstream a lot of the functionality of the CLI and the paid app into this repo but unfortunately I'm already juggling an OSS repo and paid product between the other two so it's hard to find the time to keep development going on this one.
-
 <div align="center">
   <h1>AutoShow</h1>
   <img alt="autoshow logo" src="https://ajc.pics/autoshow/autoshow-cover-01.webp" width="300" />
@@ -30,6 +16,16 @@ I would like to eventually upstream a lot of the functionality of the CLI and th
 ## Project Overview
 
 AutoShow automates the processing of audio and video content from various sources, including YouTube videos, playlists, podcast RSS feeds, and local media files. It leverages advanced transcription services and language models (LLMs) to perform transcription, summarization, and chapter generation.
+
+Currently there's three pieces:
+
+- [`autoshow-cli`](https://github.com/autoshow/autoshow-cli) which provides the widest set of functionality including text, image, speech, music, and video generation capabilities.
+- [`autoshow.app`](https://autoshow.app/) which provides a paid product version of the AutoShow CLI functionality (with some modalities currently in development) and doesn't require technical expertise to use.
+- [`autoshow`](https://github.com/autoshow/autoshow) which is the repo you're on now that splits the difference and gives an open source, local development experience that also has a frontend UI that you can host yourself.
+
+The whole AutoShow project started with this repo and eventually split off into the dedicated CLI repo and the private repo behind the product.
+
+I would like to eventually upstream a lot of the functionality of the CLI and the paid app into this repo, check back around the beginning of 2026 for updates.
 
 ### Prompts and Content Formats
 
