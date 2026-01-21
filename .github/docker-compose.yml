@@ -1,0 +1,35 @@
+services:
+  autoshow:
+    build:
+      context: ..
+      dockerfile: .github/Dockerfile
+    container_name: autoshow
+    ports:
+      - "4321:4321"
+    environment:
+      - YOUTUBE_API_KEY=${YOUTUBE_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - DEEPINFRA_API_KEY=${DEEPINFRA_API_KEY:-}
+      - LEMONFOX_API_KEY=${LEMONFOX_API_KEY:-}
+      - HAPPYSCRIBE_API_KEY=${HAPPYSCRIBE_API_KEY:-}
+      - HAPPYSCRIBE_ORGANIZATION_ID=${HAPPYSCRIBE_ORGANIZATION_ID:-}
+      - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY:-}
+    volumes:
+      - autoshow-data:/data
+      - autoshow-output:/app/output
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4321/api/health"]
+      interval: 120s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
+volumes:
+  autoshow-data:
+    driver: local
+  autoshow-output:
+    driver: local

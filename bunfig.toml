@@ -1,0 +1,5 @@
+[install]
+exact = true
+auto = "disable"
+linker = "isolated"
+minimumReleaseAge = 43200
