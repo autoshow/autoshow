@@ -1,0 +1,40 @@
+.form {
+  background: var(--bg-card);
+  padding: 2.5rem;
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+}
+
+.submitButton {
+  width: 100%;
+  padding: 1.125rem;
+  background: var(--accent-gradient-alt);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+  margin-top: 1rem;
+}
+
+.submitButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+}
+
+.submitButtonDisabled {
+  width: 100%;
+  padding: 1.125rem;
+  background: var(--text-muted);
+  color: var(--bg-card);
+  border: none;
+  border-radius: 10px;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  cursor: not-allowed;
+  opacity: 0.5;
+  margin-top: 1rem;
+}

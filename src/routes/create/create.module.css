@@ -1,0 +1,108 @@
+.container {
+  min-height: 100vh;
+  padding: 2rem;
+  background: var(--bg-primary);
+}
+
+.innerContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: 2.5rem;
+  text-align: center;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  color: var(--accent-blue);
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.backLink:hover {
+  color: var(--accent-cyan);
+}
+
+.title {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 800;
+}
+
+.errorBox {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 1rem 1.25rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  color: #fca5a5;
+}
+
+.form {
+  background: var(--bg-card);
+  padding: 2.5rem;
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+}
+
+.submitButton {
+  width: 100%;
+  padding: 1.125rem;
+  background: var(--accent-gradient-alt);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+  margin-top: 1rem;
+}
+
+.submitButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+}
+
+.submitButtonDisabled {
+  width: 100%;
+  padding: 1.125rem;
+  background: var(--text-muted);
+  color: var(--bg-card);
+  border: none;
+  border-radius: 10px;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  cursor: not-allowed;
+  opacity: 0.5;
+  margin-top: 1rem;
+}
+
+.processingBox {
+  margin-top: 1.75rem;
+  padding: 1.25rem;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 10px;
+  color: var(--accent-blue);
+}
+
+.processingTitle {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.processingMessage {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}

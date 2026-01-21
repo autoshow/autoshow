@@ -1,0 +1,55 @@
+name: Staging Tests
+
+on:
+  pull_request:
+    branches:
+      - staging
+      - main
+      - production
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+
+jobs:
+  test:
+    name: Run Test Suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Type check
+        run: bun run check
+
+      - name: Build application
+        run: bun run build
+        env:
+          NODE_ENV: production
+
+      - name: Run tests
+        run: bun test:api
+        env:
+          NODE_ENV: test
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          HAPPYSCRIBE_API_KEY: ${{ secrets.HAPPYSCRIBE_API_KEY }}
+          HAPPYSCRIBE_ORG_ID: ${{ secrets.HAPPYSCRIBE_ORG_ID }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+
+      - name: Test Summary
+        if: always()
+        run: |
+          echo "✓ Test suite completed"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"

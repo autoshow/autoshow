@@ -6,16 +6,24 @@
 ## Outline
 
 - [Project Overview](#project-overview)
-  - [Prompts and Content Formats](#prompts-and-content-formats)
-  - [Key Features](#key-features)
-  - [AutoShow Pipeline](#autoshow-pipeline)
-- [Setup](#setup)
-- [Run AutoShow](#run-autoshow)
-- [Contributors](#contributors)
+- [Features](#features)
+- [Quick Start](#quick-start)
+  - [Test URLs](#test-urls)
+  - [Install Dependencies](#install-dependencies)
+  - [Run Type Check](#run-type-check)
+  - [Start Docker Container](#start-docker-container)
+  - [CLI Helpers](#cli-helpers)
+- [Running Tests](#running-tests)
+- [Docker Commands](#docker-commands)
+  - [Start Services](#start-services)
+  - [Prune Docker Resources](#prune-docker-resources)
+  - [Display Service Information](#display-service-information)
+  - [Analyze Docker Image](#analyze-docker-image)
+  - [Build Analysis](#build-analysis)
 
 ## Project Overview
 
-AutoShow automates the processing of audio and video content from various sources, including YouTube videos, playlists, podcast RSS feeds, and local media files. It leverages advanced transcription services and language models (LLMs) to perform transcription, summarization, and chapter generation.
+AutoShow automates the processing of audio and video content from various sources, including YouTube videos, playlists, podcast RSS feeds, and local media files. It leverages advanced transcription services and language models (LLMs) to perform transcription, summarization, chapter generation, text-to-speech, image generation, music generation, and video generation.
 
 Currently there's three pieces:
 
@@ -25,69 +33,112 @@ Currently there's three pieces:
 
 The whole AutoShow project started with this repo and eventually split off into the dedicated CLI repo and the private repo behind the product.
 
-I would like to eventually upstream a lot of the functionality of the CLI and the paid app into this repo, check back around the beginning of 2026 for updates.
+## Features
 
-### Prompts and Content Formats
+- **Audio Processing**: Extract audio from YouTube videos, streaming platforms, or direct file uploads
+- **AI Transcription**: Groq Whisper or HappyScribe with automatic speaker diarization
+- **LLM Summarization**: OpenAI GPT, Anthropic Claude, or Google Gemini models for generating episode descriptions, summaries, and chapters
+- **Text-to-Speech**: Convert summaries to audio with OpenAI or ElevenLabs voices
+- **Image Generation**: Create cover images from AI-generated prompts
+- **Music Generation**: Generate background music with ElevenLabs in multiple genres
+- **Docker Support**: Containerized deployment with analysis and optimization tools
+- **Build Analysis**: Analyze and optimize SolidStart bundle size and performance
 
-AutoShow can generate diverse content formats including:
+## Quick Start
 
-- **Summaries and Chapters:**
-  - Concise summaries
-  - Detailed chapter descriptions
-  - Bullet-point summaries
-  - Chapter titles with timestamps
-- **Social Media Posts:**
-  - X (Twitter)
-  - Facebook
-  - LinkedIn
-- **Creative Content:**
-  - Rap songs
-  - Rock songs
-  - Country songs
-- **Educational and Informative Content:**
-  - Key takeaways
-  - Comprehension questions
-  - Frequently asked questions (FAQs)
-  - Curated quotes
-  - Blog outlines and drafts
+### Test URLs
 
-### Key Features
+- Video: https://www.youtube.com/watch?v=nXtaETBZ29g
+- Direct URL: https://ajc.pics/audio/fsjam-short.mp3
+- Local file: .github/1.mp3
 
-- Support for multiple input types (YouTube links, local video and audio files)
-- Integration with various:
-  - LLMs (ChatGPT, Claude, Gemini)
-  - Transcription services (Deepgram, Assembly)
-- Customizable prompts for generating titles, summaries, chapter titles/descriptions, key takeaways, and questions to test comprehension
-- Markdown output with metadata and formatted content
-
-### AutoShow Pipeline
-
-The AutoShow workflow includes the following steps that feed sequentially into each other:
-
-1. The user provides a content input (video URL or local file) and front matter is created based on the content's metadata.
-2. The audio is downloaded (if necessary).
-3. Transcription is performed using the selected transcription service.
-4. A customizable prompt is inserted containing instructions for the show notes or other content forms.
-5. The transcript is processed by the selected LLM service to generate the desired output based on the selected prompts.
-
-## Setup
-
-`.github/setup.sh` checks to ensure a `.env` file exists and Node dependencies are installed. Run the workflow with the `setup` script in `package.json`.
+### Install Dependencies
 
 ```bash
-bun setup
+bun install
 ```
 
-## Run AutoShow
-
-Example commands for all available options can be found in [`docs/README.md`](/docs/README.md).
+### Run Type Check
 
 ```bash
-bun dev
+bun check
 ```
 
-Open [localhost:4321](http://localhost:4321/).
+### Start Docker Container
 
-## Contributors
+```bash
+bun up
+```
 
-- ✨Hello beautiful human! ✨[Jenn Junod](https://jennjunod.dev/) host of [Teach Jenn Tech](https://teachjenntech.com/) & [Shit2TalkAbout](https://shit2talkabout.com)
+Visit http://localhost:4321 to generate show notes through the web interface.
+
+### CLI Helpers
+
+```bash
+bun as help
+bun as --help
+bun as -h
+```
+
+Generate repository context file with Repomix:
+
+```bash
+bun repo
+```
+
+Modify `INCLUDE_PATHS` and `IGNORE_PATHS` in `.github/repomix.sh` to customize Repomix context file output.
+
+## Running Tests
+
+```bash
+bun test
+```
+
+E2E tests spin up an isolated Docker container with a fresh SQLite database and run actual HTTP requests against the API. Requires valid API keys in `.env` (GROQ_API_KEY, OPENAI_API_KEY).
+
+## Docker Commands
+
+### Start Services
+
+```bash
+# Start services (faster, uses existing state)
+bun up
+
+# Prune Docker resources then start services (recommended for clean builds)
+bun up prune
+```
+
+The `up` command will:
+1. Build and start the Docker Compose services (use `bun up prune` to clean Docker resources first)
+2. Follow the logs for the `autoshow` service
+
+### Prune Docker Resources
+
+```bash
+# Remove all Docker containers, images, volumes, and networks
+bun run prune
+```
+
+### Display Service Information
+
+```bash
+# Show comprehensive Docker Compose information
+bun in
+```
+
+### Analyze Docker Image
+
+```bash
+# Analyze the default image
+bun docker-report
+
+# Analyze a specific image
+bun docker-report config-autoshow
+```
+
+### Build Analysis
+
+```bash
+# Analyze SolidStart build for optimization opportunities
+bun build-report
+```
