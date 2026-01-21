@@ -75,7 +75,7 @@ The AutoShow workflow includes the following steps that feed sequentially into e
 `.github/setup.sh` checks to ensure a `.env` file exists and Node dependencies are installed. Run the workflow with the `setup` script in `package.json`.
 
 ```bash
-npm run setup
+bun setup
 ```
 
 ## Run AutoShow
@@ -83,7 +83,7 @@ npm run setup
 Example commands for all available options can be found in [`docs/README.md`](/docs/README.md).
 
 ```bash
-npm run dev
+bun dev
 ```
 
 Open [localhost:4321](http://localhost:4321/).

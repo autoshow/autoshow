@@ -74,33 +74,45 @@ setup_env_file() {
   fi
 }
 
-install_npm_dependencies() {
-  local p="[setup/install_npm_dependencies]"
-  echo "$p Installing npm dependencies..."
+install_dependencies() {
+  local p="[setup/install_dependencies]"
+  echo "$p Installing dependencies..."
   
-  if ! command_exists npm; then
-    echo "$p ERROR: npm not found!"
+  if [ ! -f "package.json" ]; then
+    echo "$p WARNING: package.json not found, skipping dependency install"
+    return 0
+  fi
+  
+  local pkg_manager=""
+  local install_cmd=""
+  
+  if command_exists bun; then
+    pkg_manager="bun"
+    install_cmd="bun install"
+    echo "$p Using bun package manager"
+  elif command_exists npm; then
+    pkg_manager="npm"
+    install_cmd="npm install"
+    echo "$p Using npm package manager (bun not found)"
+  else
+    echo "$p ERROR: No package manager found!"
     echo ""
-    echo "Please install Node.js and npm first:"
-    echo "  Visit: https://nodejs.org/en/download/"
+    echo "Please install bun (recommended) or npm:"
+    echo "  bun:  Visit https://bun.sh or run: curl -fsSL https://bun.sh/install | bash"
+    echo "  npm:  Visit https://nodejs.org/en/download/"
     echo "  Or use a version manager like nvm, fnm, or volta"
     echo ""
     echo "Then re-run this setup script."
     return 1
   fi
   
-  if [ ! -f "package.json" ]; then
-    echo "$p WARNING: package.json not found, skipping npm install"
-    return 0
-  fi
-  
-  npm install || {
-    echo "$p Failed to install npm dependencies"
-    echo "Try running manually: npm install"
+  $install_cmd || {
+    echo "$p Failed to install dependencies with $pkg_manager"
+    echo "Try running manually: $install_cmd"
     return 1
   }
   
-  echo "$p npm dependencies installed successfully"
+  echo "$p Dependencies installed successfully using $pkg_manager"
 }
 
 source_os_modules() {
@@ -152,8 +164,8 @@ main() {
     echo "$p Environment setup failed, continuing anyway..."
   }
   
-  install_npm_dependencies || {
-    echo "$p npm installation failed"
+  install_dependencies || {
+    echo "$p Dependency installation failed"
     exit 1
   }
   
