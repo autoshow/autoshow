@@ -65,7 +65,6 @@ bun up
 - [Overview](docs/api/README.md) - API endpoints and usage
 - [Health](docs/api/health.md) - Health check endpoint
 - [Jobs](docs/api/jobs.md) - Job management
-- [Models](docs/api/models.md) - Available AI models
 - [Process](docs/api/process.md) - Multi-step processing pipeline
 - [Download](docs/api/download/) - File upload endpoints
 - [Media](docs/api/media/) - Audio, image, and video processing

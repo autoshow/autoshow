@@ -105,5 +105,4 @@ bun test tests/verify.test.ts
 
 ## Related Documentation
 
-- [API Documentation](../api/models.md)
 - [LLM Services](../llm/README.md)
