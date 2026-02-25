@@ -1,6 +1,6 @@
-import { For, Show } from "solid-js"
+import { For, Show, Switch, Match } from "solid-js"
 import s from "./ProgressTracker.module.css"
-import type { ProgressUpdate } from "~/types/main"
+import type { ProgressUpdate } from "~/types"
 
 type Props = {
   progress: ProgressUpdate
@@ -55,33 +55,20 @@ export default function ProgressTracker(props: Props) {
           {(step) => (
             <div class={getStepClass(step.status)}>
               <div class={s.stepIndicator}>
-                <Show
-                  when={step.status === 'completed'}
-                  fallback={
-                    <Show
-                      when={step.status === 'processing'}
-                      fallback={
-                        <Show
-                          when={step.status === 'error'}
-                          fallback={
-                            <Show
-                              when={step.status === 'skipped'}
-                              fallback={<span class={s.stepNumber}>{step.number}</span>}
-                            >
-                              <span class={s.stepIcon}>⊘</span>
-                            </Show>
-                          }
-                        >
-                          <span class={s.stepIcon}>✖</span>
-                        </Show>
-                      }
-                    >
-                      <span class={s.stepSpinner} />
-                    </Show>
-                  }
-                >
-                  <span class={s.stepIcon}>✓</span>
-                </Show>
+                <Switch fallback={<span class={s.stepNumber}>{step.number}</span>}>
+                  <Match when={step.status === 'completed'}>
+                    <span class={s.stepIcon}>✓</span>
+                  </Match>
+                  <Match when={step.status === 'processing'}>
+                    <span class={s.stepSpinner} />
+                  </Match>
+                  <Match when={step.status === 'error'}>
+                    <span class={s.stepIcon}>✖</span>
+                  </Match>
+                  <Match when={step.status === 'skipped'}>
+                    <span class={s.stepIcon}>⊘</span>
+                  </Match>
+                </Switch>
               </div>
               <div class={s.stepContent}>
                 <div class={s.stepName}>{step.name}</div>

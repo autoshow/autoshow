@@ -1,0 +1,55 @@
+{
+  "id": "verify-llm-groq-gptoss120b",
+  "name": "Verify: Groq GPT-OSS 120B",
+  "description": "Minimal verification test for Groq GPT-OSS 120B LLM",
+  "tags": [
+    "verify",
+    "llm",
+    "groq",
+    "minimal"
+  ],
+  "estimatedCost": {
+    "transcription": {
+      "service": "groq",
+      "model": "whisper-large-v3-turbo",
+      "units": "1 minute",
+      "rate": "$0.04/hour ($0.00066/min)",
+      "estimated": "$0.0007"
+    },
+    "llm": {
+      "service": "groq",
+      "model": "openai/gpt-oss-120b",
+      "units": "~2K tokens",
+      "rate": "$0.15/1M in + $0.60/1M out",
+      "estimated": "$0.0008"
+    },
+    "total": "$0.0015"
+  },
+  "input": {
+    "type": "local",
+    "path": "tests/test-input-files/5.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-120b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

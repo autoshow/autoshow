@@ -1,0 +1,42 @@
+{
+  "id": "tts-1m-local-elevenlabs-george",
+  "name": "TTS: elevenlabs JBFqnCBsd6RMkjVDRZzb with 1m-local",
+  "description": "Test elevenlabs text-to-speech with JBFqnCBsd6RMkjVDRZzb voice using 1m local audio input",
+  "tags": [
+    "1m",
+    "local",
+    "audio",
+    "tts",
+    "elevenlabs"
+  ],
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": true,
+    "service": "elevenlabs",
+    "voice": "JBFqnCBsd6RMkjVDRZzb",
+    "model": "eleven_flash_v2_5"
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  },
+  "input": {
+    "type": "local",
+    "path": "tests/test-input-files/1.mp3"
+  }
+}

@@ -2,6 +2,16 @@
 
 Monitor application health and service availability.
 
+## Outline
+
+- [Endpoint](#endpoint)
+- [Description](#description)
+- [Request](#request)
+- [Response](#response)
+- [Fields](#fields)
+- [Example](#example)
+- [Notes](#notes)
+
 ## Endpoint
 
 ```
@@ -36,6 +46,7 @@ No parameters required.
     "groq": "configured",
     "deepinfra": "configured",
     "happyscribe": "configured",
+    "fal": "configured",
     "openai": "configured"
   },
   "responseTime": "15ms"
@@ -55,6 +66,7 @@ No parameters required.
     "groq": "configured",
     "deepinfra": "configured",
     "happyscribe": "not configured",
+    "fal": "configured",
     "openai": "configured"
   },
   "responseTime": "20ms"
@@ -73,19 +85,20 @@ No parameters required.
 
 ## Fields
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `status` | string | Overall health status: `healthy`, `degraded`, or `error` |
-| `timestamp` | string | ISO 8601 timestamp of the check |
-| `uptime` | number | Server uptime in seconds |
-| `environment` | string | Current environment (`development`, `production`, etc.) |
-| `database` | string | Database connection status: `connected` or `disconnected` |
-| `services` | object | Configuration status for external services |
-| `services.groq` | string | Groq API key status |
-| `services.deepinfra` | string | DeepInfra API key status |
-| `services.happyscribe` | string | HappyScribe API key status |
-| `services.openai` | string | OpenAI API key status |
-| `responseTime` | string | Time taken to complete health check |
+| Field                | Type   | Description                                                 |
+|----------------------|--------|-------------------------------------------------------------|
+| `status`             | string | Overall health status: `healthy`, `degraded`, or `error`    |
+| `timestamp`          | string | ISO 8601 timestamp of the check                             |
+| `uptime`             | number | Server uptime in seconds                                    |
+| `environment`        | string | Current environment (`development`, `production`, etc.)     |
+| `database`           | string | Database connection status: `connected` or `disconnected`   |
+| `services`           | object | Configuration status for external services                  |
+| `services.groq`      | string | Groq API key status                                         |
+| `services.deepinfra` | string | DeepInfra API key status                                    |
+| `services.happyscribe` | string | HappyScribe API key status                                  |
+| `services.fal`       | string | Fal API key status                                          |
+| `services.openai`    | string | OpenAI API key status                                       |
+| `responseTime`       | string | Time taken to complete health check                         |
 
 ## Example
 

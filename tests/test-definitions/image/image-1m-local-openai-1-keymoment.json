@@ -1,0 +1,45 @@
+{
+  "id": "image-1m-local-openai-1-keymoment",
+  "name": "Image: openai gpt-image-1 with 1m-local",
+  "description": "Test openai image generation with gpt-image-1 model using 1m local audio input",
+  "tags": [
+    "1m",
+    "local",
+    "audio",
+    "image",
+    "openai"
+  ],
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": true,
+    "service": "openai",
+    "model": "gpt-image-1",
+    "prompts": [
+      "keyMoment"
+    ],
+    "aspectRatio": "1024x1024"
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  },
+  "input": {
+    "type": "local",
+    "path": "tests/test-input-files/1.mp3"
+  }
+}

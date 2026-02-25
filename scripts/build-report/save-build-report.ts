@@ -1,6 +1,6 @@
-import { l } from '../../src/utils/logging'
+import { l } from '~/utils/logging'
 import { formatBytes, formatTime } from './build-report-utils'
-import type { BuildAnalysisResult } from '../cli-types'
+import type { BuildAnalysisResult } from '~/types'
 
 const generateReport = (analysis: BuildAnalysisResult): string => {
   const lines: string[] = []

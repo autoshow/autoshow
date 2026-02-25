@@ -1,0 +1,68 @@
+{
+  "id": "verify-image-openai-gptimage15",
+  "name": "Verify: OpenAI GPT-Image-1.5",
+  "description": "Minimal verification test for OpenAI GPT-Image-1.5 image generation",
+  "tags": [
+    "verify",
+    "image",
+    "openai",
+    "minimal"
+  ],
+  "estimatedCost": {
+    "transcription": {
+      "service": "groq",
+      "model": "whisper-large-v3-turbo",
+      "units": "1 minute",
+      "rate": "$0.04/hour ($0.00066/min)",
+      "estimated": "$0.0007"
+    },
+    "llm": {
+      "service": "groq",
+      "model": "openai/gpt-oss-20b",
+      "units": "~2K tokens",
+      "rate": "$0.075/1M in + $0.30/1M out",
+      "estimated": "$0.0004"
+    },
+    "image": {
+      "service": "openai",
+      "model": "gpt-image-1.5",
+      "units": "1 image (1024x1024 low)",
+      "rate": "$0.009/image",
+      "estimated": "$0.009"
+    },
+    "total": "$0.0101"
+  },
+  "input": {
+    "type": "local",
+    "path": "tests/test-input-files/5.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": true,
+    "service": "openai",
+    "model": "gpt-image-1.5",
+    "prompts": [
+      "thumbnail"
+    ],
+    "aspectRatio": "1024x1024"
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

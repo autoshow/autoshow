@@ -1,6 +1,4 @@
-FROM oven/bun:alpine AS builder
-
-ARG SKIP_FRONTEND_BUILD=false
+FROM oven/bun:1.3.7-alpine AS builder
 
 WORKDIR /app
 
@@ -10,25 +8,20 @@ RUN bun install --frozen-lockfile
 
 COPY . .
 
-RUN if [ "$SKIP_FRONTEND_BUILD" = "true" ]; then \
-      echo "Skipping frontend build (using cached .output)"; \
-    else \
-      bun run build; \
-    fi
+RUN bun run build
 
-FROM oven/bun:alpine AS runtime
+FROM oven/bun:1.3.7-alpine AS runtime
 
-LABEL org.opencontainers.image.title="autoshow"
+LABEL org.opencontainers.image.title="autoshow-bun"
 LABEL org.opencontainers.image.description="AI-powered video transcriptions and summaries"
 LABEL org.opencontainers.image.version="1.0.0"
 
 ENV NODE_ENV=production
-ENV HOME=/root
-ENV DATABASE_PATH=/data/autoshow.db
 ENV HOST=0.0.0.0
 ENV PORT=4321
 
-RUN apk add --no-cache \
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup && \
+    apk add --no-cache \
     curl \
     ffmpeg \
     aria2 \
@@ -36,7 +29,9 @@ RUN apk add --no-cache \
     bash \
     python3 \
     yt-dlp && \
-    rm -rf /root/.cache/* /tmp/*
+    rm -rf /root/.cache/* /tmp/* && \
+    mkdir -p /home/appuser/.autoshow /app/output /app/uploads /app/data && \
+    chown -R appuser:appgroup /home/appuser/.autoshow /app/output /app/uploads /app/data
 
 WORKDIR /app
 
@@ -44,13 +39,10 @@ COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.output ./.output
 COPY --from=builder /app/tests ./tests
-COPY .github/start.sh /usr/local/bin/start.sh
+COPY --chmod=755 .github/start.sh /usr/local/bin/start.sh
 COPY scripts ./scripts
 
-RUN mkdir -p /data \
-    /root/.autoshow \
-    /app/output && \
-    chmod +x /usr/local/bin/start.sh
+USER appuser
 
 EXPOSE 4321
 

@@ -1,0 +1,56 @@
+{
+  "id": "verify-transcription-fal",
+  "name": "Verify: Fal Transcription",
+  "description": "Minimal verification test for Fal whisper transcription",
+  "tags": [
+    "verify",
+    "transcription",
+    "fal",
+    "minimal",
+    "minimal-service"
+  ],
+  "estimatedCost": {
+    "transcription": {
+      "service": "fal",
+      "model": "fal-ai/whisper",
+      "units": "1 minute",
+      "rate": "$0.99/hr GPU (~$0.0165/min)",
+      "estimated": "$0.0165"
+    },
+    "llm": {
+      "service": "groq",
+      "model": "openai/gpt-oss-20b",
+      "units": "~2K tokens",
+      "rate": "$0.075/1M in + $0.30/1M out",
+      "estimated": "$0.0004"
+    },
+    "total": "$0.0169"
+  },
+  "input": {
+    "type": "local",
+    "path": "tests/test-input-files/5.mp3"
+  },
+  "transcription": {
+    "service": "fal",
+    "model": "fal-ai/whisper"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

@@ -1,5 +1,5 @@
 import { l, err } from '~/utils/logging'
-import { executeCommand } from '~/routes/api/process/01-dl-audio/dl-video'
+import { executeCommand } from '~/routes/api/process/01-dl-audio/dl-utils'
 
 export const splitAudioFile = async (audioPath: string, outputDir: string, segmentDurationMinutes: number = 10): Promise<string[]> => {
   l(`Splitting audio file into ${segmentDurationMinutes}-minute segments`)
@@ -17,7 +17,9 @@ export const splitAudioFile = async (audioPath: string, outputDir: string, segme
   ])
   
   const totalDuration = parseFloat(durationResult.stdout.trim())
-  const totalSegments = Math.ceil(totalDuration / segmentDurationSeconds)
+  const remainder = totalDuration % segmentDurationSeconds
+  const minSegmentDuration = 2
+  const totalSegments = Math.floor(totalDuration / segmentDurationSeconds) + (remainder >= minSegmentDuration ? 1 : 0)
   
   l(`Audio duration: ${Math.floor(totalDuration / 60)} minutes`)
   l(`Will create ${totalSegments} segments`)

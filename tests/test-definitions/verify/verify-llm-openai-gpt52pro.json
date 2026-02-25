@@ -1,0 +1,55 @@
+{
+  "id": "verify-llm-openai-gpt52pro",
+  "name": "Verify: OpenAI GPT-5.2-Pro",
+  "description": "Minimal verification test for OpenAI GPT-5.2-Pro LLM",
+  "tags": [
+    "verify",
+    "llm",
+    "openai",
+    "minimal"
+  ],
+  "estimatedCost": {
+    "transcription": {
+      "service": "groq",
+      "model": "whisper-large-v3-turbo",
+      "units": "1 minute",
+      "rate": "$0.04/hour ($0.00066/min)",
+      "estimated": "$0.0007"
+    },
+    "llm": {
+      "service": "openai",
+      "model": "gpt-5.2-pro",
+      "units": "~2K tokens",
+      "rate": "$21/1M in + $168/1M out",
+      "estimated": "$0.189"
+    },
+    "total": "$0.1897"
+  },
+  "input": {
+    "type": "local",
+    "path": "tests/test-input-files/5.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "openai",
+    "model": "gpt-5.2-pro",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

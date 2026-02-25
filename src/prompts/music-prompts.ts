@@ -1,6 +1,4 @@
-import type { MusicGenre } from '~/types/main'
-import type { TranscriptionResult } from '~/types/main'
-import type { VideoMetadata } from '~/types/main'
+import type { MusicGenre, TranscriptionResult, VideoMetadata } from '~/types'
 
 export const getGenrePromptEnhancement = (genre: MusicGenre): string => {
   const genreDescriptions: Record<MusicGenre, string> = {
@@ -12,13 +10,14 @@ export const getGenrePromptEnhancement = (genre: MusicGenre): string => {
     jazz: 'with swing rhythms, improvisation, and sophisticated harmonies'
   }
   
-  return genreDescriptions[genre]
+  return genreDescriptions[genre] ?? 'with genre-appropriate instrumentation, structure, and production'
 }
 
 export const buildLyricsPrompt = (
   metadata: VideoMetadata,
   transcription: TranscriptionResult,
-  genre: MusicGenre
+  genre: MusicGenre,
+  targetDurationSeconds: number
 ): string => {
   const genreInstructions: Record<MusicGenre, string> = {
     rap: 'Write rap lyrics with rhythmic flow, clever wordplay, and urban storytelling. Include verses and a catchy hook. The lyrics should have a clear rhyme scheme and be suitable for hip-hop production.',
@@ -30,6 +29,15 @@ export const buildLyricsPrompt = (
   }
 
   const instruction = genreInstructions[genre]
+  const wordTarget = targetDurationSeconds <= 30
+    ? '40-80'
+    : targetDurationSeconds <= 60
+      ? '80-140'
+      : targetDurationSeconds <= 90
+        ? '120-200'
+        : targetDurationSeconds <= 120
+          ? '160-260'
+          : '200-400'
 
   return `Based on the following transcript, write original song lyrics in the ${genre} genre.
 
@@ -45,8 +53,8 @@ Important instructions:
 - DO NOT use any copyrighted lyrics or reference specific band/artist names
 - Create 100% original lyrics inspired by the themes and topics in the transcript
 - Make the lyrics complete with verses and chorus
-- Keep the total length to approximately 200-400 words
-- The lyrics should be suitable for a 2-3 minute song
+- Keep the total length to approximately ${wordTarget} words
+- The lyrics should be suitable for a ${targetDurationSeconds}-second song
 - Write ONLY the lyrics, no additional commentary or explanations
 
 Lyrics:`

@@ -1,0 +1,55 @@
+{
+  "id": "verify-llm-minimax-m21lightning",
+  "name": "Verify: MiniMax M2.1 Lightning",
+  "description": "Minimal verification test for MiniMax M2.1 Lightning LLM",
+  "tags": [
+    "verify",
+    "llm",
+    "minimax",
+    "minimal"
+  ],
+  "estimatedCost": {
+    "transcription": {
+      "service": "groq",
+      "model": "whisper-large-v3-turbo",
+      "units": "1 minute",
+      "rate": "$0.04/hour ($0.00066/min)",
+      "estimated": "$0.0007"
+    },
+    "llm": {
+      "service": "minimax",
+      "model": "MiniMax-M2.1-lightning",
+      "units": "~2K tokens",
+      "rate": "$0.3/1M in + $2.4/1M out",
+      "estimated": "$0.0027"
+    },
+    "total": "$0.0034"
+  },
+  "input": {
+    "type": "local",
+    "path": "tests/test-input-files/5.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "minimax",
+    "model": "MiniMax-M2.1-lightning",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

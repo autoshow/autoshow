@@ -1,0 +1,60 @@
+{
+  "id": "verify-document-llamaparse-agenticplus",
+  "name": "Verify: LlamaParse Agentic Plus",
+  "description": "Minimal verification test for LlamaParse agentic_plus document parsing",
+  "tags": [
+    "verify",
+    "document",
+    "llamaparse",
+    "minimal"
+  ],
+  "estimatedCost": {
+    "document": {
+      "service": "llamaparse",
+      "model": "agentic_plus",
+      "units": "1 page",
+      "rate": "-e.0125/page",
+      "estimated": "$0.013"
+    },
+    "llm": {
+      "service": "groq",
+      "model": "openai/gpt-oss-20b",
+      "units": "~2K tokens",
+      "rate": "$0.075/1M in + $0.30/1M out",
+      "estimated": "$0.0004"
+    },
+    "total": "$0.0134"
+  },
+  "input": {
+    "type": "url",
+    "url": "https://ajc.pics/autoshow/textract-1.pdf",
+    "urlType": "document"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "document": {
+    "service": "llamaparse",
+    "model": "agentic_plus"
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

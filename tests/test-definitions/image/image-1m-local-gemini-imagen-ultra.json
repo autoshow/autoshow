@@ -1,0 +1,45 @@
+{
+  "id": "image-1m-local-gemini-imagen-ultra",
+  "name": "Image: gemini imagen-4.0-ultra-generate-001 with 1m-local",
+  "description": "Test gemini image generation with imagen-4.0-ultra-generate-001 model using 1m local audio input",
+  "tags": [
+    "1m",
+    "local",
+    "audio",
+    "image",
+    "gemini"
+  ],
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": true,
+    "service": "gemini",
+    "model": "imagen-4.0-ultra-generate-001",
+    "prompts": [
+      "keyMoment"
+    ],
+    "aspectRatio": "1:1"
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  },
+  "input": {
+    "type": "local",
+    "path": "tests/test-input-files/1.mp3"
+  }
+}

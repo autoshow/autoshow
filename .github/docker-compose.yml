@@ -7,19 +7,39 @@ services:
     ports:
       - "4321:4321"
     environment:
-      - YOUTUBE_API_KEY=${YOUTUBE_API_KEY:-}
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
-      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
-      - GROQ_API_KEY=${GROQ_API_KEY:-}
-      - DEEPINFRA_API_KEY=${DEEPINFRA_API_KEY:-}
-      - LEMONFOX_API_KEY=${LEMONFOX_API_KEY:-}
-      - HAPPYSCRIBE_API_KEY=${HAPPYSCRIBE_API_KEY:-}
-      - HAPPYSCRIBE_ORGANIZATION_ID=${HAPPYSCRIBE_ORGANIZATION_ID:-}
-      - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY:-}
+      - DATABASE_URL=sqlite://./data/autoshow.db
+      - YOUTUBE_API_KEY=${YOUTUBE_API_KEY:?YOUTUBE_API_KEY is required}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:?OPENAI_API_KEY is required}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:?ANTHROPIC_API_KEY is required}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:?GEMINI_API_KEY is required}
+      - XAI_API_KEY=${XAI_API_KEY:-}
+      - GROQ_API_KEY=${GROQ_API_KEY:?GROQ_API_KEY is required}
+      - DEEPINFRA_API_KEY=${DEEPINFRA_API_KEY:?DEEPINFRA_API_KEY is required}
+      - LEMONFOX_API_KEY=${LEMONFOX_API_KEY:?LEMONFOX_API_KEY is required}
+      - FAL_API_KEY=${FAL_API_KEY:?FAL_API_KEY is required}
+      - GLADIA_API_KEY=${GLADIA_API_KEY:?GLADIA_API_KEY is required}
+      - HAPPYSCRIBE_API_KEY=${HAPPYSCRIBE_API_KEY:?HAPPYSCRIBE_API_KEY is required}
+      - HAPPYSCRIBE_ORGANIZATION_ID=${HAPPYSCRIBE_ORGANIZATION_ID:?HAPPYSCRIBE_ORGANIZATION_ID is required}
+      - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY:?ELEVENLABS_API_KEY is required}
+      - REV_AI_API_KEY=${REV_AI_API_KEY:?REV_AI_API_KEY is required}
+      - ASSEMBLYAI_API_KEY=${ASSEMBLYAI_API_KEY:?ASSEMBLYAI_API_KEY is required}
+      - DEEPGRAM_API_KEY=${DEEPGRAM_API_KEY:?DEEPGRAM_API_KEY is required}
+      - SONIOX_API_KEY=${SONIOX_API_KEY:?SONIOX_API_KEY is required}
+      - DEAPI_API_KEY=${DEAPI_API_KEY:-}
+      - SUPADATA_API_KEY=${SUPADATA_API_KEY:-}
+      - MINIMAX_API_KEY=${MINIMAX_API_KEY:-}
+      - RUNWAYML_API_SECRET=${RUNWAYML_API_SECRET:-}
+      - BFL_API_KEY=${BFL_API_KEY:-}
+      - LLAMAPARSE_API_KEY=${LLAMAPARSE_API_KEY:?LLAMAPARSE_API_KEY is required}
+      - MISTRAL_API_KEY=${MISTRAL_API_KEY:?MISTRAL_API_KEY is required}
+      - BUCKET=${BUCKET:?BUCKET is required}
+      - ACCESS_KEY_ID=${ACCESS_KEY_ID:?ACCESS_KEY_ID is required}
+      - SECRET_ACCESS_KEY=${SECRET_ACCESS_KEY:?SECRET_ACCESS_KEY is required}
+      - REGION=${REGION:?REGION is required}
+      - ENDPOINT=${ENDPOINT:?ENDPOINT is required}
     volumes:
-      - autoshow-data:/data
       - autoshow-output:/app/output
+      - autoshow-data:/app/data
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4321/api/health"]
       interval: 120s
@@ -29,7 +49,7 @@ services:
     restart: unless-stopped
 
 volumes:
-  autoshow-data:
-    driver: local
   autoshow-output:
+    driver: local
+  autoshow-data:
     driver: local

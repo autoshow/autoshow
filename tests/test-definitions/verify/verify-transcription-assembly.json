@@ -1,0 +1,56 @@
+{
+  "id": "verify-transcription-assembly",
+  "name": "Verify: AssemblyAI Transcription",
+  "description": "Minimal verification test for AssemblyAI transcription with speaker diarization",
+  "tags": [
+    "verify",
+    "transcription",
+    "assembly",
+    "minimal",
+    "minimal-service"
+  ],
+  "estimatedCost": {
+    "transcription": {
+      "service": "assembly",
+      "model": "universal",
+      "units": "1 minute",
+      "rate": "$0.17/hr (~$0.002833/min)",
+      "estimated": "$0.003"
+    },
+    "llm": {
+      "service": "groq",
+      "model": "openai/gpt-oss-20b",
+      "units": "~2K tokens",
+      "rate": "$0.075/1M in + $0.30/1M out",
+      "estimated": "$0.0004"
+    },
+    "total": "$0.0034"
+  },
+  "input": {
+    "type": "local",
+    "path": "tests/test-input-files/5.mp3"
+  },
+  "transcription": {
+    "service": "assembly",
+    "model": "universal"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

@@ -1,72 +1,57 @@
-import { Show, For } from "solid-js"
-import s from "./Step6.module.css"
-import { l } from "~/utils/logging"
+import { Show, For, createMemo } from "solid-js"
+import shared from "../shared/shared.module.css"
+import { StepHeader, SkipCheckbox, OptionButton, OptionGrid, ModelButton, ModelGrid, togglePrompt } from "../shared"
+import { IMAGE_CONFIG } from "~/models/image-config"
+import { IMAGE_PROMPT_CONFIG, IMAGE_PROMPT_TYPES } from "~/prompts/image-prompts"
+import type { ImageGenServiceType, ImageConfig } from "~/types"
 
 type Props = {
   imageGenSkipped: boolean
   setImageGenSkipped: (value: boolean) => void
   selectedImagePrompts: string[]
   setSelectedImagePrompts: (prompts: string[]) => void
+  imageService: ImageGenServiceType
+  setImageService: (service: ImageGenServiceType) => void
+  imageModel: string
+  setImageModel: (model: string) => void
+  imageDimensionOrRatio: string
+  setImageDimensionOrRatio: (ratio: string) => void
   disabled: boolean | undefined
 }
 
+type ImageEntry = [ImageGenServiceType, ImageConfig[ImageGenServiceType]]
+
+function getImageEntries(config: ImageConfig): ImageEntry[] {
+  return (Object.keys(config) as ImageGenServiceType[]).map(key => [key, config[key]])
+}
+
 export default function Step6(props: Props) {
-  const togglePrompt = (prompt: string): void => {
-    const current = props.selectedImagePrompts
-    
-    if (current.includes(prompt)) {
-      const newPrompts = current.filter(p => p !== prompt)
-      props.setSelectedImagePrompts(newPrompts)
-    } else {
-      if (current.length < 3) {
-        const newPrompts = [...current, prompt]
-        props.setSelectedImagePrompts(newPrompts)
-      } else {
-        l(`[Step6] Cannot add prompt - limit of 3 reached`)
-      }
+  const currentConfig = createMemo(() => IMAGE_CONFIG[props.imageService])
+
+  const imageServices = getImageEntries(IMAGE_CONFIG)
+
+  const handleModelClick = (serviceId: ImageGenServiceType, modelId: string) => {
+    props.setImageService(serviceId)
+    props.setImageModel(modelId)
+    const config = IMAGE_CONFIG[serviceId]
+    if (config.dimensions) {
+      props.setImageDimensionOrRatio(config.dimensions[0]?.id || '1024x1024')
+    } else if (config.aspectRatios) {
+      props.setImageDimensionOrRatio(config.aspectRatios[0] || '1:1')
     }
   }
 
-  const imagePromptOptions = [
-    {
-      id: "keyMoment",
-      title: "Key Moment",
-      description: "Generate an image representing the most important moment or concept from the content"
-    },
-    {
-      id: "thumbnail",
-      title: "Thumbnail",
-      description: "Create an eye-catching thumbnail image suitable for social media or video platforms"
-    },
-    {
-      id: "conceptual",
-      title: "Conceptual Art",
-      description: "Generate abstract or conceptual artwork that captures the essence of the discussion"
-    },
-    {
-      id: "infographic",
-      title: "Infographic Style",
-      description: "Create an infographic-style image summarizing key points visually"
-    },
-    {
-      id: "character",
-      title: "Character/Scene",
-      description: "Generate an image of characters or scenes discussed in the content"
-    },
-    {
-      id: "quote",
-      title: "Quote Visual",
-      description: "Create a visual representation of a memorable quote from the content"
-    }
-  ]
+  const isModelSelected = (serviceId: ImageGenServiceType, modelId: string): boolean => {
+    return props.imageService === serviceId && props.imageModel === modelId
+  }
 
   return (
     <>
-      <h2 class={s.stepHeading}>Step 6: AI Image Generation (Optional)</h2>
-
-      <div class={s.instructionBanner}>
-        Optionally create AI-generated images based on your content. Select 1-3 image types to generate.
-      </div>
+      <StepHeader
+        stepNumber={6}
+        title="AI Image Generation (Optional)"
+        description="Optionally create AI-generated images based on your content."
+      />
 
       <input 
         type="hidden" 
@@ -80,52 +65,116 @@ export default function Step6(props: Props) {
         value={props.selectedImagePrompts.join(',')} 
       />
 
-      <div class={s.formGroup}>
-        <label class={s.checkboxLabel}>
-          <input
-            type="checkbox"
-            checked={props.imageGenSkipped}
-            onChange={(e) => props.setImageGenSkipped(e.currentTarget.checked)}
-            disabled={props.disabled}
-            class={s.checkbox}
-          />
-          <span class={s.checkboxText}>Skip AI image generation</span>
-        </label>
-        <p class={s.helpText}>
-          Check this box to skip generating AI images based on your content.
-        </p>
-      </div>
+      <input type="hidden" name="imageService" value={props.imageService} />
+      <input type="hidden" name="imageModel" value={props.imageModel} />
+      <input type="hidden" name="imageDimensionOrRatio" value={props.imageDimensionOrRatio} />
+
+      <SkipCheckbox
+        checked={props.imageGenSkipped}
+        onChange={props.setImageGenSkipped}
+        disabled={props.disabled}
+        label="Skip AI image generation"
+        helpText="Check this box to skip generating AI images based on your content."
+      />
 
       <Show when={!props.imageGenSkipped}>
-        <div class={s.formGroup}>
-          <label class={s.label}>
-            Select Image Prompts (1-3)
+        <div class={shared.formGroup}>
+          <label class={shared.label}>Select Image Model</label>
+          <ModelGrid>
+            <For each={imageServices}>
+              {([serviceId, serviceConfig]) => (
+                <For each={serviceConfig.models}>
+                  {(model) => (
+                    <ModelButton
+                      service={serviceConfig.name}
+                      name={model.name}
+                      description={model.description}
+                      speed={model.speed}
+                      quality={model.quality}
+                      selected={isModelSelected(serviceId, model.id)}
+                      disabled={props.disabled}
+                      onClick={() => handleModelClick(serviceId, model.id)}
+                    />
+                  )}
+                </For>
+              )}
+            </For>
+          </ModelGrid>
+        </div>
+
+        <Show when={currentConfig()?.aspectRatios}>
+          <div class={shared.formGroup}>
+            <label class={shared.label}>Select Aspect Ratio</label>
+            <div class={shared.aspectRatioGrid}>
+              <For each={currentConfig()?.aspectRatios || []}>
+                {(ratio) => {
+                  const isSelected = () => props.imageDimensionOrRatio === ratio
+                  return (
+                    <button
+                      type="button"
+                      class={isSelected() ? shared.aspectRatioButtonSelected : shared.aspectRatioButton}
+                      onClick={() => props.setImageDimensionOrRatio(ratio)}
+                      disabled={props.disabled}
+                    >
+                      {ratio}
+                    </button>
+                  )
+                }}
+              </For>
+            </div>
+          </div>
+        </Show>
+
+        <Show when={currentConfig()?.dimensions}>
+          <div class={shared.formGroup}>
+            <label class={shared.label}>Select Dimensions</label>
+            <div class={shared.aspectRatioGrid}>
+              <For each={currentConfig()?.dimensions || []}>
+                {(dimension) => {
+                  const isSelected = () => props.imageDimensionOrRatio === dimension.id
+                  return (
+                    <button
+                      type="button"
+                      class={isSelected() ? shared.aspectRatioButtonSelected : shared.aspectRatioButton}
+                      onClick={() => props.setImageDimensionOrRatio(dimension.id)}
+                      disabled={props.disabled}
+                    >
+                      {dimension.name}
+                    </button>
+                  )
+                }}
+              </For>
+            </div>
+          </div>
+        </Show>
+
+        <div class={shared.formGroup}>
+          <label class={shared.label}>
+            Select Image Prompt (1)
           </label>
           
-          <div class={s.optionGrid}>
-            <For each={imagePromptOptions}>
-              {(option) => {
-                const isSelected = () => props.selectedImagePrompts.includes(option.id)
+          <OptionGrid>
+            <For each={IMAGE_PROMPT_TYPES}>
+              {(promptType) => {
+                const config = IMAGE_PROMPT_CONFIG[promptType]
+                const isSelected = () => props.selectedImagePrompts.includes(promptType)
                 
                 return (
-                  <button
-                    type="button"
-                    class={isSelected() ? s.optionButtonSelected : s.optionButton}
-                    onClick={() => {
-                      togglePrompt(option.id)
-                    }}
+                  <OptionButton
+                    title={config.title}
+                    description={config.description}
+                    selected={isSelected()}
                     disabled={props.disabled}
-                  >
-                    <div class={s.optionTitle}>{option.title}</div>
-                    <div class={s.optionDescription}>{option.description}</div>
-                  </button>
+                    onClick={() => togglePrompt(promptType, { current: () => props.selectedImagePrompts, setter: props.setSelectedImagePrompts, maxItems: 1 })}
+                    variant="simple"
+                  />
                 )
               }}
             </For>
-          </div>
+          </OptionGrid>
 
-          <p class={s.promptHelpText}>
-            Select up to 3 types of images to generate. {props.selectedImagePrompts.length > 0 && `${props.selectedImagePrompts.length} of 3 selected.`}
+          <p class={shared.promptHelpText}>
+            Select 1 type of image to generate. {props.selectedImagePrompts.length > 0 && `${props.selectedImagePrompts.length} of 1 selected.`}
           </p>
         </div>
       </Show>

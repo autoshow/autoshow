@@ -1,0 +1,79 @@
+.container {
+  min-height: 100vh;
+  padding: 2rem;
+  background: var(--bg-primary);
+}
+
+.innerContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 2rem;
+  color: var(--accent-blue);
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.backLink:hover {
+  color: var(--accent-cyan);
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 400px;
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+}
+
+.article {
+  background: var(--bg-card);
+  padding: 2.5rem;
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+}
+
+.sectionTitle {
+  font-size: 1.75rem;
+  margin-bottom: 1.25rem;
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.detailsSummary {
+  cursor: pointer;
+  padding: 1rem 1.25rem;
+  background: var(--bg-secondary);
+  border-radius: 10px;
+  user-select: none;
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.detailsSummary:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--accent-blue);
+}
+
+.promptBox {
+  margin-top: 1rem;
+  background: #0d1117;
+  padding: 1.75rem;
+  border-radius: 12px;
+  white-space: pre-wrap;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  max-height: 600px;
+  overflow-y: auto;
+  border: 1px solid #30363d;
+  color: #e6edf3;
+}

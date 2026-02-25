@@ -1,0 +1,42 @@
+{
+  "id": "tts-1m-local-openai-alloy",
+  "name": "TTS: openai alloy with 1m-local",
+  "description": "Test openai text-to-speech with alloy voice using 1m local audio input",
+  "tags": [
+    "1m",
+    "local",
+    "audio",
+    "tts",
+    "openai"
+  ],
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": true,
+    "service": "openai",
+    "voice": "alloy",
+    "model": "gpt-4o-mini-tts"
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  },
+  "input": {
+    "type": "local",
+    "path": "tests/test-input-files/1.mp3"
+  }
+}

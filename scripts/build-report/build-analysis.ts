@@ -4,7 +4,7 @@ import type {
   CSSAnalysis,
   LazyLoadingAnalysis,
   PerformanceMetrics
-} from '../cli-types'
+} from '~/types'
 
 export const analyzeBundle = (requests: NetworkRequest[]): BundleAnalysis => {
   const jsFiles = requests.filter(r => r.resourceType === 'script')

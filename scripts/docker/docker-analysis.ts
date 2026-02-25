@@ -1,6 +1,6 @@
-import { err } from '../../src/utils/logging'
+import { err } from '~/utils/logging'
 import { runDockerCommand, findDockerfile, parseTarHeader } from './docker-utils'
-import type { DirectorySizes, VolumeInfo, TarAnalysisResult } from '../cli-types'
+import type { DirectorySizes, VolumeInfo, TarAnalysisResult } from '~/types'
 
 export const analyzeImageLayers = async (imageName: string): Promise<string> => {
   let output = '\nLayer Analysis\n\nTop 10 Largest Layers:\n\n'

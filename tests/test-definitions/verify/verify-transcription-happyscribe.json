@@ -1,0 +1,57 @@
+{
+  "id": "verify-transcription-happyscribe",
+  "name": "Verify: HappyScribe Transcription",
+  "description": "Minimal verification test for HappyScribe streaming transcription",
+  "tags": [
+    "verify",
+    "transcription",
+    "happyscribe",
+    "minimal",
+    "minimal-service"
+  ],
+  "estimatedCost": {
+    "transcription": {
+      "service": "happyscribe",
+      "model": "happyscribe-auto",
+      "units": "1 minute",
+      "rate": "$0.01/min",
+      "estimated": "$0.01"
+    },
+    "llm": {
+      "service": "groq",
+      "model": "openai/gpt-oss-20b",
+      "units": "~2K tokens",
+      "rate": "$0.075/1M in + $0.30/1M out",
+      "estimated": "$0.0004"
+    },
+    "total": "$0.0104"
+  },
+  "input": {
+    "type": "url",
+    "url": "https://www.youtube.com/watch?v=MORMZXEaONk",
+    "urlType": "streaming"
+  },
+  "transcription": {
+    "service": "happyscribe",
+    "model": "happyscribe-auto"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

@@ -1,5 +1,5 @@
 import { json } from "@solidjs/router"
-import { err } from "../../utils/logging"
+import { err } from "~/utils/logging"
 import { getDatabase, initializeSchema } from "~/database/db"
 
 export async function GET() {
@@ -12,7 +12,7 @@ export async function GET() {
     
     try {
       const db = getDatabase()
-      initializeSchema(db)
+      await initializeSchema(db)
       checks.database = true
     } catch (error) {
       err("Database check failed", error)
@@ -31,9 +31,12 @@ export async function GET() {
         groq: process.env["GROQ_API_KEY"] ? "configured" : "not configured",
         deepinfra: process.env["DEEPINFRA_API_KEY"] ? "configured" : "not configured",
         happyscribe: process.env["HAPPYSCRIBE_API_KEY"] ? "configured" : "not configured",
+        fal: process.env["FAL_API_KEY"] ? "configured" : "not configured",
+        gladia: process.env["GLADIA_API_KEY"] ? "configured" : "not configured",
         openai: process.env["OPENAI_API_KEY"] ? "configured" : "not configured",
-        anthropic: process.env["ANTHROPIC_API_KEY"] ? "configured" : "not configured",
-        gemini: process.env["GEMINI_API_KEY"] ? "configured" : "not configured"
+        claude: process.env["ANTHROPIC_API_KEY"] ? "configured" : "not configured",
+        gemini: process.env["GEMINI_API_KEY"] ? "configured" : "not configured",
+        grok: process.env["XAI_API_KEY"] ? "configured" : "not configured"
       },
       responseTime: `${responseTime}ms`
     }

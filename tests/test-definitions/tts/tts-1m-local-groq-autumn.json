@@ -1,0 +1,42 @@
+{
+  "id": "tts-1m-local-groq-autumn",
+  "name": "TTS: groq autumn with 1m-local",
+  "description": "Test groq text-to-speech with autumn voice using 1m local audio input",
+  "tags": [
+    "1m",
+    "local",
+    "audio",
+    "tts",
+    "groq"
+  ],
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": true,
+    "service": "groq",
+    "voice": "autumn",
+    "model": "canopylabs/orpheus-v1-english"
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  },
+  "input": {
+    "type": "local",
+    "path": "tests/test-input-files/1.mp3"
+  }
+}

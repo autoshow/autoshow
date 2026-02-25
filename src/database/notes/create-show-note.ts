@@ -1,23 +1,66 @@
-import type { ProcessingOptions, ProcessingMetadata } from '~/types/main'
-import { ShowNoteInputSchema, validateOrThrow } from '~/types/main'
+import type { ProcessingOptions, ProcessingMetadata, Step2DocumentMetadata } from '~/types'
 import { err } from '~/utils/logging'
-import { getDatabase, initializeSchema } from '~/database/db'
-import type { Database } from "bun:sqlite"
+import type { SQL } from "bun"
 
-export const createShowNote = (db: Database, id: string, input: unknown): void => {
-  const validInput = validateOrThrow(ShowNoteInputSchema, input, 'Invalid show note input')
-  
+export const createShowNote = async (
+  db: SQL,
+  showNoteId: string,
+  metadata: { url: string, title: string, author?: string, duration?: string },
+  options: ProcessingOptions,
+  processingMetadata: ProcessingMetadata,
+  promptInstructions: string,
+  textOutput: string,
+  transcriptionText: string
+): Promise<void> => {
   try {
-    if (!validInput.llmService) {
-      err('Missing required llmService field')
-      throw new Error('llmService is required for database insert')
+    const isDocument = 'documentUrl' in processingMetadata.step1
+    const imageFiles = processingMetadata.step6?.results.map(r => r.fileName).join(',') || null
+    const videoFiles = processingMetadata.step8?.results.map(r => r.fileName).join(',') || null
+
+    const imageS3Urls = processingMetadata.step6?.results.map(r => r.s3Url).filter(Boolean).join(',') || null
+    const videoS3Urls = processingMetadata.step8?.results.map(r => r.s3Url).filter(Boolean).join(',') || null
+    const thumbnailS3Urls = processingMetadata.step8?.results.map(r => r.thumbnailS3Url).filter(Boolean).join(',') || null
+
+    let transcriptionService: string | null = null
+    let transcriptionModel: string | null = null
+    let documentService: string | null = null
+    let documentModel: string | null = null
+    let videoPublishDate: string | null = null
+    let videoThumbnail: string | null = null
+    let channelUrl: string | null = null
+    let audioFileName: string | null = null
+    let audioFileSize: number | null = null
+    let transcriptionTokenCount: number | null = null
+    let audioS3Url: string | null = null
+
+    if (isDocument) {
+      const step2Doc = processingMetadata.step2 as Step2DocumentMetadata
+      documentService = options.documentService ?? null
+      documentModel = step2Doc.extractionModel
+      transcriptionTokenCount = step2Doc.characterCount ?? null
+    } else {
+      const step1 = processingMetadata.step1 as { videoPublishDate?: string, videoThumbnail?: string, channelUrl?: string, audioFileName: string, audioFileSize: number, audioS3Url?: string }
+      const step2 = processingMetadata.step2 as { transcriptionModel: string, tokenCount: number }
+      transcriptionService = options.transcriptionService ?? null
+      transcriptionModel = step2.transcriptionModel
+      videoPublishDate = step1.videoPublishDate ?? null
+      videoThumbnail = step1.videoThumbnail ?? null
+      channelUrl = step1.channelUrl ?? null
+      audioFileName = step1.audioFileName ?? null
+      audioFileSize = step1.audioFileSize ?? null
+      transcriptionTokenCount = step2.tokenCount ?? null
+      audioS3Url = step1.audioS3Url ?? null
     }
-    
-    const query = db.query(`
+
+    const processedAt = Date.now()
+    const createdAt = processedAt
+
+    await db`
       INSERT INTO show_notes (
-        id, url, title, author, duration, prompt, summary, 
-        transcription, transcription_service, transcription_model, 
-        llm_service, llm_model, processed_at, video_publish_date, video_thumbnail,
+        id, url, title, author, duration, prompt, text_output,
+        transcription, transcription_service, transcription_model,
+        document_service, document_model,
+        llm_service, llm_model, processed_at, created_at, video_publish_date, video_thumbnail,
         channel_url, audio_file_name, audio_file_size,
         transcription_processing_time, transcription_token_count,
         llm_processing_time, llm_input_token_count,
@@ -25,163 +68,34 @@ export const createShowNote = (db: Database, id: string, input: unknown): void =
         tts_enabled, tts_service, tts_model, tts_voice, tts_audio_file,
         tts_processing_time, tts_audio_duration,
         image_gen_enabled, image_gen_service, image_gen_model, images_generated,
-        image_gen_processing_time, selected_image_prompts, image_files,
-        music_gen_enabled, music_gen_service, music_gen_model, music_gen_genre, music_gen_file,
-        music_gen_processing_time, music_gen_duration, music_gen_lyrics_length, music_gen_lyrics_generation_time, music_gen_lyrics,
+        image_gen_processing_time, image_gen_cost, selected_image_prompts, image_files,
+        music_gen_enabled, music_gen_service, music_gen_model, music_gen_genre, music_gen_preset, music_gen_target_duration, music_gen_instrumental, music_gen_sample_rate, music_gen_bitrate, music_gen_file,
+        music_gen_processing_time, music_gen_duration, music_gen_cost, music_gen_lyrics_length, music_gen_lyrics_generation_time, music_gen_lyrics,
         video_gen_enabled, video_gen_service, video_gen_model, videos_generated,
-        video_gen_processing_time, selected_video_prompts, video_size, video_duration, video_files
+        video_gen_processing_time, video_gen_cost, selected_video_prompts, video_size, video_duration, video_files,
+        audio_s3_url, tts_s3_url, image_s3_urls, music_s3_url, video_s3_urls, thumbnail_s3_url
       ) VALUES (
-        $id, $url, $title, $author, $duration, $prompt, $summary,
-        $transcription, $transcriptionService, $transcriptionModel,
-        $llmService, $llmModel, $processedAt, $videoPublishDate, $videoThumbnail,
-        $channelUrl, $audioFileName, $audioFileSize,
-        $transcriptionProcessingTime, $transcriptionTokenCount,
-        $llmProcessingTime, $llmInputTokenCount,
-        $llmOutputTokenCount, $selectedPrompts,
-        $ttsEnabled, $ttsService, $ttsModel, $ttsVoice, $ttsAudioFile,
-        $ttsProcessingTime, $ttsAudioDuration,
-        $imageGenEnabled, $imageGenService, $imageGenModel, $imagesGenerated,
-        $imageGenProcessingTime, $selectedImagePrompts, $imageFiles,
-        $musicGenEnabled, $musicGenService, $musicGenModel, $musicGenGenre, $musicGenFile,
-        $musicGenProcessingTime, $musicGenDuration, $musicGenLyricsLength, $musicGenLyricsGenerationTime, $musicGenLyrics,
-        $videoGenEnabled, $videoGenService, $videoGenModel, $videosGenerated,
-        $videoGenProcessingTime, $selectedVideoPrompts, $videoSize, $videoDuration, $videoFiles
+        ${showNoteId}, ${metadata.url}, ${metadata.title}, ${metadata.author ?? null}, ${metadata.duration ?? null}, ${promptInstructions}, ${textOutput},
+        ${transcriptionText}, ${transcriptionService}, ${transcriptionModel},
+        ${documentService}, ${documentModel},
+        ${processingMetadata.step4.llmService}, ${options.llmModel ?? null}, ${processedAt}, ${createdAt}, ${videoPublishDate}, ${videoThumbnail},
+        ${channelUrl}, ${audioFileName}, ${audioFileSize},
+        ${processingMetadata.step2.processingTime ?? null}, ${transcriptionTokenCount},
+        ${processingMetadata.step4?.processingTime ?? null}, ${processingMetadata.step4?.inputTokenCount ?? null},
+        ${processingMetadata.step4?.outputTokenCount ?? null}, ${options.selectedPrompts.join(',')},
+        ${processingMetadata.step5 ? true : false}, ${processingMetadata.step5?.ttsService ?? null}, ${processingMetadata.step5?.ttsModel ?? null}, ${processingMetadata.step5?.ttsVoice ?? null}, ${processingMetadata.step5?.audioFileName ?? null},
+        ${processingMetadata.step5?.processingTime ?? null}, ${processingMetadata.step5?.audioDuration ?? null},
+        ${processingMetadata.step6 ? true : false}, ${processingMetadata.step6?.imageGenService ?? null}, ${processingMetadata.step6?.imageGenModel ?? null}, ${processingMetadata.step6?.imagesGenerated ?? null},
+        ${processingMetadata.step6?.processingTime ?? null}, ${processingMetadata.step6?.totalCost ?? null}, ${processingMetadata.step6?.selectedPrompts.join(',') ?? null}, ${imageFiles},
+        ${processingMetadata.step7 ? true : false}, ${processingMetadata.step7?.musicService ?? null}, ${processingMetadata.step7?.musicModel ?? null}, ${processingMetadata.step7?.selectedGenre ?? null}, ${processingMetadata.step7?.musicPreset ?? null}, ${processingMetadata.step7?.targetDurationSeconds ?? null}, ${processingMetadata.step7?.instrumental ?? null}, ${processingMetadata.step7?.sampleRate ?? null}, ${processingMetadata.step7?.bitrate ?? null}, ${processingMetadata.step7?.musicFileName ?? null},
+        ${processingMetadata.step7?.processingTime ?? null}, ${processingMetadata.step7?.musicDuration ?? null}, ${processingMetadata.step7?.totalCost ?? null}, ${processingMetadata.step7?.lyricsLength ?? null}, ${processingMetadata.step7?.lyricsGenerationTime ?? null}, ${processingMetadata.step7?.lyricsText ?? null},
+        ${processingMetadata.step8 ? true : false}, ${processingMetadata.step8?.videoGenService ?? null}, ${processingMetadata.step8?.videoGenModel ?? null}, ${processingMetadata.step8?.videosGenerated ?? null},
+        ${processingMetadata.step8?.processingTime ?? null}, ${processingMetadata.step8?.totalCost ?? null}, ${processingMetadata.step8?.selectedPrompts.join(',') ?? null}, ${processingMetadata.step8?.selectedSize ?? null}, ${processingMetadata.step8?.selectedDuration ?? null}, ${videoFiles},
+        ${audioS3Url}, ${processingMetadata.step5?.ttsS3Url ?? null}, ${imageS3Urls}, ${processingMetadata.step7?.musicS3Url ?? null}, ${videoS3Urls}, ${thumbnailS3Urls}
       )
-    `)
-    
-    const imageFiles = validInput.metadata?.step6?.results.map(r => r.fileName).join(',') || null
-    const videoFiles = validInput.metadata?.step8?.results.map(r => r.fileName).join(',') || null
-
-
-    
-    query.run({
-      id,
-      url: validInput.url,
-      title: validInput.title,
-      author: validInput.author ?? null,
-      duration: validInput.duration ?? null,
-      prompt: validInput.prompt,
-      summary: validInput.summary,
-      transcription: validInput.transcription,
-      transcriptionService: validInput.transcriptionService,
-      transcriptionModel: validInput.transcriptionModel ?? null,
-      llmService: validInput.llmService,
-      llmModel: validInput.llmModel ?? null,
-      processedAt: validInput.processedAt,
-      videoPublishDate: validInput.metadata?.step1.videoPublishDate ?? null,
-      videoThumbnail: validInput.metadata?.step1.videoThumbnail ?? null,
-      channelUrl: validInput.metadata?.step1.channelUrl ?? null,
-      audioFileName: validInput.metadata?.step1.audioFileName ?? null,
-      audioFileSize: validInput.metadata?.step1.audioFileSize ?? null,
-      transcriptionProcessingTime: validInput.metadata?.step2.processingTime ?? null,
-      transcriptionTokenCount: validInput.metadata?.step2.tokenCount ?? null,
-      llmProcessingTime: validInput.metadata?.step4?.processingTime ?? null,
-      llmInputTokenCount: validInput.metadata?.step4?.inputTokenCount ?? null,
-      llmOutputTokenCount: validInput.metadata?.step4?.outputTokenCount ?? null,
-      selectedPrompts: validInput.selectedPrompts.join(','),
-      ttsEnabled: validInput.metadata?.step5 ? 1 : 0,
-      ttsService: validInput.metadata?.step5?.ttsService ?? null,
-      ttsModel: validInput.metadata?.step5?.ttsModel ?? null,
-      ttsVoice: validInput.metadata?.step5?.ttsVoice ?? null,
-      ttsAudioFile: validInput.metadata?.step5?.audioFileName ?? null,
-      ttsProcessingTime: validInput.metadata?.step5?.processingTime ?? null,
-      ttsAudioDuration: validInput.metadata?.step5?.audioDuration ?? null,
-      imageGenEnabled: validInput.metadata?.step6 ? 1 : 0,
-      imageGenService: validInput.metadata?.step6?.imageGenService ?? null,
-      imageGenModel: validInput.metadata?.step6?.imageGenModel ?? null,
-      imagesGenerated: validInput.metadata?.step6?.imagesGenerated ?? null,
-      imageGenProcessingTime: validInput.metadata?.step6?.processingTime ?? null,
-      selectedImagePrompts: validInput.metadata?.step6?.selectedPrompts.join(',') ?? null,
-      imageFiles,
-      musicGenEnabled: validInput.metadata?.step7 ? 1 : 0,
-      musicGenService: validInput.metadata?.step7?.musicService ?? null,
-      musicGenModel: validInput.metadata?.step7?.musicModel ?? null,
-      musicGenGenre: validInput.metadata?.step7?.selectedGenre ?? null,
-      musicGenFile: validInput.metadata?.step7?.musicFileName ?? null,
-      musicGenProcessingTime: validInput.metadata?.step7?.processingTime ?? null,
-      musicGenDuration: validInput.metadata?.step7?.musicDuration ?? null,
-      musicGenLyricsLength: validInput.metadata?.step7?.lyricsLength ?? null,
-      musicGenLyricsGenerationTime: validInput.metadata?.step7?.lyricsGenerationTime ?? null,
-      musicGenLyrics: validInput.metadata?.step7?.lyricsText ?? null,
-      videoGenEnabled: validInput.metadata?.step8 ? 1 : 0,
-      videoGenService: validInput.metadata?.step8?.videoGenService ?? null,
-      videoGenModel: validInput.metadata?.step8?.videoGenModel ?? null,
-      videosGenerated: validInput.metadata?.step8?.videosGenerated ?? null,
-      videoGenProcessingTime: validInput.metadata?.step8?.processingTime ?? null,
-      selectedVideoPrompts: validInput.metadata?.step8?.selectedPrompts.join(',') ?? null,
-      videoSize: validInput.metadata?.step8?.selectedSize ?? null,
-      videoDuration: validInput.metadata?.step8?.selectedDuration ?? null,
-      videoFiles
-    })
+    `
   } catch (error) {
     err('Failed to create show note', error)
-    throw error
-  }
-}
-
-export const saveResults = async (
-  showNoteId: string,
-  metadata: { url: string, title: string, author?: string, duration?: string },
-  options: ProcessingOptions,
-  processingMetadata: ProcessingMetadata,
-  promptInstructions: string
-): Promise<void> => {
-  try {
-    if (!processingMetadata.step4?.llmService) {
-      err('Missing llmService in step4 metadata', { step4: processingMetadata.step4 })
-      throw new Error('llmService is required in step4 metadata')
-    }
-    
-    if (!processingMetadata.step2?.transcriptionModel) {
-      err('Missing transcriptionModel in step2 metadata')
-      throw new Error('transcriptionModel is required in step2 metadata')
-    }
-    
-    const db = getDatabase()
-    initializeSchema(db)
-    
-    const summaryPath = `${options.outputDir}/summary.md`
-    
-    let transcriptionPath = `${options.outputDir}/transcription.txt`
-    if (options.transcriptionService === 'happyscribe') {
-      transcriptionPath = `${options.outputDir}/transcription-happyscribe.txt`
-    }
-    
-    const summaryExists = (await Bun.$`test -e ${summaryPath}`.quiet().nothrow()).exitCode === 0
-    const transcriptionExists = (await Bun.$`test -e ${transcriptionPath}`.quiet().nothrow()).exitCode === 0
-    
-    if (!summaryExists) {
-      err(`Summary file not found: ${summaryPath}`)
-      throw new Error('Summary file not found')
-    }
-    
-    if (!transcriptionExists) {
-      err(`Transcription file not found: ${transcriptionPath}`)
-      throw new Error('Transcription file not found')
-    }
-    
-    const summary = await Bun.file(summaryPath).text()
-    const transcriptionText = await Bun.file(transcriptionPath).text()
-    
-    createShowNote(db, showNoteId, {
-      url: metadata.url,
-      title: metadata.title,
-      author: metadata.author || undefined,
-      duration: metadata.duration || undefined,
-      prompt: promptInstructions,
-      summary,
-      transcription: transcriptionText,
-      transcriptionService: options.transcriptionService,
-      transcriptionModel: processingMetadata.step2.transcriptionModel,
-      llmService: processingMetadata.step4.llmService,
-      llmModel: options.llmModel,
-      processedAt: Date.now(),
-      metadata: processingMetadata,
-      selectedPrompts: options.selectedPrompts
-    })
-    
-  } catch (error) {
-    err('Failed to save results to database', error)
     throw error
   }
 }

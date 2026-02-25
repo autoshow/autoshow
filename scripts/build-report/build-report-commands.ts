@@ -1,8 +1,8 @@
-import { l, err } from '../../src/utils/logging'
+import { l, err } from '~/utils/logging'
 import { formatTime, calculateGrade, waitForServer, setupPlaywright } from './build-report-utils'
 import { analyzeBundle, analyzeCSS, analyzeLazyLoading, analyzeWithPlaywright } from './build-analysis'
 import { saveReport } from './save-build-report'
-import type { BuildAnalysisResult } from '../cli-types'
+import type { BuildAnalysisResult } from '~/types'
 
 const PORT = 4321
 const URL = `http://localhost:${PORT}`

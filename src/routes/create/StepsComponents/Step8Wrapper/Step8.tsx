@@ -1,11 +1,16 @@
-import { Show, For } from "solid-js"
-import s from "./Step8.module.css"
-import { SERVICES_CONFIG } from "~/utils/services"
-import { l } from "~/utils/logging"
+import { Show, For, createMemo } from "solid-js"
+import shared from "../shared/shared.module.css"
+import { StepHeader, SkipCheckbox, OptionButton, OptionGrid, ModelButton, ModelGrid, togglePrompt } from "../shared"
+import { VIDEO_CONFIG } from "~/models"
+import { VIDEO_PROMPT_CONFIG, VIDEO_PROMPT_TYPES } from "~/prompts/video-prompts"
+import VideoOptions from "./VideoOptions"
+import type { VideoGenServiceType, VideoConfig } from "~/types"
 
 type Props = {
   videoGenSkipped: boolean
   setVideoGenSkipped: (value: boolean) => void
+  videoService: VideoGenServiceType
+  setVideoService: (service: VideoGenServiceType) => void
   selectedVideoPrompts: string[]
   setSelectedVideoPrompts: (prompts: string[]) => void
   videoModel: string
@@ -14,67 +19,59 @@ type Props = {
   setVideoSize: (size: string) => void
   videoDuration: number
   setVideoDuration: (duration: number) => void
+  videoAspectRatio: string
+  setVideoAspectRatio: (ratio: string) => void
   disabled: boolean | undefined
 }
 
-export default function Step8(props: Props) {
-  const togglePrompt = (prompt: string): void => {
-    const current = props.selectedVideoPrompts
+type VideoEntry = [VideoGenServiceType, NonNullable<VideoConfig[VideoGenServiceType]>]
 
-    if (current.includes(prompt)) {
-      const newPrompts = current.filter(p => p !== prompt)
-      props.setSelectedVideoPrompts(newPrompts)
-    } else {
-      if (current.length < 3) {
-        const newPrompts = [...current, prompt]
-        props.setSelectedVideoPrompts(newPrompts)
-      } else {
-        l(`[Step8] Cannot add prompt - limit of 3 reached`)
+function getVideoEntries(config: VideoConfig): VideoEntry[] {
+  return (Object.keys(config) as VideoGenServiceType[])
+    .filter(key => config[key] !== undefined)
+    .map(key => [key, config[key]!])
+}
+
+export default function Step8(props: Props) {
+  const currentConfig = createMemo(() => VIDEO_CONFIG[props.videoService])
+
+  const videoServices = getVideoEntries(VIDEO_CONFIG)
+
+  const handleModelClick = (serviceId: VideoGenServiceType, modelId: string) => {
+    props.setVideoService(serviceId)
+    props.setVideoModel(modelId)
+    const config = VIDEO_CONFIG[serviceId]
+    if (config) {
+      props.setVideoSize(config.sizes[0]?.id || '')
+      props.setVideoDuration(config.durations[0] || 8)
+      if (config.aspectRatios) {
+        props.setVideoAspectRatio(config.aspectRatios[0] || '16:9')
       }
     }
   }
 
-  const videoPromptOptions = [
-    {
-      id: "explainer",
-      title: "Explainer",
-      description: "Educational video that visually demonstrates key concepts from the content"
-    },
-
-    {
-      id: "highlight",
-      title: "Highlight Reel",
-      description: "Dynamic montage showcasing the most important moments"
-    },
-    {
-      id: "intro",
-      title: "Intro Sequence",
-      description: "Professional opening sequence to introduce the content"
-    },
-    {
-      id: "outro",
-      title: "Outro Sequence",
-      description: "Closing sequence that summarizes and wraps up the content"
-    },
-    {
-      id: "social",
-      title: "Social Clip",
-      description: "Short, engaging clip optimized for social media platforms"
-    }
-  ]
+  const isModelSelected = (serviceId: VideoGenServiceType, modelId: string): boolean => {
+    return props.videoService === serviceId && props.videoModel === modelId
+  }
 
   return (
     <>
-      <h2 class={s.stepHeading}>Step 8: AI Video Generation (Optional)</h2>
-
-      <div class={s.instructionBanner}>
-        Optionally create AI-generated videos using OpenAI Sora. Select 1-3 video types to generate.
-      </div>
+      <StepHeader
+        stepNumber={8}
+        title="AI Video Generation (Optional)"
+        description="Optionally create AI-generated videos using OpenAI Sora, Gemini Veo, MiniMax, or Grok."
+      />
 
       <input
         type="hidden"
         name="videoGenSkipped"
         value={props.videoGenSkipped ? "true" : "false"}
+      />
+
+      <input
+        type="hidden"
+        name="videoService"
+        value={props.videoService}
       />
 
       <input
@@ -101,128 +98,84 @@ export default function Step8(props: Props) {
         value={props.videoDuration.toString()}
       />
 
-      <div class={s.formGroup}>
-        <label class={s.checkboxLabel}>
-          <input
-            type="checkbox"
-            checked={props.videoGenSkipped}
-            onChange={(e) => props.setVideoGenSkipped(e.currentTarget.checked)}
-            disabled={props.disabled}
-            class={s.checkbox}
-          />
-          <span class={s.checkboxText}>Skip AI video generation</span>
-        </label>
-        <p class={s.helpText}>
-          Check this box to skip generating AI videos. Video generation can take several minutes per video.
-        </p>
-      </div>
+      <input
+        type="hidden"
+        name="videoAspectRatio"
+        value={props.videoAspectRatio}
+      />
+
+      <SkipCheckbox
+        checked={props.videoGenSkipped}
+        onChange={props.setVideoGenSkipped}
+        disabled={props.disabled}
+        label="Skip AI video generation"
+        helpText="Check this box to skip generating AI videos. Video generation can take several minutes per video."
+      />
 
       <Show when={!props.videoGenSkipped}>
-        {/* Model Selection */}
-        <div class={s.formGroup}>
-          <label class={s.label}>Select Video Model</label>
-          <div class={s.modelGrid}>
-            <For each={SERVICES_CONFIG.videoGen.openai.models}>
-              {(model) => {
-                const isSelected = () => props.videoModel === model.id
-                return (
-                  <button
-                    type="button"
-                    class={isSelected() ? s.modelButtonSelected : s.modelButton}
-                    onClick={() => props.setVideoModel(model.id)}
-                    disabled={props.disabled}
-                  >
-                    <div class={s.modelHeader}>
-                      <span class={s.modelTitle}>{model.name}</span>
-                      <div class={s.modelGrades}>
-                        <span class={s.grade} title="Speed">Speed: {model.speed}</span>
-                        <span class={s.grade} title="Quality">Quality: {model.quality}</span>
-                      </div>
-                    </div>
-                    <div class={s.modelDescription}>{model.description}</div>
-                  </button>
-                )
-              }}
+        <div class={shared.formGroup}>
+          <label class={shared.label}>Select Video Model</label>
+          <ModelGrid>
+            <For each={videoServices}>
+              {([serviceId, serviceConfig]) => (
+                <For each={serviceConfig.models}>
+                  {(model) => (
+                    <ModelButton
+                      service={serviceConfig.name}
+                      name={model.name}
+                      description={model.description}
+                      speed={model.speed}
+                      quality={model.quality}
+                      selected={isModelSelected(serviceId, model.id)}
+                      disabled={props.disabled}
+                      onClick={() => handleModelClick(serviceId, model.id)}
+                    />
+                  )}
+                </For>
+              )}
             </For>
-          </div>
+          </ModelGrid>
         </div>
 
-        {/* Video Size Selection */}
-        <div class={s.formGroup}>
-          <label class={s.label}>Select Video Size</label>
-          <div class={s.sizeGrid}>
-            <For each={SERVICES_CONFIG.videoGen.openai.sizes}>
-              {(size) => {
-                const isSelected = () => props.videoSize === size.id
+        <VideoOptions
+          videoService={props.videoService}
+          videoSize={props.videoSize}
+          setVideoSize={props.setVideoSize}
+          videoDuration={props.videoDuration}
+          setVideoDuration={props.setVideoDuration}
+          videoAspectRatio={props.videoAspectRatio}
+          setVideoAspectRatio={props.setVideoAspectRatio}
+          disabled={props.disabled}
+          sizes={currentConfig()?.sizes || []}
+          durations={currentConfig()?.durations || []}
+          aspectRatios={currentConfig()?.aspectRatios}
+        />
+
+        <div class={shared.formGroup}>
+          <label class={shared.label}>Select Video Type (1)</label>
+
+          <OptionGrid>
+            <For each={VIDEO_PROMPT_TYPES}>
+              {(promptType) => {
+                const config = VIDEO_PROMPT_CONFIG[promptType]
+                const isSelected = () => props.selectedVideoPrompts.includes(promptType)
+
                 return (
-                  <button
-                    type="button"
-                    class={isSelected() ? s.sizeButtonSelected : s.sizeButton}
-                    onClick={() => props.setVideoSize(size.id)}
+                  <OptionButton
+                    title={config.title}
+                    description={config.description}
+                    selected={isSelected()}
                     disabled={props.disabled}
-                  >
-                    <div class={s.sizeTitle}>{size.name}</div>
-                    <div class={s.sizeDescription}>{size.description}</div>
-                  </button>
+                    onClick={() => togglePrompt(promptType, { current: () => props.selectedVideoPrompts, setter: props.setSelectedVideoPrompts, maxItems: 1 })}
+                    variant="simple"
+                  />
                 )
               }}
             </For>
-          </div>
-        </div>
+          </OptionGrid>
 
-        {/* Duration Selection */}
-        <div class={s.formGroup}>
-          <label class={s.label}>Select Video Duration</label>
-          <div class={s.durationGrid}>
-            <For each={SERVICES_CONFIG.videoGen.openai.durations}>
-              {(duration) => {
-                const isSelected = () => props.videoDuration === duration
-                return (
-                  <button
-                    type="button"
-                    class={isSelected() ? s.durationButtonSelected : s.durationButton}
-                    onClick={() => props.setVideoDuration(duration)}
-                    disabled={props.disabled}
-                  >
-                    {duration}s
-                  </button>
-                )
-              }}
-            </For>
-          </div>
-          <p class={s.helpText}>
-            Longer videos take more time to generate and cost more.
-          </p>
-        </div>
-
-        {/* Video Prompt Type Selection */}
-        <div class={s.formGroup}>
-          <label class={s.label}>Select Video Types (1-3)</label>
-
-          <div class={s.optionGrid}>
-            <For each={videoPromptOptions}>
-              {(option) => {
-                const isSelected = () => props.selectedVideoPrompts.includes(option.id)
-
-                return (
-                  <button
-                    type="button"
-                    class={isSelected() ? s.optionButtonSelected : s.optionButton}
-                    onClick={() => {
-                      togglePrompt(option.id)
-                    }}
-                    disabled={props.disabled}
-                  >
-                    <div class={s.optionTitle}>{option.title}</div>
-                    <div class={s.optionDescription}>{option.description}</div>
-                  </button>
-                )
-              }}
-            </For>
-          </div>
-
-          <p class={s.promptHelpText}>
-            Select up to 3 types of videos to generate. {props.selectedVideoPrompts.length > 0 && `${props.selectedVideoPrompts.length} of 3 selected.`}
+          <p class={shared.promptHelpText}>
+            Select 1 type of video to generate. {props.selectedVideoPrompts.length > 0 && `${props.selectedVideoPrompts.length} of 1 selected.`}
           </p>
         </div>
       </Show>

@@ -1,0 +1,42 @@
+{
+  "id": "document-llamaparse-agenticplus",
+  "name": "Document: llamaparse agentic_plus",
+  "description": "Test llamaparse document parsing with agentic_plus model",
+  "tags": [
+    "document",
+    "document-parsing",
+    "llamaparse"
+  ],
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  },
+  "input": {
+    "type": "url",
+    "url": "https://ajc.pics/autoshow/textract-1.pdf",
+    "urlType": "document"
+  },
+  "document": {
+    "service": "llamaparse",
+    "model": "agentic_plus"
+  }
+}

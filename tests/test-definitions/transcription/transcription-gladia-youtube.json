@@ -1,0 +1,39 @@
+{
+  "id": "transcription-gladia-youtube",
+  "name": "Transcription: Gladia YouTube",
+  "description": "Test gladia transcription service with gladia-v2 model using YouTube URL",
+  "tags": [
+    "audio",
+    "transcription",
+    "gladia",
+    "youtube"
+  ],
+  "transcription": {
+    "service": "gladia",
+    "model": "gladia-v2"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  },
+  "input": {
+    "type": "url",
+    "url": "https://www.youtube.com/watch?v=nXtaETBZ29g",
+    "urlType": "streaming"
+  }
+}

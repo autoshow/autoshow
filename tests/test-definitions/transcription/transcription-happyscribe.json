@@ -1,0 +1,38 @@
+{
+  "id": "transcription-happyscribe",
+  "name": "Transcription: HappyScribe",
+  "description": "Test happyscribe transcription service with happyscribe-auto model",
+  "tags": [
+    "audio",
+    "transcription",
+    "happyscribe"
+  ],
+  "transcription": {
+    "service": "happyscribe",
+    "model": "happyscribe-auto"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  },
+  "input": {
+    "type": "url",
+    "url": "https://www.youtube.com/watch?v=nXtaETBZ29g",
+    "urlType": "streaming"
+  }
+}

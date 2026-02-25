@@ -1,11 +1,13 @@
 #!/bin/zsh
 
 INCLUDE_PATHS=(
-  "*"
-  # "config"
+  # "*"
+  # ".github"
   # "docs"
   # "scripts"
+  # "src"
   "src"
+  # "tests"
 )
 
 IGNORE_PATHS=(

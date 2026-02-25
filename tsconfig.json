@@ -29,7 +29,7 @@
     "allowUnusedLabels": false,
     "allowUnreachableCode": false,
     "isolatedModules": true,
-    "verbatimModuleSyntax": true,
+    "verbatimModuleSyntax": false,
     "moduleDetection": "force",
     "forceConsistentCasingInFileNames": true,
     "noEmitOnError": true,

@@ -1,0 +1,61 @@
+{
+  "id": "verify-document-mistral-ocr",
+  "name": "Verify: Mistral OCR",
+  "description": "Minimal verification test for Mistral OCR document parsing",
+  "tags": [
+    "verify",
+    "document",
+    "mistral-ocr",
+    "minimal",
+    "minimal-service"
+  ],
+  "estimatedCost": {
+    "document": {
+      "service": "mistral-ocr",
+      "model": "mistral-ocr-latest",
+      "units": "1 page",
+      "rate": "$1/1000 pages",
+      "estimated": "$0.001"
+    },
+    "llm": {
+      "service": "groq",
+      "model": "openai/gpt-oss-20b",
+      "units": "~2K tokens",
+      "rate": "$0.075/1M in + $0.30/1M out",
+      "estimated": "$0.0004"
+    },
+    "total": "$0.0014"
+  },
+  "input": {
+    "type": "url",
+    "url": "https://ajc.pics/autoshow/textract-1.pdf",
+    "urlType": "document"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "document": {
+    "service": "mistral-ocr",
+    "model": "mistral-ocr-latest"
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

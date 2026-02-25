@@ -1,4 +1,31 @@
+import type { LogColors, LogEntry } from '~/types'
+
 const isBrowser = typeof window !== 'undefined'
+
+const logBuffer: LogEntry[] = []
+const MAX_LOG_ENTRIES = 10000
+
+export const getLogsSince = (since: number): LogEntry[] => {
+  return logBuffer.filter(entry => entry.timestamp >= since)
+}
+
+export const getLogsAsText = (since?: number): string => {
+  const logs = since ? getLogsSince(since) : logBuffer
+  return logs.map(entry => entry.text).join('\n')
+}
+
+export const clearLogs = (): void => {
+  logBuffer.length = 0
+}
+
+const addLogEntry = (text: string): void => {
+  if (isBrowser) return
+  const plainText = text.replace(/\x1b\[[0-9;]*m/g, '')
+  logBuffer.push({ timestamp: Date.now(), text: plainText })
+  if (logBuffer.length > MAX_LOG_ENTRIES) {
+    logBuffer.shift()
+  }
+}
 
 const RESET = '\x1b[0m'
 const BOLD = '\x1b[1m'
@@ -10,21 +37,9 @@ const isStepTitle = (message: string): boolean => {
   return STEP_PATTERN.test(message)
 }
 
-type Colors = {
-  timestamp: string
-  message: string
-  path: string
-  value: string
-  jsonKey: string
-  jsonValue: string
-  error: string
-  success: string
-  stepTitle: string
-}
+let colorsCache: LogColors | null = null
 
-let colorsCache: Colors | null = null
-
-const getColors = (): Colors => {
+const getColors = (): LogColors => {
   if (colorsCache) return colorsCache
   if (isBrowser) {
     colorsCache = {
@@ -117,26 +132,31 @@ export const l = (message: string, data?: Record<string, unknown>): void => {
     console.log(message, data || '')
     return
   }
-  
+
   const c = getColors()
   const timestamp = getTimestamp()
-  
+  const plainTimestamp = `[${new Date().toISOString().split('T')[1]?.slice(0, 12) || ''}]`
+
   if (isStepTitle(message)) {
     const coloredMessage = `${BOLD}${UNDERLINE}${c.stepTitle}${message}${RESET}`
     if (data) {
-      console.log(`\n${timestamp}${coloredMessage} ${formatJsonObject(data)}`)
+      console.log(`\n${timestamp}${coloredMessage}\n${formatJsonObject(data)}`)
+      addLogEntry(`${plainTimestamp} ${message}\n${JSON.stringify(data, null, 2)}`)
     } else {
       console.log(`\n${timestamp}${coloredMessage}`)
+      addLogEntry(`${plainTimestamp} ${message}`)
     }
     return
   }
-  
+
   const coloredMessage = `${c.message}${message}${RESET}`
-  
+
   if (data) {
-    console.log(`${timestamp}${coloredMessage} ${formatJsonObject(data)}`)
+    console.log(`${timestamp}${coloredMessage}\n${formatJsonObject(data)}`)
+    addLogEntry(`${plainTimestamp} ${message}\n${JSON.stringify(data, null, 2)}`)
   } else {
     console.log(`${timestamp}${coloredMessage}`)
+    addLogEntry(`${plainTimestamp} ${message}`)
   }
 }
 
@@ -145,11 +165,13 @@ export const err = (message: string, errorObj?: unknown): void => {
     console.error(message, errorObj || '')
     return
   }
-  
+
   const c = getColors()
   const timestamp = getTimestamp()
+  const plainTimestamp = `[${new Date().toISOString().split('T')[1]?.slice(0, 12) || ''}]`
   const errorMessage = errorObj instanceof Error ? `: ${errorObj.message}` : ''
   console.error(`${timestamp}${c.error}${message}${errorMessage}${RESET}`)
+  addLogEntry(`${plainTimestamp} ERROR: ${message}${errorMessage}`)
 }
 
 export const success = (message: string, data?: Record<string, unknown>): void => {
@@ -157,14 +179,17 @@ export const success = (message: string, data?: Record<string, unknown>): void =
     console.log(message, data || '')
     return
   }
-  
+
   const c = getColors()
   const timestamp = getTimestamp()
+  const plainTimestamp = `[${new Date().toISOString().split('T')[1]?.slice(0, 12) || ''}]`
   const coloredMessage = `${c.success}${message}${RESET}`
-  
+
   if (data) {
-    console.log(`${timestamp}${coloredMessage} ${formatJsonObject(data)}`)
+    console.log(`${timestamp}${coloredMessage}\n${formatJsonObject(data)}`)
+    addLogEntry(`${plainTimestamp} ${message}\n${JSON.stringify(data, null, 2)}`)
   } else {
     console.log(`${timestamp}${coloredMessage}`)
+    addLogEntry(`${plainTimestamp} ${message}`)
   }
 }

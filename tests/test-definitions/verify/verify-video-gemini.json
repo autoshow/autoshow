@@ -1,0 +1,71 @@
+{
+  "id": "verify-video-gemini",
+  "name": "Verify: Gemini Veo Video",
+  "description": "Minimal verification test for Gemini Veo video generation",
+  "tags": [
+    "verify",
+    "video",
+    "gemini",
+    "minimal",
+    "minimal-service"
+  ],
+  "estimatedCost": {
+    "transcription": {
+      "service": "groq",
+      "model": "whisper-large-v3-turbo",
+      "units": "1 minute",
+      "rate": "$0.04/hour ($0.00066/min)",
+      "estimated": "$0.0007"
+    },
+    "llm": {
+      "service": "groq",
+      "model": "openai/gpt-oss-20b",
+      "units": "~2K tokens",
+      "rate": "$0.075/1M in + $0.30/1M out",
+      "estimated": "$0.0004"
+    },
+    "video": {
+      "service": "gemini",
+      "model": "veo-3.1-fast-generate-preview",
+      "units": "4 seconds",
+      "rate": "$0.35/second",
+      "estimated": "$1.40"
+    },
+    "total": "$1.4011"
+  },
+  "input": {
+    "type": "local",
+    "path": "tests/test-input-files/5.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": true,
+    "service": "gemini",
+    "model": "veo-3.1-fast-generate-preview",
+    "prompts": [
+      "social"
+    ],
+    "size": "720p",
+    "duration": 4,
+    "aspectRatio": "16:9"
+  }
+}
