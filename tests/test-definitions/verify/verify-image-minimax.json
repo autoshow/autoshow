@@ -1,0 +1,69 @@
+{
+  "id": "verify-image-minimax",
+  "name": "Verify: MiniMax Image",
+  "description": "Minimal verification test for MiniMax image generation",
+  "tags": [
+    "verify",
+    "image",
+    "minimax",
+    "minimal",
+    "minimal-service"
+  ],
+  "estimatedCost": {
+    "transcription": {
+      "service": "groq",
+      "model": "whisper-large-v3-turbo",
+      "units": "1 minute",
+      "rate": "$0.04/hour ($0.00066/min)",
+      "estimated": "$0.0007"
+    },
+    "llm": {
+      "service": "groq",
+      "model": "openai/gpt-oss-20b",
+      "units": "~2K tokens",
+      "rate": "$0.075/1M in + $0.30/1M out",
+      "estimated": "$0.0004"
+    },
+    "image": {
+      "service": "minimax",
+      "model": "image-01",
+      "units": "1 image",
+      "rate": "varies",
+      "estimated": "$0.02"
+    },
+    "total": "$0.0211"
+  },
+  "input": {
+    "type": "local",
+    "path": "tests/test-input-files/5.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": true,
+    "service": "minimax",
+    "model": "image-01",
+    "prompts": [
+      "thumbnail"
+    ],
+    "aspectRatio": "1:1"
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

@@ -17,12 +17,14 @@ For production deployments, replace with your domain.
 ## Available Endpoints
 
 1. [Health Check](./health.md) - `GET /api/health`
-2. [URL Verification](./verify-url.md) - `POST /api/verify-url`
-3. [File Upload](./upload.md) - `POST /api/upload`
-4. [Chunked File Upload](./upload-chunk.md) - `POST /api/upload-chunk`
+2. [URL Verification](./download/verify-url.md) - `POST /api/download/verify-url`
+3. [File Upload](./download/upload.md) - `POST /api/download/upload`
+4. [Chunked File Upload](./download/upload-chunk.md) - `POST /api/download/upload-chunk`
 5. [Audio Processing](./process.md) - `POST /api/process`
 6. [Job Status](./jobs.md) - `GET /api/jobs/{id}`
-7. [Audio File Serving](./audio.md) - `GET /api/audio/{showNoteId}/{fileName}`
+7. [Audio File Serving](./media/audio.md) - `GET /api/media/audio/{showNoteId}/{fileName}`
+8. [Image File Serving](./media/image.md) - `GET /api/media/image/{showNoteId}/{fileName}`
+9. [Video File Serving](./media/video.md) - `GET /api/media/video/{showNoteId}/{fileName}`
 
 ---
 
@@ -40,14 +42,14 @@ All endpoints follow consistent error response patterns:
 
 ### HTTP Status Codes
 
-| Code | Meaning | When Used |
-|------|---------|-----------|
-| `200` | OK | Request successful |
-| `206` | Partial Content | Range request served |
-| `400` | Bad Request | Invalid parameters or validation failure |
-| `404` | Not Found | Resource doesn't exist |
-| `500` | Internal Server Error | Server-side error |
-| `503` | Service Unavailable | Health check failed (degraded state) |
+| Code  | Meaning               | When Used                                |
+|-------|-----------------------|------------------------------------------|
+| `200` | OK                    | Request successful                       |
+| `206` | Partial Content       | Range request served                     |
+| `400` | Bad Request           | Invalid parameters or validation failure |
+| `404` | Not Found             | Resource doesn't exist                   |
+| `500` | Internal Server Error | Server-side error                        |
+| `503` | Service Unavailable   | Health check failed (degraded state)     |
 
 ### Common Error Scenarios
 
@@ -91,15 +93,15 @@ Currently no rate limiting implemented. Consider implementing:
 
 ---
 
-## Authentication
+## Access
 
-Currently no authentication required. All endpoints are public.
+All endpoints are public.
 
 For production deployments, consider:
 
-- API key authentication
-- JWT tokens for user sessions
-- OAuth for third-party integrations
+- API keys
+- signed requests
+- scoped service tokens
 
 ---
 
@@ -143,23 +145,24 @@ Required environment variables for API functionality:
 
 ### Required
 
-| Variable | Description | Used By |
-|----------|-------------|---------|
-| `GROQ_API_KEY` | Groq API key for Whisper transcription | `/api/process` |
-| `DEEPINFRA_API_KEY` | DeepInfra API key for Whisper transcription (alternative to Groq) | `/api/process` |
-| `OPENAI_API_KEY` | OpenAI API key for GPT models | `/api/process` |
-| `ANTHROPIC_API_KEY` | Anthropic API key for Claude models | `/api/process` |
-| `GEMINI_API_KEY` | Google API key for Gemini models | `/api/process` |
+| Variable             | Description                                              | Used By        |
+|----------------------|----------------------------------------------------------|----------------|
+| `GROQ_API_KEY`       | Groq API key for Whisper transcription                   | `/api/process` |
+| `DEEPINFRA_API_KEY`  | DeepInfra API key for Whisper transcription (alternative to Groq) | `/api/process` |
+| `FAL_API_KEY`        | Fal API key for Whisper transcription with diarization   | `/api/process` |
+| `OPENAI_API_KEY`     | OpenAI API key for GPT models                            | `/api/process` |
+| `ANTHROPIC_API_KEY`  | Anthropic API key for Claude models                      | `/api/process` |
+| `GEMINI_API_KEY`     | Google API key for Gemini models                         | `/api/process` |
 
 ### Optional
 
-| Variable | Description | Used By |
-|----------|-------------|---------|
-| `YOUTUBE_API_KEY` | YouTube API v3 key for video metadata | `/api/verify-url` |
-| `HAPPYSCRIBE_API_KEY` | HappyScribe API key for transcription | `/api/process` |
-| `ELEVENLABS_API_KEY` | ElevenLabs API key for TTS/music | `/api/process` |
-| `DATABASE_PATH` | SQLite database path (default: `./data/autoshow.db`) | `/api/health`, `/api/process` |
-| `NODE_ENV` | Environment: `development`, `production`, `test` | `/api/health` |
+| Variable               | Description                                        | Used By                       |
+|------------------------|----------------------------------------------------|-------------------------------|
+| `YOUTUBE_API_KEY`      | YouTube API v3 key for video metadata              | `/api/download/verify-url`    |
+| `HAPPYSCRIBE_API_KEY`  | HappyScribe API key for transcription              | `/api/process`                |
+| `ELEVENLABS_API_KEY`   | ElevenLabs API key for TTS/music                   | `/api/process`                |
+| `DATABASE_URL`         | SQLite database URL (default: `sqlite://./data/autoshow.db`) | `/api/health`, `/api/process` |
+| `NODE_ENV`             | Environment: `development`, `production`, `test`   | `/api/health`                 |
 
 ---
 
@@ -184,7 +187,7 @@ if (health.status !== 'healthy') {
 }
 
 // 2. Verify URL
-const urlCheck = await fetch('/api/verify-url', {
+const urlCheck = await fetch('/api/download/verify-url', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ url: 'https://example.com/video' })
@@ -202,7 +205,8 @@ formData.append('urlType', urlCheck.urlType)
 formData.append('urlDuration', urlCheck.duration.toString())
 formData.append('transcriptionOption', 'groq')
 formData.append('transcriptionModel', 'whisper-large-v3-turbo')
-formData.append('llmModel', 'gpt-4o-mini')
+formData.append('llmService', 'openai')
+formData.append('llmModel', 'gpt-5.2')
 formData.append('selectedPrompts', 'shortSummary,shortChapters')
 formData.append('ttsEnabled', 'false')
 formData.append('imageGenEnabled', 'false')
@@ -240,7 +244,7 @@ const pollInterval = setInterval(async () => {
 ## Support
 
 For issues and questions:
-- GitHub: [autoshow/autoshow](https://github.com/autoshow/autoshow)
+- GitHub: [ajcwebdev/autoshow-bun](https://github.com/ajcwebdev/autoshow-bun)
 - Documentation: `/docs/` directory
 - Database Schema: `docs/Database.md`
 - Processing Pipeline: `docs/StepOverview.md`

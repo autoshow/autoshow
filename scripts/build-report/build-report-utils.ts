@@ -1,4 +1,4 @@
-import { l, err } from '../../src/utils/logging'
+import { l, err } from '~/utils/logging'
 
 export const formatBytes = (bytes: number): string => {
   if (bytes < 1024) return `${bytes}B`

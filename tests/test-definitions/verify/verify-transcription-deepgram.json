@@ -1,0 +1,56 @@
+{
+  "id": "verify-transcription-deepgram",
+  "name": "Verify: Deepgram Nova 3 Transcription",
+  "description": "Minimal verification test for Deepgram Nova 3 transcription with speaker diarization",
+  "tags": [
+    "verify",
+    "transcription",
+    "deepgram",
+    "minimal",
+    "minimal-service"
+  ],
+  "estimatedCost": {
+    "transcription": {
+      "service": "deepgram",
+      "model": "nova-3",
+      "units": "1 minute",
+      "rate": "$0.0043/min",
+      "estimated": "$0.0043"
+    },
+    "llm": {
+      "service": "groq",
+      "model": "openai/gpt-oss-20b",
+      "units": "~2K tokens",
+      "rate": "$0.075/1M in + $0.30/1M out",
+      "estimated": "$0.0004"
+    },
+    "total": "$0.0047"
+  },
+  "input": {
+    "type": "local",
+    "path": "tests/test-input-files/5.mp3"
+  },
+  "transcription": {
+    "service": "deepgram",
+    "model": "nova-3"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "id": "verify-base-document-url-second-cheapest",
+  "name": "Verify Base: Document URL Second Cheapest",
+  "description": "Targeted verification test for document URL with second-cheapest cross-service OCR and LLM",
+  "tags": [
+    "verify",
+    "verify-base",
+    "minimal",
+    "document",
+    "mistral-ocr",
+    "grok"
+  ],
+  "estimatedCost": {
+    "document": {
+      "service": "mistral-ocr",
+      "model": "mistral-ocr-latest",
+      "units": "1 page",
+      "rate": "$1/1000 pages",
+      "estimated": "$0.001"
+    },
+    "llm": {
+      "service": "grok",
+      "model": "grok-4-1-fast-non-reasoning",
+      "units": "~2K tokens",
+      "rate": "$0.20/1M in + $0.50/1M out",
+      "estimated": "$0.0004"
+    },
+    "total": "$0.0014"
+  },
+  "input": {
+    "type": "url",
+    "url": "https://ajc.pics/autoshow/textract-1.pdf",
+    "urlType": "document"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "grok",
+    "model": "grok-4-1-fast-non-reasoning",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "document": {
+    "service": "mistral-ocr",
+    "model": "mistral-ocr-latest"
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

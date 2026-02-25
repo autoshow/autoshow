@@ -1,0 +1,56 @@
+{
+  "id": "verify-transcription-elevenlabs",
+  "name": "Verify: ElevenLabs Transcription",
+  "description": "Minimal verification test for ElevenLabs Scribe v2 transcription",
+  "tags": [
+    "verify",
+    "transcription",
+    "elevenlabs",
+    "minimal",
+    "minimal-service"
+  ],
+  "estimatedCost": {
+    "transcription": {
+      "service": "elevenlabs",
+      "model": "scribe_v2",
+      "units": "1 minute",
+      "rate": "$0.48/hr ($0.008/min)",
+      "estimated": "$0.008"
+    },
+    "llm": {
+      "service": "groq",
+      "model": "openai/gpt-oss-20b",
+      "units": "~2K tokens",
+      "rate": "$0.075/1M in + $0.30/1M out",
+      "estimated": "$0.0004"
+    },
+    "total": "$0.0084"
+  },
+  "input": {
+    "type": "local",
+    "path": "tests/test-input-files/5.mp3"
+  },
+  "transcription": {
+    "service": "elevenlabs",
+    "model": "scribe_v2"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

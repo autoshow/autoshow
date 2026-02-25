@@ -1,14 +1,11 @@
 import OpenAI from 'openai'
-import { err } from '~/utils/logging'
-import type { TranscriptionResult, Step2Metadata } from '~/types/main'
-import type { IProgressTracker } from '~/types/progress'
-import { parseGroqOutput } from '../groq/parse-groq-output'
+import { l, err } from '~/utils/logging'
+import { countTokens } from '~/utils/audio'
+import type { TranscriptionResult, Step2Metadata, IProgressTracker } from '~/types'
+import { parseDeepInfraOutput } from './parse-deepinfra-output'
+import { formatTranscriptOutput } from '../transcription-helpers'
 
 const DEEPINFRA_API_KEY = process.env['DEEPINFRA_API_KEY']
-
-const countTokens = (text: string): number => {
-  return text.split(/\s+/).filter(word => word.length > 0).length
-}
 
 export const transcribeWithDeepInfra = async (
   audioPath: string,
@@ -46,7 +43,7 @@ export const transcribeWithDeepInfra = async (
     const fileName = audioPath.split('/').pop() || 'audio.wav'
     const audioFileObj = new File([audioBuffer], fileName, { type: 'audio/wav' })
 
-    const transcription = await client.audio.transcriptions.create({
+    const response = await client.audio.transcriptions.create({
       file: audioFileObj,
       model,
       response_format: 'verbose_json',
@@ -55,15 +52,15 @@ export const transcribeWithDeepInfra = async (
 
     progressTracker?.updateStepProgress(2, baseProgress + 80, 'Processing transcription results')
 
-    const { text, segments } = parseGroqOutput(transcription, segmentOffsetMinutes)
+    const transcription = parseDeepInfraOutput(response, segmentOffsetMinutes)
 
     const processingTime = Date.now() - startTime
-    const tokenCount = countTokens(text)
+    const tokenCount = countTokens(transcription.text)
 
     const segmentSuffix = segmentNumber ? `_segment_${String(segmentNumber).padStart(3, '0')}` : ''
-    const formattedTranscriptPath = `${outputDir}/transcription${segmentSuffix}.txt`
-    const formattedText = segments.map(seg => `[${seg.start}] ${seg.text}`).join('\n')
-    await Bun.write(formattedTranscriptPath, formattedText)
+    const outputPath = `${outputDir}/transcription${segmentSuffix}.txt`
+    const formattedTranscript = formatTranscriptOutput(transcription.segments)
+    await Bun.write(outputPath, formattedTranscript)
 
     if (!segmentNumber) {
       progressTracker?.completeStep(2, 'Transcription complete')
@@ -76,8 +73,18 @@ export const transcribeWithDeepInfra = async (
       tokenCount
     }
 
+    l('DeepInfra transcription completed', {
+      processingTimeMs: processingTime,
+      tokenCount,
+      transcriptLength: transcription.text.length,
+      segmentCount: transcription.segments.length,
+      outputPath,
+      segmentNumber,
+      totalSegments
+    })
+
     return {
-      result: { text, segments },
+      result: transcription,
       metadata
     }
   } catch (error) {

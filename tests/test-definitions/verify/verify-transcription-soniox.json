@@ -1,0 +1,56 @@
+{
+  "id": "verify-transcription-soniox",
+  "name": "Verify: Soniox Transcription",
+  "description": "Minimal verification test for Soniox transcription with speaker diarization",
+  "tags": [
+    "verify",
+    "transcription",
+    "soniox",
+    "minimal",
+    "minimal-service"
+  ],
+  "estimatedCost": {
+    "transcription": {
+      "service": "soniox",
+      "model": "stt-async-v4",
+      "units": "1 minute",
+      "rate": "$0.10/hr (~$0.001666/min)",
+      "estimated": "$0.002"
+    },
+    "llm": {
+      "service": "groq",
+      "model": "openai/gpt-oss-20b",
+      "units": "~2K tokens",
+      "rate": "$0.075/1M in + $0.30/1M out",
+      "estimated": "$0.0004"
+    },
+    "total": "$0.0024"
+  },
+  "input": {
+    "type": "local",
+    "path": "tests/test-input-files/5.mp3"
+  },
+  "transcription": {
+    "service": "soniox",
+    "model": "stt-async-v4"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

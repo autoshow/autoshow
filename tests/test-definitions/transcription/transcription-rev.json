@@ -1,0 +1,37 @@
+{
+  "id": "transcription-rev",
+  "name": "Transcription: Rev AI rev-machine",
+  "description": "Test rev transcription service with rev-machine model",
+  "tags": [
+    "audio",
+    "transcription",
+    "rev"
+  ],
+  "transcription": {
+    "service": "rev",
+    "model": "rev-machine"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  },
+  "input": {
+    "type": "local",
+    "path": "tests/test-input-files/1.mp3"
+  }
+}

@@ -1,0 +1,86 @@
+import * as v from 'valibot'
+import { DocumentExtractionServiceTypeSchema } from './step-2-document-types'
+import { ImageGenServiceTypeSchema } from './step-6-types'
+import { MusicServiceTypeSchema, MusicPresetSchema, MusicSampleRateSchema, MusicBitrateSchema } from './step-7-types'
+import { VideoGenServiceTypeSchema } from './step-8-types'
+import { BigIntSchema, NullableBigIntSchema } from './validation-types'
+
+export const MetadataInputSchema = v.object({
+  url: v.pipe(v.string(), v.nonEmpty()),
+  title: v.pipe(v.string(), v.nonEmpty()),
+  author: v.optional(v.string(), undefined),
+  duration: v.optional(v.string(), undefined)
+})
+
+export const ShowNoteSchema = v.object({
+  id: v.pipe(v.string(), v.nonEmpty()),
+  url: v.pipe(v.string(), v.nonEmpty()),
+  title: v.pipe(v.string(), v.nonEmpty()),
+  author: v.nullable(v.string()),
+  duration: v.nullable(v.string()),
+  prompt: v.string(),
+  text_output: v.string(),
+  transcription: v.string(),
+  transcription_service: v.nullable(v.union([v.literal('groq'), v.literal('deepinfra'), v.literal('happyscribe'), v.literal('fal'), v.literal('gladia'), v.literal('elevenlabs'), v.literal('rev'), v.literal('assembly'), v.literal('deepgram'), v.literal('soniox')])),
+  transcription_model: v.nullable(v.string()),
+  document_service: v.nullable(DocumentExtractionServiceTypeSchema),
+  document_model: v.nullable(v.string()),
+  llm_service: v.union([v.literal('openai'), v.literal('claude'), v.literal('gemini'), v.literal('minimax'), v.literal('grok'), v.literal('groq')]),
+  llm_model: v.nullable(v.string()),
+  processed_at: BigIntSchema,
+  created_at: BigIntSchema,
+  video_publish_date: v.nullable(v.string()),
+  video_thumbnail: v.nullable(v.string()),
+  channel_url: v.nullable(v.string()),
+  audio_file_name: v.nullable(v.string()),
+  audio_file_size: NullableBigIntSchema,
+  transcription_processing_time: NullableBigIntSchema,
+  transcription_token_count: NullableBigIntSchema,
+  llm_processing_time: NullableBigIntSchema,
+  llm_input_token_count: NullableBigIntSchema,
+  llm_output_token_count: NullableBigIntSchema,
+  selected_prompts: v.nullable(v.string()),
+  tts_enabled: v.nullable(v.boolean()),
+  tts_service: v.nullable(v.union([v.literal('openai'), v.literal('elevenlabs'), v.literal('groq')])),
+  tts_model: v.nullable(v.string()),
+  tts_voice: v.nullable(v.string()),
+  tts_audio_file: v.nullable(v.string()),
+  tts_processing_time: NullableBigIntSchema,
+  tts_audio_duration: v.nullable(v.pipe(v.number(), v.minValue(0))),
+  image_gen_enabled: v.nullable(v.boolean()),
+  image_gen_service: v.nullable(ImageGenServiceTypeSchema),
+  image_gen_model: v.nullable(v.string()),
+  images_generated: NullableBigIntSchema,
+  image_gen_processing_time: NullableBigIntSchema,
+  image_gen_cost: v.nullable(v.pipe(v.number(), v.minValue(0))),
+  selected_image_prompts: v.nullable(v.string()),
+  image_files: v.nullable(v.string()),
+  music_gen_enabled: v.nullable(v.boolean()),
+  music_gen_service: v.nullable(MusicServiceTypeSchema),
+  music_gen_model: v.nullable(v.string()),
+  music_gen_genre: v.nullable(v.string()),
+  music_gen_preset: v.nullable(MusicPresetSchema),
+  music_gen_target_duration: NullableBigIntSchema,
+  music_gen_instrumental: v.nullable(v.boolean()),
+  music_gen_sample_rate: v.nullable(MusicSampleRateSchema),
+  music_gen_bitrate: v.nullable(MusicBitrateSchema),
+  music_gen_file: v.nullable(v.string()),
+  music_gen_processing_time: NullableBigIntSchema,
+  music_gen_duration: v.nullable(v.pipe(v.number(), v.minValue(0))),
+  music_gen_cost: v.nullable(v.pipe(v.number(), v.minValue(0))),
+  music_gen_lyrics_length: NullableBigIntSchema,
+  music_gen_lyrics_generation_time: NullableBigIntSchema,
+  music_gen_lyrics: v.nullable(v.string()),
+  video_gen_enabled: v.nullable(v.boolean()),
+  video_gen_service: v.nullable(VideoGenServiceTypeSchema),
+  video_gen_model: v.nullable(v.string()),
+  videos_generated: NullableBigIntSchema,
+  video_gen_processing_time: NullableBigIntSchema,
+  video_gen_cost: v.nullable(v.pipe(v.number(), v.minValue(0))),
+  selected_video_prompts: v.nullable(v.string()),
+  video_size: v.nullable(v.string()),
+  video_duration: v.nullable(v.pipe(v.number(), v.minValue(0))),
+  video_files: v.nullable(v.string())
+})
+
+export type ShowNote = v.InferOutput<typeof ShowNoteSchema>

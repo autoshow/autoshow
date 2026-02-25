@@ -1,68 +1,69 @@
 import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js'
-import { l, err } from '~/utils/logging'
-import type { Step7Metadata, MusicGenre } from '~/types/main'
-import type { IProgressTracker } from '~/types/progress'
+import type { Step7Metadata, MusicGenre, MusicGenerationOptions, IProgressTracker } from '~/types'
+import { MUSIC_CONFIG } from '~/models/music-config'
+import { l } from '~/utils/logging'
 import { getGenrePromptEnhancement } from '~/prompts/music-prompts'
+import { requireEnvKey, handleMusicError, saveMusicFile, buildMusicMetadata } from './music-helpers'
 
-const ELEVENLABS_API_KEY = process.env['ELEVENLABS_API_KEY']
+const SERVICE_ID = 'elevenlabs'
+const SERVICE_CONFIG = MUSIC_CONFIG[SERVICE_ID]
+const SERVICE_NAME = SERVICE_CONFIG.name
+const STEP_NUMBER = 7
 
-const calculateAudioDuration = async (audioPath: string): Promise<number> => {
-  try {
-    const result = await Bun.$`ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 ${audioPath}`.text()
-    const duration = parseFloat(result.trim())
-    return isFinite(duration) ? duration : 0
-  } catch (error) {
-    err('Failed to calculate audio duration', error)
-    return 0
+export const buildElevenLabsMusicPrompt = (
+  genre: MusicGenre,
+  lyrics: string,
+  musicInstrumental: boolean
+): string => {
+  const genreEnhancement = getGenrePromptEnhancement(genre)
+  if (musicInstrumental) {
+    return `Create an instrumental ${genre} song ${genreEnhancement}. No vocals and no lyrics.`
   }
+  return `Create a ${genre} song ${genreEnhancement}. Use the following lyrics:\n\n${lyrics}`
 }
 
-export const generateMusic = async (
+export const getElevenLabsMusicLengthMs = (musicDurationSeconds: number): number => {
+  return musicDurationSeconds * 1000
+}
+
+export const runElevenLabsMusic = async (
   lyrics: string,
   outputDir: string,
   genre: MusicGenre,
+  model: string,
+  musicOptions: MusicGenerationOptions,
   progressTracker?: IProgressTracker,
-  stepNumber: number = 7
+  jobId?: string
 ): Promise<{ musicPath: string, metadata: Step7Metadata }> => {
   try {
-    if (!ELEVENLABS_API_KEY) {
-      err('ELEVENLABS_API_KEY not found in environment')
-      progressTracker?.error(stepNumber, 'Configuration error', 'ELEVENLABS_API_KEY environment variable is required')
-      throw new Error('ELEVENLABS_API_KEY environment variable is required')
-    }
-
-    l('Starting Eleven Music generation', {
+    const apiKey = requireEnvKey('ELEVENLABS_API_KEY')
+    const startTime = Date.now()
+    l(`Starting ${SERVICE_NAME} music generation`, {
       genre,
       lyricsLength: `${lyrics.length} characters`
     })
-    
-    progressTracker?.updateStepProgress(stepNumber, 20, 'Preparing music composition')
-    
-    const startTime = Date.now()
-    const model = 'music_v1'
-    
-    const genreEnhancement = getGenrePromptEnhancement(genre)
-    const prompt = `Create a ${genre} song ${genreEnhancement}. Use the following lyrics:\n\n${lyrics}`
-    
-    l('Sending composition request to Eleven Music', { genre, promptLength: `${prompt.length} characters` })
-    
-    progressTracker?.updateStepProgress(stepNumber, 40, 'Composing music with Eleven Music')
-    
-    const client = new ElevenLabsClient({
-      apiKey: ELEVENLABS_API_KEY
-    })
-    
+
+    progressTracker?.updateStepProgress(STEP_NUMBER, 20, 'Preparing music composition')
+
+    const prompt = buildElevenLabsMusicPrompt(genre, lyrics, musicOptions.musicInstrumental)
+
+    l(`Sending composition request to ${SERVICE_NAME}`, { genre, promptLength: `${prompt.length} characters` })
+
+    progressTracker?.updateStepProgress(STEP_NUMBER, 40, `Composing music with ${SERVICE_NAME}`)
+
+    const client = new ElevenLabsClient({ apiKey })
+
     const audioStream = await client.music.compose({
       prompt,
-      modelId: model,
-      musicLengthMs: 180000
+      modelId: model as "music_v1",
+      musicLengthMs: getElevenLabsMusicLengthMs(musicOptions.musicDurationSeconds)
     })
-    
-    progressTracker?.updateStepProgress(stepNumber, 70, 'Saving music file')
-    
+
+    progressTracker?.updateStepProgress(STEP_NUMBER, 70, 'Saving music file')
+
     const reader = audioStream.getReader()
     const chunks: Uint8Array[] = []
-    
+
     while (true) {
       const { done, value } = await reader.read()
       if (done) break
@@ -70,59 +71,27 @@ export const generateMusic = async (
         chunks.push(value)
       }
     }
-    
+
     const buffer = Buffer.concat(chunks)
-    const musicFileName = 'music.mp3'
-    const musicPath = `${outputDir}/${musicFileName}`
-    
-    await Bun.write(musicPath, buffer)
-    
-    const musicFile = Bun.file(musicPath)
-    const musicFileSize = musicFile.size
-    
-    l('Music file created', { fileName: musicFileName, size: `${musicFileSize} bytes` })
-    
-    progressTracker?.updateStepProgress(stepNumber, 90, 'Calculating music duration')
-    
-    const musicDuration = await calculateAudioDuration(musicPath)
-    const processingTime = Date.now() - startTime
-    
-    l('Music generation completed', {
-      processingTime: `${processingTime}ms`,
-      musicDuration: `${musicDuration.toFixed(2)}s`
-    })
-    
-    const metadata: Step7Metadata = {
-      musicService: 'elevenlabs',
-      musicModel: model,
-      selectedGenre: genre,
-      processingTime,
+    const { musicPath, musicFileName, musicFileSize, musicS3Url } = await saveMusicFile(buffer, outputDir, jobId)
+
+    progressTracker?.updateStepProgress(STEP_NUMBER, 90, 'Calculating music duration')
+
+    const metadata = await buildMusicMetadata(
+      SERVICE_ID,
+      model,
+      genre,
+      startTime,
+      musicPath,
       musicFileName,
       musicFileSize,
-      musicDuration,
-      lyricsLength: lyrics.length,
-      lyricsGenerationTime: 0,
-      lyricsText: lyrics
-    }
-    
+      lyrics,
+      musicOptions,
+      musicS3Url
+    )
+
     return { musicPath, metadata }
   } catch (error) {
-    err('Failed to generate music with Eleven Music', error)
-    progressTracker?.error(stepNumber, 'Music generation failed', error instanceof Error ? error.message : 'Unknown error')
-    throw error
-  }
-}
-
-export const checkElevenMusicHealth = async (): Promise<boolean> => {
-  try {
-    if (!ELEVENLABS_API_KEY) {
-      err('ELEVENLABS_API_KEY not found in environment')
-      return false
-    }
-
-    return true
-  } catch (error) {
-    err('Eleven Music health check failed', error)
-    return false
+    return handleMusicError(error, SERVICE_NAME, progressTracker)
   }
 }

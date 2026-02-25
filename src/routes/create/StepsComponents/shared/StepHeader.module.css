@@ -1,0 +1,31 @@
+.stepHeading {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: 2.5rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 3px solid transparent;
+  border-image: linear-gradient(90deg, var(--accent-blue) 0%, rgba(96, 165, 250, 0.3) 100%);
+  border-image-slice: 1;
+}
+
+.stepHeading:first-of-type {
+  margin-top: 1.5rem;
+}
+
+.instructionBanner {
+  margin-top: 1.5rem;
+  margin-bottom: 2rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: center;
+  padding: 1.5rem 2rem;
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.15) 0%, rgba(167, 139, 250, 0.15) 100%);
+  border: 2px solid rgba(96, 165, 250, 0.3);
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 12px rgba(96, 165, 250, 0.2);
+  line-height: 1.6;
+}

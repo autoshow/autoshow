@@ -1,0 +1,140 @@
+.main {
+  min-height: 100vh;
+  padding: 2rem;
+  background: var(--bg-primary);
+}
+
+.container {
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-size: 2rem;
+  color: var(--text-primary);
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.tab {
+  padding: 0.75rem 1.5rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+}
+
+.tabActive {
+  background: var(--accent-gradient-alt);
+  color: white;
+  border-color: transparent;
+}
+
+.tabActive:hover {
+  color: white;
+}
+
+.tableInfo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.table th,
+.table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.table th {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s ease;
+}
+
+.table th:hover {
+  background: var(--bg-card-hover);
+}
+
+.sortIndicator {
+  margin-left: 0.5rem;
+  opacity: 0.5;
+}
+
+.sortActive {
+  opacity: 1;
+}
+
+.table tbody tr:nth-child(even) {
+  background: var(--bg-secondary);
+}
+
+.table tbody tr:hover {
+  background: var(--bg-card-hover);
+}
+
+.table td {
+  color: var(--text-secondary);
+}
+
+.cellNull {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 400px;
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+}
+
+.error {
+  color: #f87171;
+  padding: 2rem;
+  text-align: center;
+}

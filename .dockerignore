@@ -27,7 +27,6 @@ repomix-output.txt
 *.swo
 *~
 .bun
-.cache
 .local
 .autoshow
 docker-analysis-*.md
@@ -35,9 +34,9 @@ docker-analysis-*.md
 bun.lock
 tsconfig.json
 railway.json
-+mise.local.toml
-+.mise.local.toml
-+mise.*.local.toml
-+.mise.*.local.toml
-+.mise
+mise.local.toml
+.mise.local.toml
+mise.*.local.toml
+.mise.*.local.toml
+.mise
 build-analysis

@@ -1,0 +1,71 @@
+{
+  "id": "verify-music-elevenlabs",
+  "name": "Verify: ElevenLabs Music",
+  "description": "Minimal verification test for ElevenLabs music generation",
+  "tags": [
+    "verify",
+    "music",
+    "elevenlabs",
+    "minimal",
+    "minimal-service"
+  ],
+  "estimatedCost": {
+    "transcription": {
+      "service": "groq",
+      "model": "whisper-large-v3-turbo",
+      "units": "1 minute",
+      "rate": "$0.04/hour ($0.00066/min)",
+      "estimated": "$0.0007"
+    },
+    "llm": {
+      "service": "groq",
+      "model": "openai/gpt-oss-20b",
+      "units": "~2K tokens",
+      "rate": "$0.075/1M in + $0.30/1M out",
+      "estimated": "$0.0004"
+    },
+    "music": {
+      "service": "elevenlabs",
+      "model": "music_v1",
+      "units": "3 seconds",
+      "rate": "$0.80/min",
+      "estimated": "$0.0400"
+    },
+    "total": "$0.0411"
+  },
+  "input": {
+    "type": "local",
+    "path": "tests/test-input-files/5.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": true,
+    "service": "elevenlabs",
+    "genre": "pop",
+    "model": "music_v1",
+    "preset": "cheap",
+    "durationSeconds": 3,
+    "instrumental": true,
+    "sampleRate": 16000,
+    "bitrate": 32000
+  },
+  "video": {
+    "enabled": false
+  }
+}

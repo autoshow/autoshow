@@ -1,0 +1,37 @@
+{
+  "id": "transcription-soniox",
+  "name": "Transcription: Soniox Async V4",
+  "description": "Test soniox transcription service with stt-async-v4 model",
+  "tags": [
+    "audio",
+    "transcription",
+    "soniox"
+  ],
+  "transcription": {
+    "service": "soniox",
+    "model": "stt-async-v4"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  },
+  "input": {
+    "type": "local",
+    "path": "tests/test-input-files/1.mp3"
+  }
+}

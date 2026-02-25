@@ -2,30 +2,40 @@
 
 set -e
 
-GRAY='\033[38;2;107;114;128m'
-WHITE='\033[38;2;229;231;235m'
-RESET='\033[0m'
+REQUIRED_VARS=(
+    "YOUTUBE_API_KEY"
+    "OPENAI_API_KEY"
+    "ANTHROPIC_API_KEY"
+    "GEMINI_API_KEY"
+    "GROQ_API_KEY"
+    "DEEPINFRA_API_KEY"
+    "FAL_API_KEY"
+    "GLADIA_API_KEY"
+    "HAPPYSCRIBE_API_KEY"
+    "HAPPYSCRIBE_ORGANIZATION_ID"
+    "ELEVENLABS_API_KEY"
+    "LLAMAPARSE_API_KEY"
+    "MISTRAL_API_KEY"
+    "BUCKET"
+    "ACCESS_KEY_ID"
+    "SECRET_ACCESS_KEY"
+    "REGION"
+    "ENDPOINT"
+)
 
-log() {
-    local ms=$(python3 -c "import time; print(f'{time.time() % 1:.3f}'[1:])")
-    echo -e "${GRAY}[$(date '+%H:%M:%S')${ms}]${RESET} ${WHITE}$1${RESET}"
-}
+MISSING_VARS=()
+for var in "${REQUIRED_VARS[@]}"; do
+    if [ -z "${!var}" ]; then
+        MISSING_VARS+=("$var")
+    fi
+done
 
-cleanup() {
-    kill -TERM $APP_PID 2>/dev/null || true
-    wait $APP_PID 2>/dev/null || true
-    exit 0
-}
+if [ ${#MISSING_VARS[@]} -ne 0 ]; then
+    echo "Missing required environment variables:"
+    for var in "${MISSING_VARS[@]}"; do
+        echo "  - $var"
+    done
+    exit 1
+fi
 
-trap cleanup SIGTERM SIGINT
-
-log "Starting autoshow container"
-
-mkdir -p /data
-
-exec bun run start &
-APP_PID=$!
-
-log "Container initialized"
-
-wait $APP_PID
+exec bun run start

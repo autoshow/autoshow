@@ -1,6 +1,6 @@
-import { err } from '../../src/utils/logging'
+import { err } from '~/utils/logging'
 import { formatBytes, findDockerfile } from './docker-utils'
-import type { HistoryEntry } from '../cli-types'
+import type { HistoryEntry } from '~/types'
 
 export const generateReportHeader = async (imageName: string, imageSize: number): Promise<string> => {
   const date = new Date()

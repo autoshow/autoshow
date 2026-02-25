@@ -37,9 +37,37 @@ jobs:
           NODE_ENV: production
 
       - name: Run tests
-        run: bun test:api
+        run: |
+          bun run .output/server/index.mjs > /tmp/autoshow-server.log 2>&1 &
+          SERVER_PID=$!
+
+          cleanup() {
+            kill "$SERVER_PID" 2>/dev/null || true
+          }
+          trap cleanup EXIT
+
+          echo "Waiting for app server on http://localhost:4321..."
+          READY=0
+          for attempt in {1..60}; do
+            if curl -fsS http://localhost:4321/api/health >/dev/null; then
+              READY=1
+              break
+            fi
+            sleep 1
+          done
+
+          if [ "$READY" -ne 1 ]; then
+            echo "Server failed to become ready within 60 seconds."
+            echo "Last 200 lines of server logs:"
+            tail -n 200 /tmp/autoshow-server.log || true
+            exit 1
+          fi
+
+          bun test:api
         env:
           NODE_ENV: test
+          BASE_URL: http://localhost:4321
+          PORT: 4321
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           HAPPYSCRIBE_API_KEY: ${{ secrets.HAPPYSCRIBE_API_KEY }}
           HAPPYSCRIBE_ORG_ID: ${{ secrets.HAPPYSCRIBE_ORG_ID }}

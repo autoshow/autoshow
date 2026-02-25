@@ -1,8 +1,92 @@
 import { l, err } from '~/utils/logging'
-import type { CommandResult } from '~/types/main'
-export type { ConvertToAudioResult } from '~/types/main'
+import { uploadToS3 } from '~/utils/s3-upload'
+import type { CommandResult, SupportedDocumentType, ConvertToAudioResult } from '~/types'
 
 export const VIDEO_EXTENSIONS = /\.(mp4|mkv|avi|mov|webm|wmv|flv|m4v)$/i
+
+export const getDocumentType = (pathOrName: string): SupportedDocumentType | null => {
+  const ext = pathOrName.toLowerCase().split('.').pop()
+  if (ext === 'pdf') return 'pdf'
+  if (ext === 'png') return 'png'
+  if (ext === 'jpg' || ext === 'jpeg') return 'jpg'
+  if (ext === 'tiff' || ext === 'tif') return 'tiff'
+  if (ext === 'txt') return 'txt'
+  if (ext === 'docx') return 'docx'
+  return null
+}
+
+export const extractYouTubeId = (url: string): string | null => {
+  try {
+    const urlObj = new URL(url)
+    if (urlObj.hostname === 'youtu.be') {
+      return urlObj.pathname.slice(1)
+    }
+    if (urlObj.hostname.includes('youtube.com')) {
+      return urlObj.searchParams.get('v')
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
+export const fetchUrlHeaders = async (url: string): Promise<{ fileSize?: number, mimeType?: string }> => {
+  try {
+    const result = await executeCommand('curl', ['-sI', '-L', url])
+    
+    let fileSize: number | undefined
+    const sizeMatch = result.stdout.match(/content-length:\s*(\d+)/i)
+    if (sizeMatch?.[1]) {
+      fileSize = parseInt(sizeMatch[1])
+    }
+    
+    let mimeType: string | undefined
+    const typeMatch = result.stdout.match(/content-type:\s*([^\r\n]+)/i)
+    if (typeMatch?.[1]) {
+      mimeType = typeMatch[1].trim()
+    }
+    
+    return {
+      ...(fileSize !== undefined && { fileSize }),
+      ...(mimeType !== undefined && { mimeType })
+    }
+  } catch (error) {
+    err('Failed to fetch URL headers', error)
+    return {}
+  }
+}
+
+export const getAudioFileInfo = (audioPath: string): { fileName: string, fileSize: number } => {
+  const file = Bun.file(audioPath)
+  const fileName = audioPath.split('/').pop() || 'audio.wav'
+  l('Final audio file', { fileName, size: `${file.size} bytes` })
+  return { fileName, fileSize: file.size }
+}
+
+export const buildDualOutputArgs = (
+  inputPath: string,
+  wavPath: string,
+  mp3Path: string,
+  isVideo: boolean
+): string[] => {
+  return [
+    '-i', inputPath,
+    ...(isVideo ? ['-vn'] : []),
+    '-ar', '16000',
+    '-ac', '1',
+    '-c:a', 'pcm_s16le',
+    '-y',
+    wavPath,
+    ...(isVideo ? ['-vn'] : []),
+    '-ar', '16000',
+    '-ac', '1',
+    '-c:a', 'libmp3lame',
+    '-b:a', '32k',
+    '-af', 'lowpass=f=8000',
+    '-y',
+    mp3Path
+  ]
+}
 export const LARGE_FILE_THRESHOLD = 100 * 1024 * 1024
 
 export const executeCommand = async (command: string, args: string[] = []): Promise<CommandResult> => {
@@ -73,8 +157,9 @@ export const convertSmallFile = async (
   inputPath: string,
   wavPath: string,
   mp3Path: string,
-  isVideo: boolean
-): Promise<void> => {
+  isVideo: boolean,
+  jobId?: string
+): Promise<ConvertToAudioResult> => {
   const baseArgs = isVideo ? ['-i', inputPath, '-vn'] : ['-i', inputPath]
 
   const wavArgs = [
@@ -111,14 +196,29 @@ export const convertSmallFile = async (
     err(`FFmpeg MP3 conversion failed with exit code ${mp3Result.exitCode}`)
     throw new Error(`Failed to convert to MP3: ${mp3Result.stderr}`)
   }
+
+  let wavS3Url: string | undefined
+  let mp3S3Url: string | undefined
+
+  if (jobId) {
+    const [wavUpload, mp3Upload] = await Promise.all([
+      uploadToS3(wavPath, jobId, 'audio'),
+      uploadToS3(mp3Path, jobId, 'audio')
+    ])
+    wavS3Url = wavUpload?.s3Url
+    mp3S3Url = mp3Upload?.s3Url
+  }
+
+  return { wavPath, mp3Path, wavS3Url, mp3S3Url }
 }
 
 export const convertLargeFile = async (
   inputPath: string,
   wavPath: string,
   mp3Path: string,
-  isVideo: boolean
-): Promise<void> => {
+  isVideo: boolean,
+  jobId?: string
+): Promise<ConvertToAudioResult> => {
   const args = [
     '-i', inputPath,
     ...(isVideo ? ['-vn'] : []),
@@ -143,4 +243,18 @@ export const convertLargeFile = async (
     err(`FFmpeg conversion failed with exit code ${result.exitCode}`)
     throw new Error(`Failed to convert to audio: ${result.stderr}`)
   }
+
+  let wavS3Url: string | undefined
+  let mp3S3Url: string | undefined
+
+  if (jobId) {
+    const [wavUpload, mp3Upload] = await Promise.all([
+      uploadToS3(wavPath, jobId, 'audio'),
+      uploadToS3(mp3Path, jobId, 'audio')
+    ])
+    wavS3Url = wavUpload?.s3Url
+    mp3S3Url = mp3Upload?.s3Url
+  }
+
+  return { wavPath, mp3Path, wavS3Url, mp3S3Url }
 }

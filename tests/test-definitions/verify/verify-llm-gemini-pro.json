@@ -1,0 +1,55 @@
+{
+  "id": "verify-llm-gemini-pro",
+  "name": "Verify: Gemini 3 Pro",
+  "description": "Minimal verification test for Gemini 3 Pro LLM",
+  "tags": [
+    "verify",
+    "llm",
+    "gemini",
+    "minimal"
+  ],
+  "estimatedCost": {
+    "transcription": {
+      "service": "groq",
+      "model": "whisper-large-v3-turbo",
+      "units": "1 minute",
+      "rate": "$0.04/hour ($0.00066/min)",
+      "estimated": "$0.0007"
+    },
+    "llm": {
+      "service": "gemini",
+      "model": "gemini-3-pro-preview",
+      "units": "~2K tokens",
+      "rate": "$2/1M in + $12/1M out",
+      "estimated": "$0.014"
+    },
+    "total": "$0.0147"
+  },
+  "input": {
+    "type": "local",
+    "path": "tests/test-input-files/5.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "gemini",
+    "model": "gemini-3-pro-preview",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

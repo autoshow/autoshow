@@ -1,0 +1,34 @@
+.section {
+  margin-bottom: 2.5rem;
+}
+
+.sectionTitle {
+  font-size: 1.75rem;
+  margin-bottom: 1.25rem;
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.metadataGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.detailsSummary {
+  cursor: pointer;
+  padding: 1rem 1.25rem;
+  background: var(--bg-secondary);
+  border-radius: 10px;
+  user-select: none;
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.detailsSummary:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--accent-blue);
+}

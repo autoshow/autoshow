@@ -1,0 +1,60 @@
+{
+  "id": "verify-document-llamaparse-costeffective",
+  "name": "Verify: LlamaParse Cost Effective",
+  "description": "Minimal verification test for LlamaParse cost_effective document parsing",
+  "tags": [
+    "verify",
+    "document",
+    "llamaparse",
+    "minimal"
+  ],
+  "estimatedCost": {
+    "document": {
+      "service": "llamaparse",
+      "model": "cost_effective",
+      "units": "1 page",
+      "rate": "-e.0025/page",
+      "estimated": "$0.003"
+    },
+    "llm": {
+      "service": "groq",
+      "model": "openai/gpt-oss-20b",
+      "units": "~2K tokens",
+      "rate": "$0.075/1M in + $0.30/1M out",
+      "estimated": "$0.0004"
+    },
+    "total": "$0.0034"
+  },
+  "input": {
+    "type": "url",
+    "url": "https://ajc.pics/autoshow/textract-1.pdf",
+    "urlType": "document"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "document": {
+    "service": "llamaparse",
+    "model": "cost_effective"
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "id": "verify-llm-claude-haiku",
+  "name": "Verify: Claude Haiku 4.5",
+  "description": "Minimal verification test for Claude Haiku 4.5 LLM",
+  "tags": [
+    "verify",
+    "llm",
+    "claude",
+    "minimal",
+    "minimal-service"
+  ],
+  "estimatedCost": {
+    "transcription": {
+      "service": "groq",
+      "model": "whisper-large-v3-turbo",
+      "units": "1 minute",
+      "rate": "$0.04/hour ($0.00066/min)",
+      "estimated": "$0.0007"
+    },
+    "llm": {
+      "service": "claude",
+      "model": "claude-haiku-4-5-20251001",
+      "units": "~2K tokens",
+      "rate": "$1/1M in + $5/1M out",
+      "estimated": "$0.006"
+    },
+    "total": "$0.0067"
+  },
+  "input": {
+    "type": "local",
+    "path": "tests/test-input-files/5.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "claude",
+    "model": "claude-haiku-4-5-20251001",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

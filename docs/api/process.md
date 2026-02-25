@@ -2,6 +2,22 @@
 
 Process audio/video content through the complete 8-step pipeline to generate show notes, transcriptions, summaries, and optional media outputs.
 
+## Outline
+
+- [Endpoint](#endpoint)
+- [Description](#description)
+- [Request](#request)
+- [Selected Prompts Options](#selected-prompts-options)
+- [Video Prompt Types](#video-prompt-types)
+- [Response](#response)
+- [Step Breakdown](#step-breakdown)
+- [Example Client Implementation (JavaScript)](#example-client-implementation-javascript)
+- [Example using curl](#example-using-curl)
+- [Validation Rules](#validation-rules)
+- [Database Storage](#database-storage)
+- [Output Files](#output-files)
+- [Notes](#notes)
+
 ## Endpoint
 
 ```
@@ -14,14 +30,14 @@ Main processing endpoint that accepts either a URL or uploaded file path and cre
 
 The pipeline includes:
 
-1. **Download & Audio Extraction** - Download/convert audio to 16kHz mono WAV
-2. **Transcription** - Generate transcript using Groq Whisper, DeepInfra Whisper, or HappyScribe
+1. **Download & Audio Extraction** - Download/convert audio to 16kHz mono WAV (or extract text from documents)
+2. **Transcription** - Generate transcript using Groq, DeepInfra, HappyScribe, Fal, Gladia, ElevenLabs, Rev, AssemblyAI, Deepgram, or Soniox (or document extraction via LlamaParse/Mistral OCR)
 3. **Prompt Selection** - Already selected via form (summaries, chapters, etc.)
-4. **LLM Processing** - Generate show notes using selected GPT model
-5. **Text-to-Speech** (optional) - Convert summary to audio
-6. **Image Generation** (optional) - Create thumbnail/promotional images
-7. **Music Generation** (optional) - Generate background music
-8. **Video Generation** (optional) - Generate video clips with OpenAI Sora
+4. **LLM Processing** - Generate show notes using OpenAI, Claude, Gemini, MiniMax, Grok, or Groq
+5. **Text-to-Speech** (optional) - Convert summary to audio via OpenAI, ElevenLabs, or Groq
+6. **Image Generation** (optional) - Create thumbnail/promotional images via OpenAI, Gemini, MiniMax, or Grok
+7. **Music Generation** (optional) - Generate background music via ElevenLabs or MiniMax
+8. **Video Generation** (optional) - Generate video clips via OpenAI Sora, Gemini Veo, MiniMax, or Grok
 
 ## Request
 
@@ -31,60 +47,112 @@ The pipeline includes:
 
 ### Required Fields
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `llmService` | string | No | LLM provider: `openai` (default), `anthropic`, `gemini` |
-| `llmModel` | string | Yes | LLM model ID for the selected provider |
-| `selectedPrompts` | string | Yes | Comma-separated list of content types to generate |
+| Field             | Type   | Required | Description                                                  |
+|-------------------|--------|----------|--------------------------------------------------------------|
+| `llmService`      | string | Yes      | LLM provider: `openai`, `claude`, `gemini`, `minimax`, `grok`, `groq` |
+| `llmModel`        | string | Yes      | LLM model ID for the selected provider                       |
+| `selectedPrompts` | string | Yes      | Comma-separated list of content types to generate            |
 
 ### Source Fields (One Required)
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `url` | string | Conditional | URL to process (if not using uploaded file) |
-| `urlType` | string | Conditional | URL type from verify-url: `youtube`, `streaming`, `direct-file` |
-| `urlDuration` | string | Optional | Duration in seconds (from verify-url) |
-| `urlFileSize` | string | Optional | File size in bytes (from verify-url) |
-| `uploadedFilePath` | string | Conditional | Server file path from upload/upload-chunk (if not using URL) |
-| `uploadedFileName` | string | Conditional | Original filename (if using uploaded file) |
+| Field              | Type   | Required    | Description                                                              |
+|--------------------|--------|-------------|--------------------------------------------------------------------------|
+| `url`              | string | Conditional | URL to process (if not using uploaded file)                              |
+| `urlType`          | string | Conditional | URL type from verify-url: `youtube`, `streaming`, `direct-file`, `document` |
+| `urlDuration`      | string | Optional    | Duration in seconds (from verify-url)                                    |
+| `urlFileSize`      | string | Optional    | File size in bytes (from verify-url)                                     |
+| `uploadedFilePath` | string | Conditional | Server file path from upload/upload-chunk (if not using URL)             |
+| `uploadedFileName` | string | Conditional | Original filename (if using uploaded file)                               |
 
 ### Transcription Options
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `transcriptionOption` | string | Yes | Service: `groq`, `deepinfra`, or `happyscribe` |
-| `transcriptionModel` | string | Yes | Model for Groq/DeepInfra: `whisper-large-v3-turbo`, `whisper-large-v3` |
+| Field                 | Type   | Required | Description                                                                                                                                                                       |
+|-----------------------|--------|----------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `transcriptionOption` | string | Yes      | Service: `groq`, `deepinfra`, `happyscribe`, `fal`, `gladia`, `elevenlabs`, `rev`, `assembly`, `deepgram`, `soniox`                             |
+| `transcriptionModel`  | string | Yes      | Model ID (service-specific; must match selected service) |
 
 ### Optional Features
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `ttsEnabled` | string | No | Enable TTS: `"true"` or `"false"` (default: `"false"`) |
-| `ttsService` | string | Conditional | TTS service (if enabled): `elevenlabs` or `openai` |
-| `ttsVoice` | string | Conditional | Voice ID/name (if TTS enabled) |
-| `imageGenEnabled` | string | No | Enable image generation: `"true"` or `"false"` (default: `"false"`) |
-| `selectedImagePrompts` | string | Conditional | Comma-separated image prompts (if image gen enabled) |
-| `musicGenSkipped` | string | No | Skip music generation: `"true"` or `"false"` (default: `"false"`) |
-| `selectedMusicGenre` | string | Optional | Genre: `rap`, `rock`, `pop`, `country`, `folk`, `jazz` |
-| `videoGenEnabled` | string | No | Enable video generation: `"true"` or `"false"` (default: `"false"`) |
-| `selectedVideoPrompts` | string | Conditional | Comma-separated video types (if video gen enabled) |
-| `videoModel` | string | Conditional | Video model: `sora-2` or `sora-2-pro` |
-| `videoSize` | string | Conditional | Video size: `1920x1080`, `1080x1920`, `1280x720`, `720x1280` |
-| `videoDuration` | string | Conditional | Video duration in seconds |
+| Field                   | Type   | Required    | Description                                                                      |
+|-------------------------|--------|-------------|----------------------------------------------------------------------------------|
+| `ttsEnabled`            | string | No          | Enable TTS: `"true"` or `"false"` (default: `"false"`)                           |
+| `ttsService`            | string | Conditional | TTS service (if enabled): `openai`, `elevenlabs`, or `groq`                      |
+| `ttsVoice`              | string | Conditional | Voice ID/name (if TTS enabled)                                                   |
+| `ttsModel`              | string | Conditional | TTS model (if TTS enabled)                                                       |
+| `imageGenEnabled`       | string | No          | Enable image generation: `"true"` or `"false"` (default: `"false"`)              |
+| `imageService`          | string | Conditional | Image service (if enabled): `openai`, `gemini`, `minimax`, or `grok`     |
+| `imageModel`            | string | Conditional | Image model (if enabled; must match selected service)                            |
+| `imageDimensionOrRatio` | string | Conditional | OpenAI uses dimensions (e.g., `1024x1024`), others use aspect ratios (e.g., `1:1`) |
+| `selectedImagePrompts`  | string | Conditional | Comma-separated image prompts (if image gen enabled)                             |
+| `musicGenSkipped`       | string | No          | Skip music generation: `"true"` or `"false"` (default: `"false"`)                |
+| `musicService`          | string | Conditional | Music service (if enabled): `elevenlabs` or `minimax`                            |
+| `musicModel`            | string | Conditional | Music model (if enabled; must match selected service)                            |
+| `selectedMusicGenre`    | string | Conditional | Genre (service-specific). ElevenLabs: `rap`, `rock`, `pop`, `country`, `folk`, `jazz`. MiniMax: `pop`, `rock`, `rap`, `country`, `electronic`, `jazz` |
+| `musicPreset`           | string | Conditional | Required if music enabled: `cheap`, `balanced`, or `quality`                     |
+| `musicDurationSeconds`  | string | Conditional | Required if music enabled: integer between `3` and `300`                         |
+| `musicInstrumental`     | string | Conditional | Required if music enabled: `"true"` or `"false"`                                 |
+| `musicSampleRate`       | string | Optional    | MiniMax advanced override: `16000`, `24000`, `32000`, `44100`                    |
+| `musicBitrate`          | string | Optional    | MiniMax advanced override: `32000`, `64000`, `128000`, `256000`                  |
+| `videoGenEnabled`       | string | No          | Enable video generation: `"true"` or `"false"` (default: `"false"`)              |
+| `videoService`          | string | Conditional | Video service (if enabled): `openai`, `gemini`, `minimax`, or `grok`    |
+| `selectedVideoPrompts`  | string | Conditional | Comma-separated video types (if video gen enabled)                               |
+| `videoModel`            | string | Conditional | Video model (service-specific; see Video Services below)                         |
+| `videoSize`             | string | Conditional | Video size (service-specific; see Video Services below)                          |
+| `videoAspectRatio`      | string | Conditional | Video aspect ratio (service-specific; see Video Services below)                  |
+| `videoDuration`         | string | Conditional | Video duration in seconds (service-specific; see Video Services below)           |
+
+### Document Processing Options
+
+| Field                  | Type   | Required | Description                                                                           |
+|------------------------|--------|----------|---------------------------------------------------------------------------------------|
+| `documentService`      | string | No       | Document extraction service: `llamaparse` or `mistral-ocr`                            |
+| `documentModel`        | string | No       | Model for document extraction (service-specific defaults)                             |
+| `documentType`         | string | No       | Document type: `pdf`, `png`, `jpg`, `tiff`, `txt`, `docx` (auto-detected from extension) |
+| `disableDocumentCache` | string | No       | Disable document cache: `"true"` or `"false"` (default: `"false"`)                    |
 
 ## Selected Prompts Options
 
-**Summaries:**
+**Summaries and Chapters:**
 - `shortSummary` - Brief overview
+- `mediumSummary` - Standard summary
 - `longSummary` - Detailed summary
 - `bulletPoints` - Key points list
 - `takeaways` - Main takeaways
 - `faq` - Frequently asked questions
-
-**Chapters:**
 - `shortChapters` - Concise chapter breakdown
 - `mediumChapters` - Standard chapter detail
 - `longChapters` - Detailed chapter summaries
+
+**Extras:**
+- `quotes` - Notable quotes
+- `titles` - Title suggestions
+- `facebook` - Facebook post
+- `instagram` - Instagram post
+- `linkedin` - LinkedIn post
+- `tiktok` - TikTok script
+- `x` - X (Twitter) post
+- `poetryCollection` - Poetry collection
+- `screenplay` - Screenplay
+- `shortStory` - Short story
+- `contentStrategy` - Content strategy outline
+- `emailNewsletter` - Email newsletter
+- `seoArticle` - SEO article
+- `courseCurriculum` - Course curriculum
+- `questions` - Discussion questions
+- `assessmentGenerator` - Assessment generator
+- `flashcards` - Q/A flashcards
+- `howToGuide` - How-to guide
+- `studyGuide` - Study guide
+- `trainingManual` - Training manual
+- `troubleshootingGuide` - Troubleshooting guide
+- `pressRelease` - Press release
+- `competitiveAnalysis` - Competitive analysis
+- `trendAnalysis` - Trend analysis
+- `meetingActions` - Meeting actions
+- `voiceReflection` - Voice reflection
+- `goalSetting` - Goal setting
+- `careerPlan` - Career plan
+- `progressAnalysis` - Progress analysis
 
 ## Video Prompt Types
 
@@ -93,6 +161,41 @@ The pipeline includes:
 - `intro` - Introduction video
 - `outro` - Outro video
 - `social` - Social media clip
+
+## Image Prompt Types
+
+- `keyMoment` - Key moment
+- `thumbnail` - Thumbnail
+- `conceptual` - Conceptual illustration
+- `infographic` - Infographic
+- `character` - Character portrait
+- `quote` - Quote card
+
+## Video Services
+
+Video sizes, durations, and aspect ratios are service-specific.
+
+**OpenAI (Sora):**
+- Models: `sora-2`, `sora-2-pro`
+- Sizes: `1920x1080`, `1080x1920`, `1280x720`, `720x1280`
+- Durations (seconds): `4`, `8`, `12`
+
+**Gemini (Veo):**
+- Models: `veo-3.1-generate-preview`, `veo-3.1-fast-generate-preview`
+- Sizes: `720p`, `1080p`, `4k`
+- Durations (seconds): `4`, `6`, `8`
+- Aspect ratios: `16:9`, `9:16`
+
+**MiniMax (Hailuo):**
+- Models: `MiniMax-Hailuo-2.3`, `MiniMax-Hailuo-02`, `T2V-01-Director`, `T2V-01`
+- Sizes: `768P`, `1080P`, `720P`
+- Durations (seconds): `6`, `10`
+
+**Grok:**
+- Models: `grok-imagine-video`
+- Sizes: `720p`, `480p`
+- Durations (seconds): `1` through `15`
+- Aspect ratios: `16:9`, `4:3`, `1:1`, `9:16`, `3:4`, `3:2`, `2:3`
 
 ## Response
 
@@ -131,8 +234,8 @@ The pipeline includes:
 - Saves `audio.wav` and `metadata.json`
 
 **Step 2: Transcription (35% weight)**
-- Routes to Groq Whisper, DeepInfra Whisper, or HappyScribe
-- Segments audio if needed (Groq >10min)
+- Routes to Groq, DeepInfra, HappyScribe, Fal, Gladia, ElevenLabs, Rev, AssemblyAI, Deepgram, or Soniox (audio) or LlamaParse/Mistral OCR (documents)
+- Segments audio if duration > 10 minutes (all services)
 - Generates timestamped transcript
 - Saves `transcription.txt`
 
@@ -142,29 +245,29 @@ The pipeline includes:
 - Injects metadata and transcript
 
 **Step 4: LLM Processing (20% weight)**
-- Sends prompt to selected LLM provider (OpenAI GPT, Anthropic Claude, or Google Gemini)
-- 30-minute timeout
-- Generates markdown show notes
-- Saves `summary.md`
+- Sends prompt to selected LLM provider (OpenAI, Claude, Gemini, MiniMax, Grok, or Groq)
+- Automatic retry with fallback to alternate models/services
+- Generates structured JSON output
+- Saves `text-output.json`
 
 **Step 5: Text-to-Speech (5% weight, optional)**
 - Converts summary to audio
-- Uses ElevenLabs or OpenAI TTS
+- Uses OpenAI, ElevenLabs, or Groq TTS
 - Saves audio file
 
 **Step 6: Image Generation (5% weight, optional)**
 - Generates images from selected prompts
-- Uses OpenAI DALL-E
+- Uses OpenAI, Gemini, MiniMax, or Grok (model defaults derived from config)
 - Saves image files
 
 **Step 7: Music Generation (5% weight, optional)**
-- Generates background music
-- Uses ElevenLabs Music
-- Saves music file
+- Generates lyrics via LLM
+- Generates background music via ElevenLabs or MiniMax
+- Saves lyrics and music files
 
 **Step 8: Video Generation (13% weight, optional)**
-- Generates video clips from selected prompts
-- Uses OpenAI Sora (sora-2 or sora-2-pro)
+- Generates scene descriptions via LLM
+- Generates video clips via OpenAI Sora, Gemini Veo, MiniMax, or Grok
 - Saves video files with thumbnails
 
 ## Example Client Implementation (JavaScript)
@@ -216,8 +319,8 @@ const formData = new FormData()
 formData.append('url', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ')
 formData.append('urlType', 'youtube')
 formData.append('transcriptionOption', 'groq')
-formData.append('transcriptionModel', 'whisper-large-v3-turbo')
-formData.append('llmModel', 'gpt-4o-mini')
+formData.append('llmService', 'openai')
+formData.append('llmModel', 'gpt-5.2')
 formData.append('selectedPrompts', 'shortSummary,shortChapters')
 formData.append('ttsEnabled', 'false')
 formData.append('imageGenEnabled', 'false')
@@ -234,8 +337,8 @@ curl -X POST http://localhost:4321/api/process \
   -F "url=https://www.youtube.com/watch?v=dQw4w9WgXcQ" \
   -F "urlType=youtube" \
   -F "transcriptionOption=groq" \
-  -F "transcriptionModel=whisper-large-v3-turbo" \
-  -F "llmModel=gpt-4o-mini" \
+  -F "llmService=openai" \
+  -F "llmModel=gpt-5.2" \
   -F "selectedPrompts=shortSummary,shortChapters" \
   -F "ttsEnabled=false" \
   -F "imageGenEnabled=false" \
@@ -256,26 +359,29 @@ Response:
    - Must provide exactly one: `url` + `urlType` OR `uploadedFilePath` + `uploadedFileName`
    - Cannot provide both URL and uploaded file
 
-2. **LLM Model:**
-   - Required and must not be empty
-   - Valid values: `gpt-4o`, `gpt-4o-mini`, `gpt-4o-2024-08-06`
+2. **LLM Service + Model:**
+   - Both required and must not be empty
+   - Model ID must match selected `llmService`
 
 3. **Selected Prompts:**
    - Must select at least one content type
    - Comma-separated, no spaces
 
 4. **TTS Options:**
-   - If `ttsEnabled=true`, must provide `ttsService` and `ttsVoice`
+   - If `ttsEnabled=true`, must provide `ttsService`, `ttsModel`, and `ttsVoice`
 
 5. **Image Generation:**
-   - If `imageGenEnabled=true`, must provide at least one `selectedImagePrompts`
+   - If `imageGenEnabled=true`, must provide `imageService`, `imageModel`, `imageDimensionOrRatio`, and at least one `selectedImagePrompts`
 
 6. **Video Generation:**
-   - If `videoGenEnabled=true`, must provide at least one `selectedVideoPrompts`
-   - Must also provide `videoModel`, `videoSize`, and `videoDuration`
+   - If `videoGenEnabled=true`, must provide `videoService`, `videoModel`, `videoSize`, `videoDuration`, and at least one `selectedVideoPrompts`
 
-7. **Transcription:**
-   - `transcriptionOption` and `transcriptionModel` always required
+7. **Music Generation:**
+   - If music is enabled (`musicGenSkipped=false`), must provide `musicService`, `musicModel`, `selectedMusicGenre`, `musicPreset`, `musicDurationSeconds`, and `musicInstrumental`
+
+8. **Transcription:**
+   - `transcriptionOption` required
+   - `transcriptionModel` required and must match selected service
    - HappyScribe only available for streaming URLs (not local files)
 
 ## Database Storage
@@ -291,10 +397,15 @@ Files saved to `./output/{showNoteId}/`:
 - `audio.wav` - Processed audio (16kHz mono)
 - `metadata.json` - Video/audio metadata
 - `transcription.txt` - Timestamped transcript
-- `summary.md` - Generated show notes
+- `prompt.md` - LLM prompt used
+- `text-output.json` - Generated structured output
 - `{ttsService}-summary.{ext}` - TTS audio (if enabled)
 - `{prompt}-{timestamp}.png` - Generated images (if enabled)
+- `music-lyrics-prompt.md` - Music lyrics prompt (if enabled)
+- `music-lyrics.txt` - Generated lyrics (if enabled)
 - `music-{timestamp}.mp3` - Generated music (if enabled)
+- `video-scene-{type}.md` - Video scene prompts (if enabled)
+- `video-scene-description-{type}.md` - Generated scene descriptions (if enabled)
 - `{promptType}-{timestamp}.mp4` - Generated videos (if enabled)
 
 ## Notes

@@ -1,0 +1,56 @@
+{
+  "id": "verify-llm-grok-41fast",
+  "name": "Verify: Grok 4.1 Fast",
+  "description": "Minimal verification test for Grok 4.1 Fast LLM",
+  "tags": [
+    "verify",
+    "llm",
+    "grok",
+    "minimal",
+    "minimal-service"
+  ],
+  "estimatedCost": {
+    "transcription": {
+      "service": "groq",
+      "model": "whisper-large-v3-turbo",
+      "units": "1 minute",
+      "rate": "$0.04/hour ($0.00066/min)",
+      "estimated": "$0.0007"
+    },
+    "llm": {
+      "service": "grok",
+      "model": "grok-4-1-fast-non-reasoning",
+      "units": "~2K tokens",
+      "rate": "$0.20/1M in + $0.50/1M out",
+      "estimated": "$0.0004"
+    },
+    "total": "$0.0011"
+  },
+  "input": {
+    "type": "local",
+    "path": "tests/test-input-files/5.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "grok",
+    "model": "grok-4-1-fast-non-reasoning",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

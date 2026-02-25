@@ -1,6 +1,8 @@
+import { For } from "solid-js"
 import s from "./Step3.module.css"
-import { PROMPT_SECTIONS } from "~/prompts/text-prompts"
-import { PROMPT_METADATA } from "~/prompts/prompt-metadata"
+import { StepHeader, OptionButton, OptionGrid, togglePrompt } from "../shared"
+import { PROMPT_CONFIG, PROMPT_TYPES } from "~/prompts/text-prompts/text-prompt-config"
+import type { PromptType } from "~/types"
 
 type Props = {
   selectedPrompts: string[]
@@ -8,71 +10,65 @@ type Props = {
   disabled: boolean | undefined
 }
 
-export default function Step3(props: Props) {
-  const togglePrompt = (prompt: string): void => {
-    const current = props.selectedPrompts
-    if (current.includes(prompt)) {
-      props.setSelectedPrompts(current.filter(p => p !== prompt))
-    } else {
-      props.setSelectedPrompts([...current, prompt])
+type GroupedPromptEntry = [string, PromptType[]]
+
+function getGroupedPromptEntries(): GroupedPromptEntry[] {
+  const grouped: Record<string, PromptType[]> = {}
+  for (const promptKey of PROMPT_TYPES) {
+    const config = PROMPT_CONFIG[promptKey]
+    if (!config) continue
+    const { category } = config
+    if (!grouped[category]) {
+      grouped[category] = []
     }
+    grouped[category].push(promptKey)
   }
+  return Object.entries(grouped)
+}
 
-  const promptKeys = Object.keys(PROMPT_SECTIONS)
-
-  const groupedPrompts = promptKeys.reduce((acc, promptKey) => {
-    const metadata = PROMPT_METADATA[promptKey]
-    if (!metadata) return acc
-
-    const { category } = metadata
-    
-    if (!acc[category]) {
-      acc[category] = []
-    }
-    
-    acc[category].push(promptKey)
-    return acc
-  }, {} as Record<string, string[]>)
+export default function Step3(props: Props) {
+  const groupedPromptEntries = getGroupedPromptEntries()
 
   return (
     <>
-      <h2 class={s.stepHeading}>Step 3: Select Content to Generate</h2>
-      <p class={s.promptHelpText}>
-        Select at least one option. You can choose any combination.
-      </p>
-
-      <input 
-        type="hidden" 
-        name="selectedPrompts" 
-        value={props.selectedPrompts.join(',')} 
+      <StepHeader
+        stepNumber={3}
+        title="Select Content to Generate"
+        description="Select at least one option. You can choose any combination."
       />
 
-      {Object.entries(groupedPrompts).map(([category, prompts]) => (
-        <div class={s.categorySection}>
-          <h3 class={s.categoryHeading}>{category}</h3>
-          
-          <div class={s.optionGrid}>
-            {prompts.map((promptKey) => {
-              const metadata = PROMPT_METADATA[promptKey]
-              if (!metadata) return null
+      <input
+        type="hidden"
+        name="selectedPrompts"
+        value={props.selectedPrompts.join(',')}
+      />
 
-              return (
-                <button
-                  type="button"
-                  class={props.selectedPrompts.includes(promptKey) ? s.optionButtonSelected : s.optionButton}
-                  onClick={() => togglePrompt(promptKey)}
-                  disabled={props.disabled}
-                >
-                  <div class={s.optionTitle}>{metadata.title}</div>
-                  <div class={s.optionDescription}>
-                    {metadata.description}
-                  </div>
-                </button>
-              )
-            })}
+      <For each={groupedPromptEntries}>
+        {([category, prompts]) => (
+          <div class={s.categorySection}>
+            <h3 class={s.categoryHeading}>{category}</h3>
+
+            <OptionGrid>
+              <For each={prompts}>
+                {(promptKey) => {
+                  const config = PROMPT_CONFIG[promptKey]
+                  if (!config) return null
+
+                  return (
+                    <OptionButton
+                      title={config.title}
+                      description={config.schema.description}
+                      selected={props.selectedPrompts.includes(promptKey)}
+                      disabled={props.disabled}
+                      onClick={() => togglePrompt(promptKey, { current: () => props.selectedPrompts, setter: props.setSelectedPrompts })}
+                    />
+                  )
+                }}
+              </For>
+            </OptionGrid>
           </div>
-        </div>
-      ))}
+        )}
+      </For>
     </>
   )
 }

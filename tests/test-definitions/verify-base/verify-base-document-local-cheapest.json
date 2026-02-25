@@ -1,0 +1,61 @@
+{
+  "id": "verify-base-document-local-cheapest",
+  "name": "Verify Base: Document Local Cheapest",
+  "description": "Targeted verification test for local PDF with cheapest OCR and LLM",
+  "tags": [
+    "verify",
+    "verify-base",
+    "minimal",
+    "document",
+    "llamaparse",
+    "groq"
+  ],
+  "estimatedCost": {
+    "document": {
+      "service": "llamaparse",
+      "model": "fast",
+      "units": "1 page",
+      "rate": "~1 credit/page ($0.00125/page)",
+      "estimated": "$0.001"
+    },
+    "llm": {
+      "service": "groq",
+      "model": "openai/gpt-oss-20b",
+      "units": "~2K tokens",
+      "rate": "$0.075/1M in + $0.30/1M out",
+      "estimated": "$0.0004"
+    },
+    "total": "$0.0014"
+  },
+  "input": {
+    "type": "local",
+    "path": "tests/test-input-files/1.pdf"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "document": {
+    "service": "llamaparse",
+    "model": "fast"
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

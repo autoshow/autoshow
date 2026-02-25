@@ -2,6 +2,19 @@
 
 Get the current status and progress of a processing job.
 
+## Outline
+
+- [Endpoint](#endpoint)
+- [Description](#description)
+- [Request](#request)
+- [Response](#response)
+- [Fields](#fields)
+- [Job Statuses](#job-statuses)
+- [Step Names](#step-names)
+- [Example](#example)
+- [Polling Example (JavaScript)](#polling-example-javascript)
+- [Notes](#notes)
+
 ## Endpoint
 
 ```
@@ -16,9 +29,9 @@ Retrieves the current status of a background processing job created by the [Proc
 
 **Path Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `id` | string | Yes | Job ID returned from `/api/process` |
+| Parameter | Type   | Required | Description                         |
+|-----------|--------|----------|-------------------------------------|
+| `id`      | string | Yes      | Job ID returned from `/api/process` |
 
 ## Response
 
@@ -94,7 +107,10 @@ Retrieves the current status of a background processing job created by the [Proc
 
 ```json
 {
-  "error": "Job ID is required"
+  "error": "Validation failed",
+  "details": {
+    "root": ["Invalid type: Expected string but received undefined"]
+  }
 }
 ```
 
@@ -108,44 +124,44 @@ Retrieves the current status of a background processing job created by the [Proc
 
 ## Fields
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique job identifier |
-| `status` | string | Job status: `pending`, `processing`, `completed`, `error` |
-| `currentStep` | number | Current processing step (1-8) |
-| `stepName` | string | Human-readable step name |
-| `stepProgress` | number | Progress percentage for current step (0-100) |
-| `overallProgress` | number | Overall pipeline progress (0-100) |
-| `message` | string | Human-readable status message |
-| `error` | string \| null | Error details (only when status is `error`) |
-| `showNoteId` | string \| null | Generated show note ID (only when status is `completed`) |
-| `inputData` | string | JSON-encoded original processing options |
-| `createdAt` | number | Unix timestamp (ms) when job was created |
-| `startedAt` | number \| null | Unix timestamp (ms) when processing started |
-| `completedAt` | number \| null | Unix timestamp (ms) when job finished |
-| `updatedAt` | number | Unix timestamp (ms) of last update |
+| Field             | Type             | Description                                                    |
+|-------------------|------------------|----------------------------------------------------------------|
+| `id`              | string           | Unique job identifier                                          |
+| `status`          | string           | Job status: `pending`, `processing`, `completed`, `error`      |
+| `currentStep`     | number           | Current processing step (0-8, where 0 is initial state)        |
+| `stepName`        | string           | Human-readable step name                                       |
+| `stepProgress`    | number           | Progress percentage for current step (0-100)                   |
+| `overallProgress` | number           | Overall pipeline progress (0-100)                              |
+| `message`         | string           | Human-readable status message                                  |
+| `error`           | string \| null   | Error details (only when status is `error`)                    |
+| `showNoteId`      | string \| null   | Generated show note ID (only when status is `completed`)       |
+| `inputData`       | string           | JSON-encoded original processing options                       |
+| `createdAt`       | number           | Unix timestamp (ms) when job was created                       |
+| `startedAt`       | number \| null   | Unix timestamp (ms) when processing started                    |
+| `completedAt`     | number \| null   | Unix timestamp (ms) when job finished                          |
+| `updatedAt`       | number           | Unix timestamp (ms) of last update                             |
 
 ## Job Statuses
 
-| Status | Description |
-|--------|-------------|
-| `pending` | Job created but not yet started |
-| `processing` | Job is actively being processed |
-| `completed` | Job finished successfully |
-| `error` | Job failed with an error |
+| Status       | Description                      |
+|--------------|----------------------------------|
+| `pending`    | Job created but not yet started  |
+| `processing` | Job is actively being processed  |
+| `completed`  | Job finished successfully        |
+| `error`      | Job failed with an error         |
 
 ## Step Names
 
-| Step | Name | Weight |
-|------|------|--------|
-| 1 | Download Audio | 12% |
-| 2 | Transcription | 35% |
-| 3 | Content Selection | 5% |
-| 4 | LLM Generation | 20% |
-| 5 | Text-to-Speech | 5% |
-| 6 | Image Generation | 5% |
-| 7 | Music Generation | 5% |
-| 8 | Video Generation | 13% |
+| Step | Name              | Weight |
+|------|-------------------|--------|
+| 1    | Download Audio    | 12%    |
+| 2    | Transcription     | 35%    |
+| 3    | Content Selection | 5%     |
+| 4    | LLM Generation    | 20%    |
+| 5    | Text-to-Speech    | 5%     |
+| 6    | Image Generation  | 5%     |
+| 7    | Music Generation  | 5%     |
+| 8    | Video Generation  | 13%    |
 
 ## Example
 

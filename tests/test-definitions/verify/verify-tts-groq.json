@@ -1,0 +1,66 @@
+{
+  "id": "verify-tts-groq",
+  "name": "Verify: Groq TTS",
+  "description": "Minimal verification test for Groq Orpheus text-to-speech",
+  "tags": [
+    "verify",
+    "tts",
+    "groq",
+    "minimal",
+    "minimal-service"
+  ],
+  "estimatedCost": {
+    "transcription": {
+      "service": "groq",
+      "model": "whisper-large-v3-turbo",
+      "units": "1 minute",
+      "rate": "$0.04/hr ($0.00066/min)",
+      "estimated": "$0.0007"
+    },
+    "llm": {
+      "service": "groq",
+      "model": "openai/gpt-oss-20b",
+      "units": "~2K tokens",
+      "rate": "$0.075/1M in + $0.30/1M out",
+      "estimated": "$0.0004"
+    },
+    "tts": {
+      "service": "groq",
+      "model": "canopylabs/orpheus-v1-english",
+      "units": "~1000 chars (~1 min output)",
+      "rate": "$22/1M chars ($0.022/1K chars)",
+      "estimated": "$0.022"
+    },
+    "total": "$0.0231"
+  },
+  "input": {
+    "type": "local",
+    "path": "tests/test-input-files/5.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": true,
+    "service": "groq",
+    "voice": "autumn",
+    "model": "canopylabs/orpheus-v1-english"
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

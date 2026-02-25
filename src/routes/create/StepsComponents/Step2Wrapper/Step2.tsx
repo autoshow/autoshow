@@ -1,6 +1,8 @@
-import { Show, For } from "solid-js"
-import s from "./Step2.module.css"
-import { SERVICES_CONFIG } from "~/utils/services"
+import { Show } from "solid-js"
+import { StepHeader } from "../shared"
+import { isDocumentExtension } from "~/models"
+import Transcription from "./Transcription"
+import Document from "./Document"
 
 type Props = {
   transcriptionOption: string
@@ -10,35 +12,46 @@ type Props = {
   hasFile: boolean
   transcriptionModel: string
   setTranscriptionModel: (value: string) => void
+  documentService: string
+  setDocumentService: (value: string) => void
+  documentModel: string
+  setDocumentModel: (value: string) => void
+  uploadedFileName: string
+  durationSeconds?: number
 }
 
 export default function Step2(props: Props) {
-  const handleModelClick = (service: string, modelId: string): void => {
-    props.setTranscriptionOption(service)
-    props.setTranscriptionModel(modelId)
-  }
-
-  const isModelSelected = (service: string, modelId: string): boolean => {
-    return props.transcriptionOption === service && props.transcriptionModel === modelId
+  const isDocumentInput = (): boolean => {
+    if (props.urlType === "document") return true
+    if (props.hasFile && props.uploadedFileName && isDocumentExtension(props.uploadedFileName)) return true
+    return false
   }
 
   const shouldShowWhisperOptions = (): boolean => {
+    if (isDocumentInput()) return false
     if (!props.hasFile && !props.urlType) return true
     return props.hasFile || props.urlType === "direct-file"
   }
 
   const shouldShowStreamingOptions = (): boolean => {
+    if (isDocumentInput()) return false
     if (!props.hasFile && !props.urlType) return true
     return props.urlType === "youtube" || props.urlType === "streaming"
   }
 
+  const shouldShowDocumentOptions = (): boolean => {
+    return isDocumentInput()
+  }
+
   return (
     <>
-      <h2 class={s.stepHeading}>Step 2: Run Transcription</h2>
-
-      <div class={s.instructionBanner}>
-        Select a transcription service and model. Options will update based on your source selection.
-      </div>
+      <StepHeader
+        stepNumber={2}
+        title={isDocumentInput() ? "Extract Document Text" : "Run Transcription"}
+        description={isDocumentInput() 
+          ? "Select a document extraction tier. Higher tiers provide better accuracy for complex layouts."
+          : "Select a transcription service and model. Options will update based on your source selection."}
+      />
 
       <input 
         type="hidden" 
@@ -46,97 +59,29 @@ export default function Step2(props: Props) {
         value={props.transcriptionOption} 
       />
 
-      <Show when={shouldShowWhisperOptions()}>
-        <h3 class={s.serviceHeading}>Without Speaker Labels</h3>
+      <Show when={shouldShowDocumentOptions()}>
+        <Document
+          transcriptionOption={props.transcriptionOption}
+          setTranscriptionOption={props.setTranscriptionOption}
+          documentService={props.documentService}
+          setDocumentService={props.setDocumentService}
+          documentModel={props.documentModel}
+          setDocumentModel={props.setDocumentModel}
+          disabled={props.disabled}
+        />
+      </Show>
 
-        <h4 class={s.providerHeading}>{SERVICES_CONFIG.transcription.whisper.groq.name}</h4>
-        <div class={s.optionGrid}>
-          <For each={SERVICES_CONFIG.transcription.whisper.groq.models}>
-            {(model) => (
-              <button
-                type="button"
-                class={isModelSelected('groq', model.id) ? s.optionButtonSelected : s.optionButton}
-                onClick={() => handleModelClick('groq', model.id)}
-                disabled={props.disabled}
-              >
-                <div class={s.optionTitle}>{model.name}</div>
-                <div class={s.optionDescription}>{model.description}</div>
-                <div class={s.optionMeta}>
-                  <span class={s.optionSpeed}>Speed: {model.speed}</span>
-                  <span class={s.optionQuality}>Quality: {model.quality}</span>
-                </div>
-              </button>
-            )}
-          </For>
-        </div>
-
-        <h4 class={s.providerHeading}>{SERVICES_CONFIG.transcription.whisper.deepinfra.name}</h4>
-        <div class={s.optionGrid}>
-          <For each={SERVICES_CONFIG.transcription.whisper.deepinfra.models}>
-            {(model) => (
-              <button
-                type="button"
-                class={isModelSelected('deepinfra', model.id) ? s.optionButtonSelected : s.optionButton}
-                onClick={() => handleModelClick('deepinfra', model.id)}
-                disabled={props.disabled}
-              >
-                <div class={s.optionTitle}>{model.name}</div>
-                <div class={s.optionDescription}>{model.description}</div>
-                <div class={s.optionMeta}>
-                  <span class={s.optionSpeed}>Speed: {model.speed}</span>
-                  <span class={s.optionQuality}>Quality: {model.quality}</span>
-                </div>
-              </button>
-            )}
-          </For>
-        </div>
-
-        <h3 class={s.serviceHeading}>With Speaker Labels</h3>
-
-        <h4 class={s.providerHeading}>{SERVICES_CONFIG.transcription.diarization.lemonfox.name}</h4>
-        <div class={s.optionGrid}>
-          <For each={SERVICES_CONFIG.transcription.diarization.lemonfox.models}>
-            {(model) => (
-              <button
-                type="button"
-                class={isModelSelected('lemonfox', model.id) ? s.optionButtonSelected : s.optionButton}
-                onClick={() => handleModelClick('lemonfox', model.id)}
-                disabled={props.disabled}
-              >
-                <div class={s.optionTitle}>{model.name}</div>
-                <div class={s.optionDescription}>{model.description}</div>
-                <div class={s.optionMeta}>
-                  <span class={s.optionSpeed}>Speed: {model.speed}</span>
-                  <span class={s.optionQuality}>Quality: {model.quality}</span>
-                </div>
-              </button>
-            )}
-          </For>
-        </div>
-
-        </Show>
-
-      <Show when={shouldShowStreamingOptions()}>
-        <h3 class={s.serviceHeading}>Paid Services</h3>
-        <div class={s.optionGrid}>
-          <For each={SERVICES_CONFIG.transcription.streaming.happyscribe.models}>
-            {(model) => (
-              <button
-                type="button"
-                class={isModelSelected('happyscribe', model.id) ? s.optionButtonSelected : s.optionButton}
-                onClick={() => handleModelClick('happyscribe', model.id)}
-                disabled={props.disabled}
-              >
-                <div class={s.optionTitle}>{SERVICES_CONFIG.transcription.streaming.happyscribe.name}</div>
-                <div class={s.optionDescription}>{model.description}</div>
-                <div class={s.optionMeta}>
-                  <span class={s.optionSpeed}>Speed: {model.speed}</span>
-                  <span class={s.optionQuality}>Quality: {model.quality}</span>
-                </div>
-              </button>
-            )}
-          </For>
-        </div>
+      <Show when={!shouldShowDocumentOptions()}>
+        <Transcription
+          transcriptionOption={props.transcriptionOption}
+          setTranscriptionOption={props.setTranscriptionOption}
+          transcriptionModel={props.transcriptionModel}
+          setTranscriptionModel={props.setTranscriptionModel}
+          disabled={props.disabled}
+          durationSeconds={props.durationSeconds}
+          showWhisperOptions={shouldShowWhisperOptions()}
+          showStreamingOptions={shouldShowStreamingOptions()}
+        />
       </Show>
     </>
   )

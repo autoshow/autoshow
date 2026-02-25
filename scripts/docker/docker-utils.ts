@@ -1,5 +1,5 @@
-import { l, err } from '../../src/utils/logging'
-import type { TarHeader } from '../cli-types'
+import { l, err } from '~/utils/logging'
+import type { TarHeader } from '~/types'
 
 const COMPOSE_FILE = '.github/docker-compose.yml'
 

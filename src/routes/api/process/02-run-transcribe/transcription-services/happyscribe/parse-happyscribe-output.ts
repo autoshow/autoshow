@@ -1,14 +1,6 @@
 import { l, err } from '~/utils/logging'
-import type { TranscriptionSegment, HappyScribeSegment, HappyScribeWord } from '~/types/main'
-import { HappyScribeJsonOutputSchema, validateOrThrow } from '~/types/main'
-
-const formatTimestamp = (seconds: number): string => {
-  const hours = Math.floor(seconds / 3600)
-  const minutes = Math.floor((seconds % 3600) / 60)
-  const secs = Math.floor(seconds % 60)
-  
-  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
-}
+import { formatTimestamp } from '~/utils/audio'
+import { HappyScribeJsonOutputSchema, validateOrThrow, type TranscriptionSegment, type HappyScribeSegment, type HappyScribeWord } from '~/types'
 
 export const parseHappyScribeOutput = (jsonContent: string): { text: string, segments: TranscriptionSegment[] } => {
   let data: unknown

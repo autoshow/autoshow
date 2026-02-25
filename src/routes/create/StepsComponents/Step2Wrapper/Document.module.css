@@ -1,0 +1,34 @@
+.providerHeading {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-top: 1rem;
+  margin-bottom: 0.75rem;
+  opacity: 0.85;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.providerHeading:hover {
+  color: var(--text-primary);
+  opacity: 1;
+}
+
+.providerHeadingSelected {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--accent-blue);
+  margin-top: 1rem;
+  margin-bottom: 0.75rem;
+  opacity: 1;
+  cursor: pointer;
+}
+
+.providerDescription {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-top: -0.5rem;
+  margin-bottom: 1rem;
+  opacity: 0.75;
+  line-height: 1.5;
+}

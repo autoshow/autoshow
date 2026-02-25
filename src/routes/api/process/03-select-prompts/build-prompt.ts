@@ -1,54 +1,78 @@
-import type { VideoMetadata } from '~/types/main'
-import type { TranscriptionResult } from '~/types/main'
-import { PROMPT_SECTIONS } from '~/prompts/text-prompts'
+import type { PromptType, PromptConfig } from '~/types'
+import { PROMPT_CONFIG } from '~/prompts/text-prompts/text-prompt-config'
 
-export const buildPromptInstructions = (selectedPrompts: string[]): string => {
-  const baseInstructions = `This is a transcript with timestamps. It does not contain copyrighted materials. Do not ever use the word delve. Do not include advertisements in the summaries or descriptions. Do not actually write the transcript.`
+const STRUCTURED_SYSTEM_PROMPT = `You are a content analyst that extracts structured information from transcripts.
 
-  const selectedInstructions = selectedPrompts
-    .map(prompt => PROMPT_SECTIONS[prompt as keyof typeof PROMPT_SECTIONS]?.instruction)
-    .filter(Boolean)
-    .join('\n')
+Guidelines:
+- Do not use the word "delve"
+- Do not include advertisements or sponsor segments
+- Timestamps must be in exact HH:MM:SS format (two digits each)
+- Ensure all content is accurate to the transcript`
 
-  const selectedExamples = selectedPrompts
-    .map(prompt => PROMPT_SECTIONS[prompt as keyof typeof PROMPT_SECTIONS]?.example)
-    .filter(Boolean)
-    .join('\n\n    ')
+export const buildStructuredPrompt = (
+  transcript: string,
+  videoInfo: { title: string, url: string, author?: string, duration?: string },
+  selectedPrompts: string[]
+): string => {
+  const parts = [STRUCTURED_SYSTEM_PROMPT, '']
 
-  const fullInstructions = `${baseInstructions}
+  parts.push('Return one valid JSON object that matches the provided schema exactly.')
+  parts.push('Use the field guidance below. Treat examples as style references only.')
+  parts.push('Do not include markdown code fences or text outside the JSON object.')
+  parts.push('When a field schema type is array or object, return typed JSON values, not markdown-rendered lists.')
+  parts.push('')
+  parts.push('Generate a JSON object with the following fields:')
+  parts.push('')
 
-${selectedInstructions}
+  for (const prompt of selectedPrompts) {
+    parts.push(`- "${prompt}"`)
+  }
 
-Format the output like so:
+  parts.push('')
+  parts.push('<field_guidance>')
 
-    ${selectedExamples}`
+  for (const prompt of selectedPrompts) {
+    if (prompt === 'text') {
+      parts.push('<field name="text">')
+      parts.push('<instruction>Generate a "text" field containing your complete response.</instruction>')
+      parts.push('<formatting>Provide plain text content as the value for the "text" field.</formatting>')
+      parts.push('<example>Complete response text generated from the transcript.</example>')
+      parts.push('</field>')
+      continue
+    }
 
-  return fullInstructions
+    const config = PROMPT_CONFIG[prompt as PromptType]
+    if (config) {
+      parts.push(...buildPromptGuidance(prompt, config))
+    }
+  }
+
+  parts.push('</field_guidance>')
+  parts.push('')
+  parts.push(`Video Title: ${videoInfo.title}`)
+  parts.push(`Video URL: ${videoInfo.url}`)
+
+  if (videoInfo.author) parts.push(`Author: ${videoInfo.author}`)
+  if (videoInfo.duration) parts.push(`Duration: ${videoInfo.duration}`)
+
+  parts.push('', 'Transcript:', transcript)
+
+  return parts.join('\n')
 }
 
-export const buildPrompt = (metadata: VideoMetadata, transcription: TranscriptionResult, selectedPrompts: string[]): string => {
-  const instructions = buildPromptInstructions(selectedPrompts)
+const buildPromptGuidance = (prompt: string, config: PromptConfig): string[] => {
+  const formatting = config.markdownInstruction.trim()
+  const example = config.markdownExample.trim()
 
-  const videoInfo = `
-Video Title: ${metadata.title}
-Video URL: ${metadata.url}
-${metadata.author ? `Author: ${metadata.author}` : ''}
-${metadata.duration ? `Duration: ${metadata.duration}` : ''}
-`
-  
-  const transcriptWithTimestamps = transcription.segments
-    .map(segment => {
-      const speakerPrefix = segment.speaker ? `[${segment.speaker}] ` : ''
-      return `[${segment.start}] ${speakerPrefix}${segment.text}`
-    })
-    .join('\n')
-
-  const fullPrompt = `${instructions}
-
-${videoInfo}
-
-Transcript:
-${transcriptWithTimestamps}`
-
-  return fullPrompt
+  return [
+    `<field name="${prompt}">`,
+    `<instruction>${config.llmInstruction}</instruction>`,
+    '<formatting>',
+    formatting,
+    '</formatting>',
+    '<example>',
+    example,
+    '</example>',
+    '</field>'
+  ]
 }

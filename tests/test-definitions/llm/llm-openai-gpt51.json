@@ -1,0 +1,44 @@
+{
+  "id": "llm-openai-gpt51",
+  "name": "LLM: openai gpt-5.1",
+  "description": "Test openai LLM service with gpt-5.1 model",
+  "tags": [
+    "audio",
+    "llm",
+    "openai"
+  ],
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "openai",
+    "model": "gpt-5.1",
+    "prompts": [
+      "shortSummary",
+      "longSummary",
+      "bulletPoints",
+      "takeaways",
+      "faq",
+      "shortChapters",
+      "mediumChapters",
+      "longChapters"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  },
+  "input": {
+    "type": "local",
+    "path": "tests/test-input-files/1.mp3"
+  }
+}

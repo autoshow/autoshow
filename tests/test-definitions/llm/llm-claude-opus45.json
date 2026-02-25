@@ -1,0 +1,44 @@
+{
+  "id": "llm-claude-opus45",
+  "name": "LLM: Claude Opus 4.5",
+  "description": "Test Claude LLM service with claude-opus-4-5-20251101 model",
+  "tags": [
+    "audio",
+    "llm",
+    "claude"
+  ],
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "claude",
+    "model": "claude-opus-4-5-20251101",
+    "prompts": [
+      "shortSummary",
+      "longSummary",
+      "bulletPoints",
+      "takeaways",
+      "faq",
+      "shortChapters",
+      "mediumChapters",
+      "longChapters"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  },
+  "input": {
+    "type": "local",
+    "path": "tests/test-input-files/1.mp3"
+  }
+}

@@ -1,54 +1,68 @@
-import type { ProcessingOptions } from '~/types/main'
-import type { TranscriptionResult, Step2Metadata } from '~/types/main'
-import type { IProgressTracker } from '~/types/progress'
+import type { ProcessingOptions, TranscriptionServiceType, TranscriptionResult, Step2Metadata, IProgressTracker } from '~/types'
+import { l } from '~/utils/logging'
 import { transcribeWithGroq } from './transcription-services/groq/run-groq-whisper'
 import { transcribeWithDeepInfra } from './transcription-services/deepinfra/run-deepinfra-whisper'
-import { transcribeWithLemonfox } from './transcription-services/lemonfox/run-lemonfox-whisper'
+import { transcribeWithFal } from './transcription-services/fal/run-fal-whisper'
+import { transcribeWithGladia } from './transcription-services/gladia/run-gladia'
+import { transcribeWithElevenLabs } from './transcription-services/elevenlabs/run-elevenlabs-scribe'
+import { transcribeWithRev } from './transcription-services/rev/run-rev'
+import { transcribeWithAssembly } from './transcription-services/assembly/run-assembly'
+import { transcribeWithDeepgram } from './transcription-services/deepgram/run-deepgram'
+import { transcribeWithSoniox } from './transcription-services/soniox/run-soniox'
 import { splitAudioFile, getAudioDuration } from './audio-splitter'
+
+const getTranscriber = (service: TranscriptionServiceType | undefined) => {
+  switch (service) {
+    case 'deepinfra':
+      return transcribeWithDeepInfra
+    case 'fal':
+      return transcribeWithFal
+    case 'gladia':
+      return transcribeWithGladia
+    case 'elevenlabs':
+      return transcribeWithElevenLabs
+    case 'rev':
+      return transcribeWithRev
+    case 'assembly':
+      return transcribeWithAssembly
+    case 'deepgram':
+      return transcribeWithDeepgram
+    case 'soniox':
+      return transcribeWithSoniox
+    case 'groq':
+    default:
+      return transcribeWithGroq
+  }
+}
 
 export const transcribe = async (
   audioPath: string,
   options: ProcessingOptions,
   progressTracker?: IProgressTracker
 ): Promise<{ result: TranscriptionResult, metadata: Step2Metadata }> => {
+  if (!options.transcriptionModel) {
+    throw new Error('Transcription model is required')
+  }
+  const whisperModel = options.transcriptionModel
+  const transcriber = getTranscriber(options.transcriptionService)
+  
+  l('Step 2: Transcription', {
+    service: options.transcriptionService || 'groq',
+    model: whisperModel,
+    audioFile: audioPath.split('/').pop()
+  })
+  
   if (options.transcriptionService === 'happyscribe') {
     throw new Error('HappyScribe is only supported for streaming URLs')
   }
   
-  const getTranscriber = () => {
-    switch (options.transcriptionService) {
-      case 'deepinfra':
-        return transcribeWithDeepInfra
-      case 'lemonfox':
-        return transcribeWithLemonfox
-      case 'groq':
-      default:
-        return transcribeWithGroq
-    }
-  }
-  
-  const getDefaultModel = () => {
-    switch (options.transcriptionService) {
-      case 'deepinfra':
-        return 'openai/whisper-large-v3-turbo'
-      case 'lemonfox':
-        return 'whisper-large-v3'
-      case 'groq':
-      default:
-        return 'whisper-large-v3-turbo'
-    }
-  }
-  
-  const whisperModel = options.transcriptionModel || getDefaultModel()
-  const transcriber = getTranscriber()
-  
   progressTracker?.updateStepProgress(2, 5, 'Checking audio duration')
   const duration = await getAudioDuration(audioPath)
   
-  if (duration > 600) {
-    progressTracker?.updateStepProgress(2, 10, 'Audio exceeds 10 minutes - splitting into segments')
-    
-    const segmentPaths = await splitAudioFile(audioPath, options.outputDir, 10)
+  if (duration > 1800) {
+    progressTracker?.updateStepProgress(2, 10, 'Audio exceeds 30 minutes - splitting into segments')
+
+    const segmentPaths = await splitAudioFile(audioPath, options.outputDir, 30)
     
     progressTracker?.updateStepProgress(2, 20, `Split into ${segmentPaths.length} segments`)
     
@@ -57,7 +71,7 @@ export const transcribe = async (
     for (let i = 0; i < segmentPaths.length; i++) {
       const segmentPath = segmentPaths[i]!
       const segmentNumber = i + 1
-      const offsetMinutes = i * 10
+      const offsetMinutes = i * 30
       
       const baseProgress = 20 + ((i / segmentPaths.length) * 70)
       progressTracker?.updateStepWithSubStep(2, segmentNumber, segmentPaths.length, `Segment ${segmentNumber}/${segmentPaths.length}`, `Transcribing segment ${segmentNumber} of ${segmentPaths.length}`)

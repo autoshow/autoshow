@@ -34,6 +34,16 @@ if (command === 'help') {
 } else if (command === 'build-report') {
   const { analyzeBuild } = await import('./build-report/build-report-commands')
   await analyzeBuild()
+} else if (command === 'fetch-models') {
+  await import('./models/fetch-models')
+} else if (command === 'analyze-logs') {
+  await import('./test/analyze-logs')
+} else if (command === 'e2e') {
+  process.argv = ['bun', 'e2e', ...positionals.slice(1)]
+  await import('./test/e2e')
+} else if (command === 'config') {
+  const { runConfigCheck } = await import('./config/config-commands')
+  await runConfigCheck(subcommand)
 } else {
   const { executeDockerCommand } = await import('./docker/docker-commands')
   const shouldPrune = command === 'up' && subcommand === 'prune'

@@ -1,10 +1,38 @@
-import { l, err } from '../../src/utils/logging'
+import { l, err } from '~/utils/logging'
 import { detectImageName, runDockerCommand, ensureDirectory, saveImage, cleanupTempFiles, ensureDockerComposeRunning } from './docker-utils'
 import { analyzeImageLayers, analyzeFilesystem, analyzePackages, analyzeDockerfile, analyzeCombinedTar } from './docker-analysis'
 import { compareWithHistory, generateReportHeader, generateRecommendations } from './save-docker-report'
-import { checkFrontendCache, saveFrontendCache, restoreFrontendCache, clearFrontendCache } from './frontend-hash'
+import type { ShellErrorLike, BuildStrategy } from '~/types'
 
 const COMPOSE_FILE = '.github/docker-compose.yml'
+const CRITICAL_FILES = [
+  '.github/Dockerfile',
+  '.github/docker-compose.yml',
+  'package.json',
+  'bun.lock',
+  'tsconfig.json',
+  'app.config.ts'
+]
+
+const isShellError = (error: unknown): error is ShellErrorLike =>
+  typeof error === 'object' &&
+  error !== null &&
+  'exitCode' in error &&
+  'stderr' in error &&
+  'stdout' in error
+
+const formatShellError = (error: unknown): string => {
+  if (isShellError(error)) {
+    const stderr = error.stderr.toString().trim()
+    const stdout = error.stdout.toString().trim()
+    const output = stderr || stdout
+    if (output) {
+      return `\n${output}`
+    }
+    return ` exit code ${error.exitCode}`
+  }
+  return ` ${String(error)}`
+}
 
 export const runPrune = async (): Promise<void> => {
   try {
@@ -20,13 +48,160 @@ export const runPrune = async (): Promise<void> => {
     await Bun.$`docker network rm $(docker network ls -q)`.nothrow().quiet()
 
     l('Docker prune completed')
-
-    await clearFrontendCache()
-    l('Frontend build cache cleared')
   } catch (error) {
-    err(`Docker prune failed: ${error}`)
+    err(`Docker prune failed:${formatShellError(error)}`)
     process.exit(1)
   }
+}
+
+const detectBuildStrategy = async (): Promise<BuildStrategy> => {
+  try {
+    const hasCriticalChanges = await checkCriticalFileChanges()
+    if (hasCriticalChanges) {
+      l('  Critical files changed, using no-cache build')
+      return 'no-cache'
+    }
+
+    const hasSourceChanges = await checkSourceChanges()
+    if (hasSourceChanges) {
+      l('  Source files changed, using cached build')
+      return 'cache'
+    }
+
+    const hasImageIssues = await checkImageHealth()
+    if (hasImageIssues) {
+      l('  Image health issues detected, will prune')
+      return 'prune'
+    }
+
+    const hasVolumeIssues = await checkVolumeHealth()
+    if (hasVolumeIssues) {
+      l('  Volume issues detected, will prune')
+      return 'prune'
+    }
+
+    l('  No changes detected, using cached build')
+    return 'cache'
+  } catch (error) {
+    l('  Detection failed, defaulting to cached build')
+    return 'cache'
+  }
+}
+
+const checkCriticalFileChanges = async (): Promise<boolean> => {
+  try {
+    const result = await Bun.$`git diff --name-only HEAD`.text()
+    const changedFiles = result.trim().split('\n').filter(Boolean)
+    return CRITICAL_FILES.some(file => changedFiles.includes(file))
+  } catch {
+    return false
+  }
+}
+
+const checkSourceChanges = async (): Promise<boolean> => {
+  try {
+    const result = await Bun.$`git diff --name-only HEAD`.text()
+    const changedFiles = result.trim().split('\n').filter(Boolean)
+    return changedFiles.some(file => 
+      file.startsWith('src/') || 
+      file.startsWith('scripts/') ||
+      file.endsWith('.ts') ||
+      file.endsWith('.tsx')
+    )
+  } catch {
+    return false
+  }
+}
+
+const checkImageHealth = async (): Promise<boolean> => {
+  try {
+    const images = await Bun.$`docker images -f "dangling=true" -q`.text()
+    const hasDanglingImages = images.trim().length > 0
+
+    const composeImages = await Bun.$`docker compose -f ${COMPOSE_FILE} images -q`.nothrow().text()
+    const hasComposeImage = composeImages.trim().length > 0
+
+    return hasDanglingImages || !hasComposeImage
+  } catch {
+    return false
+  }
+}
+
+const checkVolumeHealth = async (): Promise<boolean> => {
+  try {
+    const volumes = await Bun.$`docker volume ls -f "dangling=true" -q`.text()
+    return volumes.trim().length > 0
+  } catch {
+    return false
+  }
+}
+
+export const runStop = async (): Promise<void> => {
+  try {
+    l('Stopping containers')
+    await Bun.$`docker compose -f ${COMPOSE_FILE} down --remove-orphans`.nothrow().quiet()
+    l('Containers stopped')
+  } catch (error) {
+    err(`Stop failed:${formatShellError(error)}`)
+    process.exit(1)
+  }
+}
+
+export const runBuild = async (noCache = false): Promise<string> => {
+  try {
+    const buildStart = performance.now()
+    if (noCache) {
+      l('Building image (no cache)')
+      await Bun.$`docker compose -f ${COMPOSE_FILE} build --no-cache`.quiet()
+    } else {
+      l('Building image')
+      await Bun.$`docker compose -f ${COMPOSE_FILE} build`.quiet()
+    }
+    const duration = ((performance.now() - buildStart) / 1000).toFixed(2)
+    l(`Build completed in ${duration}s`)
+    return duration
+  } catch (error) {
+    err(`Build failed:${formatShellError(error)}`)
+    process.exit(1)
+  }
+}
+
+export const runStart = async (): Promise<string> => {
+  try {
+    const startTime = performance.now()
+    l('Starting containers')
+    await Bun.$`docker compose -f ${COMPOSE_FILE} up -d --wait`.quiet()
+    const duration = ((performance.now() - startTime) / 1000).toFixed(2)
+    l(`Containers started in ${duration}s`)
+    return duration
+  } catch (error) {
+    err(`Start failed:${formatShellError(error)}`)
+    process.exit(1)
+  }
+}
+
+export const runHealth = async (): Promise<void> => {
+  try {
+    l('Running health check')
+    await Bun.$`docker compose -f ${COMPOSE_FILE} exec autoshow curl -f http://localhost:4321/api/health`.nothrow().quiet()
+    l('Health check passed')
+  } catch (error) {
+    err(`Health check failed:${formatShellError(error)}`)
+  }
+}
+
+export const runLogs = async (): Promise<void> => {
+  const logsProc = Bun.spawn(['docker', 'compose', '-f', COMPOSE_FILE, 'logs', '-f', '--no-log-prefix', 'autoshow'], {
+    stdout: 'inherit',
+    stderr: 'inherit'
+  })
+  await logsProc.exited
+}
+
+const strategyMessages: Record<BuildStrategy, string> = {
+  'cache': 'Using cached build',
+  'no-cache': 'Using no-cache build',
+  'prune': 'Full prune and rebuild'
 }
 
 export const runUp = async (shouldPrune: boolean): Promise<void> => {
@@ -35,49 +210,22 @@ export const runUp = async (shouldPrune: boolean): Promise<void> => {
       await runPrune()
     }
 
-    l('Starting Docker services')
+    const strategy = shouldPrune ? 'prune' : await detectBuildStrategy()
+    l(strategyMessages[strategy])
 
-    const buildStart = performance.now()
-
-    const { skipBuild: skipFrontendBuild, hash: frontendHash } = await checkFrontendCache()
-
-    if (skipFrontendBuild) {
-      l('  Using cached frontend build')
-      await restoreFrontendCache()
+    if (strategy === 'prune') {
+      await runPrune()
     }
 
-    l('  Building image...')
+    await runStop()
+    const buildTime = await runBuild(strategy === 'no-cache')
+    const startTime = await runStart()
+    await runHealth()
 
-    const buildArgs = skipFrontendBuild
-      ? ['--build-arg', 'SKIP_FRONTEND_BUILD=true']
-      : []
-
-    await Bun.$`docker compose -f ${COMPOSE_FILE} build ${buildArgs}`.quiet()
-
-    const buildDuration = ((performance.now() - buildStart) / 1000).toFixed(2)
-    l(`  Build completed in ${buildDuration}s`)
-
-    if (!skipFrontendBuild) {
-      await saveFrontendCache(frontendHash)
-    }
-
-    const upStart = performance.now()
-    l('  Starting containers...')
-    await Bun.$`docker compose -f ${COMPOSE_FILE} up -d`.quiet()
-    const upDuration = ((performance.now() - upStart) / 1000).toFixed(2)
-    l(`  Containers started in ${upDuration}s`)
-
-    const totalDuration = ((performance.now() - buildStart) / 1000).toFixed(2)
-    l(`Docker services started (total: ${totalDuration}s)`)
-
-    const logsProc = Bun.spawn(['docker', 'compose', '-f', COMPOSE_FILE, 'logs', '-f', '--no-log-prefix', 'autoshow'], {
-      stdout: 'inherit',
-      stderr: 'inherit'
-    })
-
-    await logsProc.exited
+    l(`Docker ready (build: ${buildTime}s, start: ${startTime}s)`)
+    await runLogs()
   } catch (error) {
-    err(`Up command failed: ${error}`)
+    err(`Up command failed:${formatShellError(error)}`)
     process.exit(1)
   }
 }
@@ -112,7 +260,7 @@ export const runInfo = async (): Promise<void> => {
 
     l('Docker Compose information gathered')
   } catch (error) {
-    err(`Info gathering failed: ${error}`)
+    err(`Info gathering failed:${formatShellError(error)}`)
     process.exit(1)
   }
 }
@@ -176,7 +324,7 @@ export const runAnalyze = async (providedImageName?: string): Promise<void> => {
     console.log(report)
     l(`Report saved: ${process.cwd()}/${reportFile}`)
   } catch (error) {
-    err(`Analysis failed: ${error}`)
+    err(`Analysis failed:${formatShellError(error)}`)
     process.exit(1)
   } finally {
     await cleanupTempFiles([tempSaveFile])
@@ -187,6 +335,10 @@ export const executeDockerCommand = async (command: string | undefined, position
   const commandMap: Record<string, () => Promise<void>> = {
     up: () => runUp(shouldPrune),
     prune: runPrune,
+    stop: runStop,
+    build: async () => { await runBuild(positionals.includes('--no-cache')) },
+    start: async () => { await runStart() },
+    logs: runLogs,
     info: runInfo,
     'docker-report': () => runAnalyze(positionals[1])
   }
@@ -201,7 +353,7 @@ export const executeDockerCommand = async (command: string | undefined, position
   const errorMessage = command ? `Unknown command: ${command}` : 'No command provided'
   err(errorMessage)
   console.log("Usage: bun as <command> [options]")
-  console.log("Available commands: up, up prune, prune, info, docker-report")
+  console.log("Available commands: up, up prune, prune, stop, build, start, logs, info, docker-report")
   console.log("To generate show notes, use the web application.")
   console.log("Run 'bun up' to start the development server.")
   process.exit(1)
