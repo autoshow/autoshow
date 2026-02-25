@@ -95,7 +95,7 @@ export default function ShowNote() {
     <div class={s.container}>
       <Title>Show Note - Autoshow</Title>
       <div class={s.innerContainer}>
-        <A href="/show-notes" class={s.backLink}>
+        <A href="/" class={s.backLink}>
           ← Back to dashboard
         </A>
 

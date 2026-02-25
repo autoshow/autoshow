@@ -195,7 +195,7 @@ export default function Create() {
       <div class={s.innerContainer}>
         <header class={s.header}>
           <A href="/" class={s.backLink}>
-            ← Back to home
+            ← Back to show notes
           </A>
           <h1 class={s.title}>
             AutoShow

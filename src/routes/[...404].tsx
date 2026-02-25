@@ -15,7 +15,7 @@ export default function NotFound() {
         The page you're looking for doesn't exist.
       </p>
       <A href="/" class={s.homeLink}>
-        Go Home
+        Go to Show Notes
       </A>
     </main>
   )
