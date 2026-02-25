@@ -281,21 +281,6 @@ export const OpenAIVerboseTranscriptionSchema = v.object({
 export type OpenAITranscriptionSegment = v.InferOutput<typeof OpenAITranscriptionSegmentSchema>
 export type OpenAIVerboseTranscription = v.InferOutput<typeof OpenAIVerboseTranscriptionSchema>
 
-export const LemonfoxTranscriptionSegmentSchema = v.object({
-  start: v.pipe(v.number(), v.minValue(0)),
-  end: v.pipe(v.number(), v.minValue(0)),
-  text: v.string(),
-  speaker: v.optional(v.nullable(v.string()))
-})
-
-export const LemonfoxTranscriptionResponseSchema = v.object({
-  text: v.string(),
-  segments: v.optional(v.array(LemonfoxTranscriptionSegmentSchema))
-})
-
-export type LemonfoxTranscriptionSegment = v.InferOutput<typeof LemonfoxTranscriptionSegmentSchema>
-export type LemonfoxTranscriptionResponse = v.InferOutput<typeof LemonfoxTranscriptionResponseSchema>
-
 export const RevElementSchema = v.object({
   type: v.string(),
   value: v.string(),
@@ -444,66 +429,5 @@ export type SonioxTranscriptResponse = v.InferOutput<typeof SonioxTranscriptResp
 export type SonioxFileUploadResponse = v.InferOutput<typeof SonioxFileUploadResponseSchema>
 export type SonioxTranscriptionInitResponse = v.InferOutput<typeof SonioxTranscriptionInitResponseSchema>
 export type SonioxTranscriptionStatusResponse = v.InferOutput<typeof SonioxTranscriptionStatusResponseSchema>
-
-export const DeapiCreateResponseSchema = v.object({
-  data: v.object({
-    request_id: v.pipe(v.string(), v.nonEmpty())
-  })
-})
-
-export const DeapiSegmentSchema = v.object({
-  start: v.pipe(v.number(), v.minValue(0)),
-  end: v.pipe(v.number(), v.minValue(0)),
-  text: v.string()
-})
-
-export const DeapiResultSchema = v.object({
-  text: v.string(),
-  segments: v.optional(v.array(DeapiSegmentSchema))
-})
-
-export const DeapiStatusResponseSchema = v.object({
-  data: v.object({
-    status: v.union([v.literal('pending'), v.literal('processing'), v.literal('done'), v.literal('error')]),
-    progress: v.optional(v.nullable(v.pipe(v.number(), v.minValue(0), v.maxValue(100)))),
-    result_url: v.optional(v.nullable(v.string())),
-    result: v.optional(v.nullable(DeapiResultSchema)),
-    error: v.optional(v.nullable(v.string()))
-  })
-})
-
-export type DeapiCreateResponse = v.InferOutput<typeof DeapiCreateResponseSchema>
-export type DeapiSegment = v.InferOutput<typeof DeapiSegmentSchema>
-export type DeapiResult = v.InferOutput<typeof DeapiResultSchema>
-export type DeapiStatusResponse = v.InferOutput<typeof DeapiStatusResponseSchema>
-
-export const SupadataChunkSchema = v.object({
-  text: v.string(),
-  offset: v.pipe(v.number(), v.minValue(0)),
-  duration: v.pipe(v.number(), v.minValue(0)),
-  lang: v.optional(v.string())
-})
-
-export const SupadataTranscriptResponseSchema = v.object({
-  content: v.array(SupadataChunkSchema),
-  lang: v.optional(v.string()),
-  availableLangs: v.optional(v.array(v.string()))
-})
-
-export const SupadataJobResponseSchema = v.object({
-  jobId: v.pipe(v.string(), v.nonEmpty())
-})
-
-export const SupadataJobStatusResponseSchema = v.object({
-  status: v.union([v.literal('pending'), v.literal('processing'), v.literal('completed'), v.literal('failed')]),
-  content: v.optional(v.array(SupadataChunkSchema)),
-  lang: v.optional(v.string()),
-  error: v.optional(v.string())
-})
-
-export type SupadataChunk = v.InferOutput<typeof SupadataChunkSchema>
-export type SupadataTranscriptResponse = v.InferOutput<typeof SupadataTranscriptResponseSchema>
-export type SupadataJobResponse = v.InferOutput<typeof SupadataJobResponseSchema>
-export type SupadataJobStatusResponse = v.InferOutput<typeof SupadataJobStatusResponseSchema>
 
 export type TranscriptionConfig = ServicesConfig['transcription']
