@@ -1,0 +1,38 @@
+{
+  "id": "verify-llm-openai-gpt54pro",
+  "name": "Verify: OpenAI GPT-5.4-Pro",
+  "description": "Minimal verification test for OpenAI GPT-5.4-Pro LLM",
+  "tags": [
+    "verify",
+    "llm",
+    "openai",
+    "minimal"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "openai",
+    "model": "gpt-5.4-pro",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

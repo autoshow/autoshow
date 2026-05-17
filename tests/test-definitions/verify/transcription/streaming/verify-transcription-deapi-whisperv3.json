@@ -1,0 +1,40 @@
+{
+  "id": "verify-transcription-deapi-whisperv3",
+  "name": "Verify: deAPI Transcription",
+  "description": "Minimal verification test for deAPI streaming transcription",
+  "tags": [
+    "verify",
+    "transcription",
+    "deapi",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "url",
+    "url": "https://www.youtube.com/watch?v=MORMZXEaONk",
+    "urlType": "streaming"
+  },
+  "transcription": {
+    "service": "deapi",
+    "model": "whisper-large-v3"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

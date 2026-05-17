@@ -1,0 +1,39 @@
+{
+  "id": "verify-llm-claude-haiku45",
+  "name": "Verify: Claude Haiku 4.5",
+  "description": "Minimal verification test for Claude Haiku 4.5 LLM",
+  "tags": [
+    "verify",
+    "llm",
+    "claude",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "claude",
+    "model": "claude-haiku-4-5-20251001",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

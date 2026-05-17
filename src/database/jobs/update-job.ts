@@ -1,5 +1,5 @@
 import type { SQL } from "bun"
-import { UpdateJobProgressInputSchema, validateOrThrow } from "~/types"
+import { UpdateJobProgressInputSchema,validateOrThrow } from "~/types"
 
 export const updateJobProgress = async (db: SQL, id: string, input: unknown): Promise<void> => {
   const validInput = validateOrThrow(UpdateJobProgressInputSchema, input, 'Invalid job progress update input')
@@ -25,6 +25,7 @@ export const updateJobProgress = async (db: SQL, id: string, input: unknown): Pr
       started_at = COALESCE(${startedAt}, started_at),
       updated_at = ${updatedAt}
     WHERE id = ${id}
+      AND updated_at <= ${updatedAt}
   `
 }
 
@@ -35,6 +36,7 @@ export const completeJob = async (db: SQL, id: string, showNoteId: string): Prom
     UPDATE jobs
     SET status = 'completed',
         show_note_id = ${showNoteId},
+        error = NULL,
         completed_at = ${now},
         updated_at = ${now},
         overall_progress = 100,

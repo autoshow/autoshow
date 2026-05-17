@@ -1,10 +1,12 @@
-import type { PromptType, PromptConfig } from '~/types'
+import type { PromptConfig,PromptType } from '~/types'
 
 export const EDUCATIONAL: Partial<Record<PromptType, PromptConfig>> = {
   courseCurriculum: {
     title: "Course Curriculum",
     displayTitle: "Course Curriculum",
     category: "Educational",
+    inputTokens: 200,
+    outputTokens: 1500,
     renderType: 'text',
     schema: {
       type: 'string',
@@ -55,6 +57,8 @@ Original project demonstrating course concepts with written report and presentat
     title: "Comprehension Questions",
     displayTitle: "Comprehension Questions",
     category: "Educational",
+    inputTokens: 200,
+    outputTokens: 600,
     renderType: 'numberedList',
     schema: {
       type: 'array',
@@ -87,6 +91,8 @@ Original project demonstrating course concepts with written report and presentat
     title: "Assessment Generator",
     displayTitle: "Assessment Package",
     category: "Educational",
+    inputTokens: 200,
+    outputTokens: 1000,
     renderType: 'text',
     schema: {
       type: 'string',
@@ -134,5 +140,54 @@ Using provided data, create [deliverable] following Module 4 methodology.
 
 ### Grading Scale
 A (90-100%), B (80-89%), C (70-79%), F (<70%)`
+  },
+  literatureReview: {
+    title: "Literature Review",
+    displayTitle: "Literature Review",
+    category: "Educational",
+    inputTokens: 250,
+    outputTokens: 3500,
+    renderType: 'text',
+    schema: {
+      type: 'string',
+      description: 'An academic literature review with theoretical frameworks, methodological synthesis, research gaps, future directions, and source-grounded APA-style references'
+    },
+    llmInstruction: 'Generate "literatureReview": an academic literature review with an introduction, thematic analysis, methodological synthesis, critical evaluation, research gaps, future directions, and APA-style references only for sources explicitly present in the transcript or document. Do not invent authors, years, titles, DOIs, or reference entries.',
+    markdownInstruction: `- Create an academic literature review grounded only in the transcript or document content.
+  - Structure the review with an introduction, thematic analysis, methodological synthesis, critical evaluation, research gaps, future directions, and references.
+  - Synthesize theoretical frameworks, methodological approaches, and empirical findings when they are present in the source material.
+  - Use formal academic language and source-grounded APA-style in-text citations only when the transcript or document explicitly provides enough source details.
+  - Do not invent authors, years, titles, DOIs, publication venues, or reference entries.
+  - If source metadata is incomplete, cite only the available details in prose and explain the limitation.
+  - If no explicit source metadata is present, omit the References section entries and state that source details were not available in the provided material.`,
+    markdownExample: `## Literature Review: [Research Topic]
+
+### Introduction
+Introduce the research area, scope of the review, and the source base available in the transcript or document. State any citation limitations if author, date, title, or publication details are not provided.
+
+### Theoretical Frameworks
+Synthesize named theories, models, or conceptual frameworks that are explicitly discussed in the source material. When the source gives enough metadata, use APA-style in-text citations such as ([Author], [Year]).
+
+### Thematic Analysis
+#### Theme 1: [Theme Name]
+Compare findings, arguments, and points of agreement across the sources or speakers represented in the material.
+
+#### Theme 2: [Theme Name]
+Identify contrasting perspectives, unresolved questions, and areas of convergence supported by the provided content.
+
+### Methodological Synthesis
+Summarize research designs, samples, data sources, analytical methods, and limitations only when they are explicitly described.
+
+### Critical Evaluation
+Evaluate the strength of the evidence, consistency of findings, methodological constraints, and theoretical implications.
+
+### Research Gaps
+List underexplored populations, missing methods, limited replication, contradictory findings, or unanswered conceptual questions found in the material.
+
+### Future Directions
+Recommend future research directions based on the identified gaps, including possible methods, contexts, and theoretical extensions.
+
+### References
+Include APA-style references only for sources whose author, year, title, and publication details are explicitly present in the transcript or document. If those details are absent, write: Source metadata was not available in the provided material, so formal reference entries are omitted.`
   }
 }

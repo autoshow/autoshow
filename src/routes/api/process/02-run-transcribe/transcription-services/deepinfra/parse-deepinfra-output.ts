@@ -1,11 +1,10 @@
-import { l } from '~/utils/logging'
-import { formatTimestamp } from '~/utils/audio'
-import type { TranscriptionSegment, OpenAIVerboseTranscription } from '~/types'
+import type { SourceRoutesApiProcess02RunTranscribeTranscriptionServicesDeepinfraParseDeepinfraOutputDeepInfraNativeResponse as DeepInfraNativeResponse,TranscriptionSegment } from '~/types'
+import { formatTimestamp } from '../transcription-helpers'
 
 export const parseDeepInfraOutput = (
-  response: OpenAIVerboseTranscription,
+  response: DeepInfraNativeResponse,
   offsetMinutes: number = 0
-): { text: string, segments: TranscriptionSegment[] } => {
+): { text: string, segments: TranscriptionSegment[], cost?: number } => {
   const offsetSeconds = offsetMinutes * 60
   const segments: TranscriptionSegment[] = []
 
@@ -31,13 +30,11 @@ export const parseDeepInfraOutput = (
   }
 
   const fullText = segments.map(seg => seg.text).join(' ')
+  const cost = response.inference_status?.cost
 
-  l('Parsed DeepInfra transcript', {
-    segmentCount: segments.length,
-    transcriptLength: fullText.length,
-    language: response.language,
-    duration: response.duration
-  })
-
-  return { text: fullText, segments }
+  const result: { text: string, segments: TranscriptionSegment[], cost?: number } = { text: fullText, segments }
+  if (cost != null) {
+    result.cost = cost
+  }
+  return result
 }

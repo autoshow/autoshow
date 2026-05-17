@@ -1,0 +1,95 @@
+.mediaSection {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+.sectionHeader {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--create-panel-text);
+}
+
+.sectionDescription {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.925rem;
+  line-height: 1.5;
+}
+
+.mediaSection .musicFieldset {
+  margin: 0;
+  padding: var(--space-2) 0 var(--space-3);
+}
+
+.mediaSection .musicFieldset > * + * {
+  margin-block-start: var(--space-3);
+}
+
+.mediaSection .musicGenreGrid,
+.mediaSection .musicPresetGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.mediaSection .musicPromptHelpText,
+.mediaSection .musicHelpText {
+  margin-top: var(--space-3);
+  line-height: 1.5;
+}
+
+.mediaSection .instrumentalGroup {
+  margin: 0;
+  padding: var(--space-2) 0 var(--space-3);
+}
+
+.mediaSection .advancedGroup {
+  margin: 0;
+  padding: var(--space-2) 0 var(--space-3);
+}
+
+.mediaSection .advancedGroup > * + * {
+  margin-block-start: var(--space-3);
+}
+
+.mediaSection .instrumentalLabel {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin: 0;
+  line-height: 1.45;
+}
+
+.mediaSection .instrumentalLabel input {
+  flex: 0 0 auto;
+  margin-top: 0.2em;
+}
+
+@media (max-width: 42rem) {
+  .mediaSection .musicGenreGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 32rem) {
+  .mediaSection {
+    margin-top: var(--space-5);
+  }
+
+  .mediaSection .musicFieldset,
+  .mediaSection .instrumentalGroup,
+  .mediaSection .advancedGroup {
+    padding-block: var(--space-2);
+  }
+
+  .mediaSection .musicGenreGrid,
+  .mediaSection .musicPresetGrid {
+    grid-template-columns: 1fr;
+  }
+}

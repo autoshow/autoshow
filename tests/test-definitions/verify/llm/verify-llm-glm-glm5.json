@@ -1,0 +1,39 @@
+{
+  "id": "verify-llm-glm-glm5",
+  "name": "Verify: GLM-5 LLM",
+  "description": "Minimal verification test for GLM-5 LLM",
+  "tags": [
+    "verify",
+    "llm",
+    "glm",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "glm",
+    "model": "glm-5",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

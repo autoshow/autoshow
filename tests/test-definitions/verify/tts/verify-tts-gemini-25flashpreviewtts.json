@@ -1,0 +1,42 @@
+{
+  "id": "verify-tts-gemini-25flashpreviewtts",
+  "name": "Verify: Gemini 2.5 Flash Preview TTS",
+  "description": "Minimal verification test for Gemini 2.5 Flash Preview text-to-speech",
+  "tags": [
+    "verify",
+    "tts",
+    "gemini",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": true,
+    "service": "gemini",
+    "voice": "Aoede",
+    "model": "gemini-2.5-flash-preview-tts"
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

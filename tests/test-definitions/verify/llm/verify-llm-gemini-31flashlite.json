@@ -1,0 +1,39 @@
+{
+  "id": "verify-llm-gemini-31flashlite",
+  "name": "Verify: Gemini 3.1 Flash-Lite",
+  "description": "Minimal verification test for Gemini 3.1 Flash-Lite LLM",
+  "tags": [
+    "verify",
+    "llm",
+    "gemini",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "gemini",
+    "model": "gemini-3.1-flash-lite-preview",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

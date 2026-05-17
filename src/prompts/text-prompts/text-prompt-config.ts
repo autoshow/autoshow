@@ -1,13 +1,13 @@
-import type { PromptType, PromptConfig } from '~/types'
-import { SUMMARIES_AND_OVERVIEWS } from './summaries-and-overviews'
+import type { PromptConfig,PromptType } from '~/types'
+import { BUSINESS_ANALYSIS } from './business-analysis'
 import { CHAPTERS } from './chapters'
-import { SOCIAL_MEDIA_POSTS } from './social-media-posts'
 import { CREATIVE_WRITING } from './creative-writing'
-import { MARKETING_CONTENT } from './marketing-content'
 import { EDUCATIONAL } from './educational'
 import { LEARNING_RESOURCES } from './learning-resources'
-import { BUSINESS_ANALYSIS } from './business-analysis'
+import { MARKETING_CONTENT } from './marketing-content'
 import { PERSONAL_GROWTH } from './personal-growth'
+import { SOCIAL_MEDIA_POSTS } from './social-media-posts'
+import { SUMMARIES_AND_OVERVIEWS } from './summaries-and-overviews'
 
 export const PROMPT_CONFIG = {
   ...SUMMARIES_AND_OVERVIEWS,

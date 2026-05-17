@@ -1,5 +1,13 @@
 [install]
+# Record exact versions in package.json to prevent silent upgrades across installs.
 exact = true
+# Disable runtime auto-install so missing dependencies fail explicitly instead of fetching unreviewed packages.
 auto = "disable"
+# Use isolated module resolution so each package can only access its own declared dependencies.
 linker = "isolated"
-minimumReleaseAge = 43200
+# Block packages released fewer than 3 days ago to guard against freshly published supply-chain attacks.
+minimumReleaseAge = 4320
+
+[test]
+# Playwright specs run under the Playwright runner, not Bun's unit test discovery.
+pathIgnorePatterns = ["tests/playwright/**"]

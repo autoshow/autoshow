@@ -1,29 +1,60 @@
-import { l, err } from '~/utils/logging'
-import { uploadToS3 } from '~/utils/s3-upload'
-import type { CommandResult, SupportedDocumentType, ConvertToAudioResult } from '~/types'
+import type { CommandResult,ConvertToAudioResult,SupportedDocumentType } from '~/types'
+import { uploadToS3 } from '~/utils/s3-utils'
+import { getPublicHttpUrlHeaders } from '~/utils/security/public-http'
 
 export const VIDEO_EXTENSIONS = /\.(mp4|mkv|avi|mov|webm|wmv|flv|m4v)$/i
 
 export const getDocumentType = (pathOrName: string): SupportedDocumentType | null => {
-  const ext = pathOrName.toLowerCase().split('.').pop()
+  let value = pathOrName
+  try {
+    value = new URL(pathOrName).pathname
+  } catch {
+  }
+
+  const ext = value.toLowerCase().split('.').pop()
   if (ext === 'pdf') return 'pdf'
   if (ext === 'png') return 'png'
   if (ext === 'jpg' || ext === 'jpeg') return 'jpg'
   if (ext === 'tiff' || ext === 'tif') return 'tiff'
   if (ext === 'txt') return 'txt'
   if (ext === 'docx') return 'docx'
+  if (ext === 'pptx') return 'pptx'
+  if (ext === 'xlsx') return 'xlsx'
   return null
+}
+
+const YOUTUBE_VIDEO_ID_PATTERN = /^[A-Za-z0-9_-]{11}$/
+
+const normalizeYouTubeVideoId = (value: string | null | undefined): string | null => {
+  if (!value) return null
+
+  const normalized = value.trim()
+  return YOUTUBE_VIDEO_ID_PATTERN.test(normalized) ? normalized : null
 }
 
 export const extractYouTubeId = (url: string): string | null => {
   try {
     const urlObj = new URL(url)
-    if (urlObj.hostname === 'youtu.be') {
-      return urlObj.pathname.slice(1)
+    const hostname = urlObj.hostname.toLowerCase()
+    const pathSegments = urlObj.pathname.split('/').filter(Boolean)
+
+    if (hostname === 'youtu.be' || hostname.endsWith('.youtu.be')) {
+      return normalizeYouTubeVideoId(pathSegments[0])
     }
-    if (urlObj.hostname.includes('youtube.com')) {
-      return urlObj.searchParams.get('v')
+
+    if (hostname !== 'youtube.com' && !hostname.endsWith('.youtube.com')) {
+      return null
     }
+
+    const queryVideoId = normalizeYouTubeVideoId(urlObj.searchParams.get('v'))
+    if (queryVideoId) {
+      return queryVideoId
+    }
+
+    if (pathSegments.length >= 2 && ['embed', 'shorts', 'live'].includes(pathSegments[0] || '')) {
+      return normalizeYouTubeVideoId(pathSegments[1])
+    }
+
     return null
   } catch {
     return null
@@ -32,18 +63,20 @@ export const extractYouTubeId = (url: string): string | null => {
 
 export const fetchUrlHeaders = async (url: string): Promise<{ fileSize?: number, mimeType?: string }> => {
   try {
-    const result = await executeCommand('curl', ['-sI', '-L', url])
-    
+    const headers = await getPublicHttpUrlHeaders(url)
+
     let fileSize: number | undefined
-    const sizeMatch = result.stdout.match(/content-length:\s*(\d+)/i)
-    if (sizeMatch?.[1]) {
-      fileSize = parseInt(sizeMatch[1])
+    const contentLength = headers['content-length']
+    if (contentLength) {
+      const parsedLength = parseInt(contentLength, 10)
+      if (Number.isFinite(parsedLength)) {
+        fileSize = parsedLength
+      }
     }
     
     let mimeType: string | undefined
-    const typeMatch = result.stdout.match(/content-type:\s*([^\r\n]+)/i)
-    if (typeMatch?.[1]) {
-      mimeType = typeMatch[1].trim()
+    if (headers['content-type']) {
+      mimeType = headers['content-type'].trim()
     }
     
     return {
@@ -51,7 +84,6 @@ export const fetchUrlHeaders = async (url: string): Promise<{ fileSize?: number,
       ...(mimeType !== undefined && { mimeType })
     }
   } catch (error) {
-    err('Failed to fetch URL headers', error)
     return {}
   }
 }
@@ -59,60 +91,59 @@ export const fetchUrlHeaders = async (url: string): Promise<{ fileSize?: number,
 export const getAudioFileInfo = (audioPath: string): { fileName: string, fileSize: number } => {
   const file = Bun.file(audioPath)
   const fileName = audioPath.split('/').pop() || 'audio.wav'
-  l('Final audio file', { fileName, size: `${file.size} bytes` })
   return { fileName, fileSize: file.size }
 }
 
-export const buildDualOutputArgs = (
-  inputPath: string,
-  wavPath: string,
-  mp3Path: string,
-  isVideo: boolean
-): string[] => {
-  return [
-    '-i', inputPath,
-    ...(isVideo ? ['-vn'] : []),
-    '-ar', '16000',
-    '-ac', '1',
-    '-c:a', 'pcm_s16le',
-    '-y',
-    wavPath,
-    ...(isVideo ? ['-vn'] : []),
-    '-ar', '16000',
-    '-ac', '1',
-    '-c:a', 'libmp3lame',
-    '-b:a', '32k',
-    '-af', 'lowpass=f=8000',
-    '-y',
-    mp3Path
-  ]
-}
 export const LARGE_FILE_THRESHOLD = 100 * 1024 * 1024
+const DEFAULT_COMMAND_TIMEOUT_MS = 300_000
 
-export const executeCommand = async (command: string, args: string[] = []): Promise<CommandResult> => {
+export const executeCommand = async (
+  command: string,
+  args: string[] = [],
+  timeoutMs = DEFAULT_COMMAND_TIMEOUT_MS
+): Promise<CommandResult> => {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined
+
   try {
     const proc = Bun.spawn([command, ...args], {
       stdout: 'pipe',
       stderr: 'pipe',
       env: process.env as Record<string, string | undefined>
     })
-    
-    const stdout = await new Response(proc.stdout).text()
-    const stderr = await new Response(proc.stderr).text()
-    const exitCode = await proc.exited
-    
-    if (exitCode !== 0) {
-      l(`Command ${command} exited with code ${exitCode}`)
-    }
-    
-    return {
-      stdout,
-      stderr: stderr || stdout,
-      exitCode
-    }
+
+    const commandPromise = (async (): Promise<CommandResult> => {
+      const [stdout, stderr, exitCode] = await Promise.all([
+        new Response(proc.stdout).text(),
+        new Response(proc.stderr).text(),
+        proc.exited
+      ])
+
+      if (exitCode !== 0) {
+      }
+
+      return {
+        stdout,
+        stderr: stderr || stdout,
+        exitCode
+      }
+    })()
+
+    void commandPromise.catch(() => undefined)
+
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timeoutId = setTimeout(() => {
+        proc.kill()
+        reject(new Error(`Command ${command} timed out after ${timeoutMs}ms`))
+      }, timeoutMs)
+    })
+
+    return await Promise.race([commandPromise, timeoutPromise])
   } catch (error) {
-    err(`Failed to execute command: ${command}`, error)
     throw error
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId)
+    }
   }
 }
 
@@ -188,12 +219,10 @@ export const convertSmallFile = async (
   ])
 
   if (wavResult.exitCode !== 0) {
-    err(`FFmpeg WAV conversion failed with exit code ${wavResult.exitCode}`)
     throw new Error(`Failed to convert to WAV: ${wavResult.stderr}`)
   }
 
   if (mp3Result.exitCode !== 0) {
-    err(`FFmpeg MP3 conversion failed with exit code ${mp3Result.exitCode}`)
     throw new Error(`Failed to convert to MP3: ${mp3Result.stderr}`)
   }
 
@@ -240,7 +269,6 @@ export const convertLargeFile = async (
   const result = await executeCommand('ffmpeg', args)
 
   if (result.exitCode !== 0) {
-    err(`FFmpeg conversion failed with exit code ${result.exitCode}`)
     throw new Error(`Failed to convert to audio: ${result.stderr}`)
   }
 

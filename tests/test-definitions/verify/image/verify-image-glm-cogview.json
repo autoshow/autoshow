@@ -1,0 +1,45 @@
+{
+  "id": "verify-image-glm-cogview",
+  "name": "Verify: GLM CogView 4 Image",
+  "description": "Minimal verification test for GLM CogView 4 image generation",
+  "tags": [
+    "verify",
+    "image",
+    "glm",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": true,
+    "service": "glm",
+    "model": "cogView-4-250304",
+    "prompts": [
+      "thumbnail"
+    ],
+    "aspectRatio": "1:1"
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

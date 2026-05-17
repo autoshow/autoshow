@@ -1,125 +1,171 @@
 import { json } from "@solidjs/router"
 import type { APIEvent } from "@solidjs/start/server"
 import * as v from 'valibot'
-import { l, err } from "~/utils/logging"
-import { formatDurationHuman, formatFileSize } from '~/utils/audio'
-import { VerifyUrlRequestSchema, validationErrorResponse, type UrlType, type UrlMetadata, type SupportedDocumentType } from '~/types'
-import { getDirectFileMetadata } from '~/routes/api/process/01-dl-audio/file/metadata-file'
 import { getDocumentMetadata } from '~/routes/api/process/01-dl-audio/document/metadata-document'
-import { getYouTubeMetadata, getNonYouTubeStreamingMetadata } from '~/routes/api/process/01-dl-audio/video/metadata-video'
+import { getDirectFileMetadata } from '~/routes/api/process/01-dl-audio/file/metadata-file'
+import { getNonYouTubeStreamingMetadata,getYouTubeMetadata } from '~/routes/api/process/01-dl-audio/video/metadata-video'
+import type { SourceRoutesApiDownloadVerifyUrlVerifiedUrlMetadata as VerifiedUrlMetadata } from '~/types'
+import { VerifyUrlRequestSchema,validationErrorResponse,type UrlMetadata,type UrlType } from '~/types'
+import { err,l } from "~/utils/logger/logging"
+import { detectRemoteSourceType } from '~/utils/remote-source-url'
+import { checkRateLimit,getRateLimitClientIp,getRateLimitKey } from '~/utils/security/rate-limit'
+import { validatePublicHttpUrl } from '~/utils/security/security-config'
+import { formatSourcePublishDate } from '~/utils/source-publish-date'
 
-const STREAMING_PATTERNS = [
-  /youtube\.com\/watch/i,
-  /youtu\.be\//i,
-  /vimeo\.com\//i,
-  /twitch\.tv\//i,
-  /dailymotion\.com\//i,
-  /facebook\.com\/watch/i,
-  /soundcloud\.com\//i
-]
+const formatDurationHuman = (seconds: number): string => {
+  const hours = Math.floor(seconds / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
+  const secs = Math.floor(seconds % 60)
 
-const DIRECT_FILE_EXTENSIONS = [
-  '.mp3', '.mp4', '.wav', '.m4a', '.flac', '.ogg', '.webm',
-  '.mpeg', '.mpga', '.avi', '.mov', '.mkv', '.aac', '.wma'
-]
+  if (hours > 0) {
+    return `${hours}h ${minutes}m ${secs}s`
+  }
+  if (minutes > 0) {
+    return `${minutes}m ${secs}s`
+  }
+  return `${secs}s`
+}
 
-const DOCUMENT_EXTENSIONS = ['.pdf', '.png', '.jpg', '.jpeg', '.tiff', '.tif', '.txt', '.docx']
+const formatFileSize = (bytes: number): string => {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
+  return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`
+}
+
+const INVALID_URL_ERROR = 'Invalid URL or unsupported format'
+const YOUTUBE_DURATION_ERROR = 'Could not determine YouTube video duration. Please try again.'
 
 const detectUrlType = (url: string): UrlType => {
-  try {
-    const urlObj = new URL(url)
-    
-    const isStreaming = STREAMING_PATTERNS.some(pattern => pattern.test(url))
-    if (isStreaming) {
-      const isYoutube = /youtube\.com|youtu\.be/i.test(url)
-      return isYoutube ? 'youtube' : 'streaming'
-    }
-    
-    const pathname = urlObj.pathname.toLowerCase()
-    
-    const isDocument = DOCUMENT_EXTENSIONS.some(ext => pathname.endsWith(ext))
-    if (isDocument) {
-      return 'document'
-    }
-    
-    const isDirectFile = DIRECT_FILE_EXTENSIONS.some(ext => pathname.endsWith(ext))
-    if (isDirectFile) {
-      return 'direct-file'
-    }
-    
-    return 'invalid'
-  } catch {
-    return 'invalid'
+  return detectRemoteSourceType(url)
+}
+
+const loadVerifiedUrlMetadata = async (
+  urlType: Exclude<UrlType, 'invalid'>,
+  url: string
+): Promise<VerifiedUrlMetadata> => {
+  switch (urlType) {
+    case 'direct-file':
+      return await getDirectFileMetadata(url)
+    case 'youtube':
+      return await getYouTubeMetadata(url)
+    case 'streaming':
+      return await getNonYouTubeStreamingMetadata(url)
+    case 'document':
+      return await getDocumentMetadata(url)
   }
 }
 
-const verifyUrl = async (url: string): Promise<UrlMetadata> => {
-  l('Verifying URL type and metadata', { url })
-
-  const urlType = detectUrlType(url)
-  l('Detected URL type', { urlType })
-  
-  if (urlType === 'invalid') {
-    l('Invalid URL or unsupported format', { url, urlType })
-    return {
-      urlType,
-      error: 'Invalid URL or unsupported format'
-    }
-  }
-  
-  let metadata: { duration?: number, fileSize?: number, mimeType?: string, documentType?: SupportedDocumentType } = {}
-  
-  if (urlType === 'direct-file') {
-    metadata = await getDirectFileMetadata(url)
-  } else if (urlType === 'youtube') {
-    metadata = await getYouTubeMetadata(url)
-  } else if (urlType === 'streaming') {
-    metadata = await getNonYouTubeStreamingMetadata(url)
-  } else if (urlType === 'document') {
-    metadata = await getDocumentMetadata(url)
-  }
-  
-  const result: UrlMetadata = {
-    urlType,
-    ...(metadata.duration !== undefined && { 
-      duration: metadata.duration,
-      durationFormatted: formatDurationHuman(metadata.duration)
+const buildFormattedMetadata = (
+  urlType: Exclude<UrlType, 'invalid'>,
+  metadata: VerifiedUrlMetadata
+): UrlMetadata => {
+  const sharedMetadata = {
+    ...(metadata.title !== undefined && { title: metadata.title }),
+    ...(metadata.author !== undefined && { author: metadata.author }),
+    ...(metadata.publishDate !== undefined && {
+      publishDate: metadata.publishDate,
+      publishDateFormatted: formatSourcePublishDate(metadata.publishDate)
     }),
-    ...(metadata.fileSize !== undefined && { 
+    ...(metadata.thumbnail !== undefined && { thumbnail: metadata.thumbnail }),
+    ...(metadata.channelUrl !== undefined && { channelUrl: metadata.channelUrl }),
+    ...(metadata.fileSize !== undefined && {
       fileSize: metadata.fileSize,
       fileSizeFormatted: formatFileSize(metadata.fileSize)
     }),
     ...(metadata.mimeType !== undefined && { mimeType: metadata.mimeType }),
+    ...(metadata.youtubeCaptions !== undefined && { youtubeCaptions: metadata.youtubeCaptions }),
     ...(metadata.documentType !== undefined && { documentType: metadata.documentType })
   }
-  
-  l('URL verification complete', {
-    urlType,
-    ...(result.durationFormatted && { duration: result.durationFormatted }),
-    ...(result.fileSizeFormatted && { fileSize: result.fileSizeFormatted })
-  })
-  return result
+
+  return metadata.error
+    ? {
+        urlType,
+        error: metadata.error,
+        ...sharedMetadata
+      }
+    : {
+        urlType,
+        ...(metadata.duration !== undefined && {
+          duration: metadata.duration,
+          durationFormatted: formatDurationHuman(metadata.duration)
+        }),
+        ...sharedMetadata
+      }
+}
+
+const verifyUrl = async (url: string): Promise<{ result: UrlMetadata, diagnostics?: VerifiedUrlMetadata['diagnostics'] }> => {
+  const urlType = detectUrlType(url)
+
+  if (urlType === 'invalid') {
+    return { result: { urlType, error: INVALID_URL_ERROR } }
+  }
+
+  const metadata = await loadVerifiedUrlMetadata(urlType, url)
+
+  if (urlType === 'youtube' && metadata.duration === undefined && !metadata.error) {
+    metadata.error = YOUTUBE_DURATION_ERROR
+  }
+
+  return { result: buildFormattedMetadata(urlType, metadata), diagnostics: metadata.diagnostics }
 }
 
 export async function POST({ request }: APIEvent) {
   try {
+    const t0 = performance.now()
+
+    const t1 = performance.now()
+
+    const clientIp = getRateLimitClientIp(request.headers)
+    if (clientIp) {
+      const rateLimit = await checkRateLimit(getRateLimitKey('verifyUrl', clientIp), 'verifyUrlIp')
+      if (!rateLimit.allowed) {
+        return json({ error: 'Too many verification requests. Please try again later.' }, { status: 429 })
+      }
+    }
+
+    const t2 = performance.now()
+
     const body = await request.json()
-    
+
     const bodyResult = v.safeParse(VerifyUrlRequestSchema, body)
     if (!bodyResult.success) {
       return validationErrorResponse(bodyResult.issues)
     }
-    
-    const { url } = bodyResult.output
-    
-    const metadata = await verifyUrl(url)
 
-    if (metadata.error) {
-      return json(metadata, { status: 200 })
+    const { url } = bodyResult.output
+    const urlSafety = await validatePublicHttpUrl(url)
+    if (!urlSafety.safe) {
+      return json({
+        urlType: 'invalid',
+        error: urlSafety.error,
+      }, { status: 400 })
     }
 
-    l('URL verified', { urlType: metadata.urlType })
-    return json(metadata)
+    const t3 = performance.now()
+
+    const { result: metadata, diagnostics: metadataDiagnostics } = await verifyUrl(urlSafety.url)
+
+    const t4 = performance.now()
+    l('[verify-url]', {
+      url: urlSafety.url,
+      urlType: metadata.urlType,
+      requestStart_ms: Math.round(t1 - t0),
+      rateLimit_ms: Math.round(t2 - t1),
+      urlValidation_ms: Math.round(t3 - t2),
+      metadata_ms: Math.round(t4 - t3),
+      total_ms: Math.round(t4 - t0),
+      ...( urlSafety.diagnostics ? {
+        dns: urlSafety.diagnostics
+      } : {}),
+      ...(metadataDiagnostics ? {
+        metadata: metadataDiagnostics
+      } : {}),
+    })
+
+    return metadata.error
+      ? json(metadata, { status: 200 })
+      : json(metadata)
   } catch (error) {
     err("Failed to verify URL", error)
     return json(

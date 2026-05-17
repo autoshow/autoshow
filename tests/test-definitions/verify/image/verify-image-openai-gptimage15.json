@@ -1,0 +1,44 @@
+{
+  "id": "verify-image-openai-gptimage15",
+  "name": "Verify: OpenAI GPT-Image-1.5",
+  "description": "Minimal verification test for OpenAI GPT-Image-1.5 image generation",
+  "tags": [
+    "verify",
+    "image",
+    "openai",
+    "minimal"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": true,
+    "service": "openai",
+    "model": "gpt-image-1.5",
+    "prompts": [
+      "thumbnail"
+    ],
+    "aspectRatio": "1024x1024"
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

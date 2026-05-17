@@ -1,10 +1,29 @@
-import { l, err } from '~/utils/logging'
-import type { MistralOCRModel, MistralOCRResponse, IProgressTracker, MistralOCRExtractionResult, Step2DocumentMetadata } from '~/types'
+import { getDocumentFlatRateUsd } from '~/utils/cost/cost-estimation'
+import type { IProgressTracker,SourceRoutesApiProcess02RunTranscribeDocumentServicesMistralOcrRunMistralOcrMistralApiError as MistralApiError,MistralOCRExtractionResult,MistralOCRModel,MistralOCRResponse,Step2DocumentMetadata } from '~/types'
 
 const MISTRAL_API_KEY = process.env['MISTRAL_API_KEY']
 const MISTRAL_API_BASE = 'https://api.mistral.ai/v1'
 const MISTRAL_OCR_ENDPOINT = `${MISTRAL_API_BASE}/ocr`
 const MISTRAL_FILES_ENDPOINT = `${MISTRAL_API_BASE}/files`
+const MISTRAL_OCR_MAX_ATTEMPTS = 3
+const MISTRAL_OCR_RETRYABLE_STATUSES = new Set([408, 429, 500, 502, 503, 504])
+
+const createMistralApiError = (message: string, status?: number): MistralApiError => {
+  const error = new Error(message) as MistralApiError
+  if (status !== undefined) {
+    error.status = status
+  }
+  return error
+}
+
+const isRetryableMistralError = (error: unknown): error is MistralApiError => {
+  if (!(error instanceof Error)) {
+    return false
+  }
+
+  const maybeApiError = error as MistralApiError
+  return maybeApiError.status === undefined || MISTRAL_OCR_RETRYABLE_STATUSES.has(maybeApiError.status)
+}
 
 const submitLocalDocument = async (
   documentPath: string
@@ -21,8 +40,6 @@ const submitLocalDocument = async (
   formData.append('file', new Blob([fileBuffer]), fileName)
   formData.append('purpose', 'ocr')
 
-  l('Uploading local document to Mistral Files API', { fileName })
-
   const response = await fetch(MISTRAL_FILES_ENDPOINT, {
     method: 'POST',
     headers: {
@@ -33,12 +50,10 @@ const submitLocalDocument = async (
 
   if (!response.ok) {
     const errorText = await response.text()
-    err('Mistral file upload failed', { status: response.status, error: errorText })
     throw new Error(`Mistral file upload failed: ${response.status} ${errorText}`)
   }
 
   const result = await response.json() as { id: string }
-  l('File uploaded to Mistral', { fileId: result.id })
   return result.id
 }
 
@@ -57,7 +72,6 @@ const getSignedUrl = async (fileId: string): Promise<string> => {
 
   if (!response.ok) {
     const errorText = await response.text()
-    err('Failed to get signed URL', { status: response.status, error: errorText })
     throw new Error(`Failed to get signed URL: ${response.status} ${errorText}`)
   }
 
@@ -77,9 +91,7 @@ const deleteFile = async (fileId: string): Promise<void> => {
         'Authorization': `Bearer ${MISTRAL_API_KEY}`
       }
     })
-    l('Deleted temporary file from Mistral', { fileId })
   } catch (error) {
-    err('Failed to delete temporary file', { fileId, error })
   }
 }
 
@@ -125,41 +137,46 @@ const callOCREndpoint = async (
     include_image_base64: false
   }
 
-  l('Calling Mistral OCR endpoint', { 
-    documentType: documentInput.type,
-    model 
-  })
+  for (let attempt = 1; attempt <= MISTRAL_OCR_MAX_ATTEMPTS; attempt++) {
+    if (attempt > 1) {
+      progressTracker?.updateStepProgress(2, 50, `Retrying Mistral OCR API (${attempt}/${MISTRAL_OCR_MAX_ATTEMPTS})`)
+    }
 
-  const response = await fetch(MISTRAL_OCR_ENDPOINT, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${MISTRAL_API_KEY}`,
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(requestBody)
-  })
+    try {
+      const response = await fetch(MISTRAL_OCR_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${MISTRAL_API_KEY}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      })
 
-  if (!response.ok) {
-    const errorText = await response.text()
-    err('Mistral OCR request failed', { status: response.status, error: errorText })
-    throw new Error(`Mistral OCR request failed: ${response.status} ${errorText}`)
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw createMistralApiError(`Mistral OCR request failed: ${response.status} ${errorText}`, response.status)
+      }
+
+      const result = await response.json() as MistralOCRResponse
+      return result
+    } catch (error) {
+      if (!isRetryableMistralError(error) || attempt === MISTRAL_OCR_MAX_ATTEMPTS) {
+        throw error
+      }
+
+      const retryDelayMs = attempt * 1000
+      await Bun.sleep(retryDelayMs)
+    }
   }
 
-  const result = await response.json() as MistralOCRResponse
-  return result
+  throw createMistralApiError('Mistral OCR request failed without a response')
 }
 
 const extractMarkdown = (response: MistralOCRResponse): { markdown: string; pageCount: number } => {
   const pages = response.pages || []
   const markdown = pages.map(page => page.markdown).join('\n\n---\n\n')
   const pageCount = pages.length
-
-  l('Extracted markdown from Mistral OCR', { 
-    pageCount, 
-    characterCount: markdown.length,
-    model: response.model
-  })
 
   return { markdown, pageCount }
 }
@@ -171,7 +188,6 @@ export const runMistralOCR = async (
   progressTracker?: IProgressTracker
 ): Promise<MistralOCRExtractionResult> => {
   if (!MISTRAL_API_KEY) {
-    err('MISTRAL_API_KEY not found in environment')
     progressTracker?.error(2, 'Configuration error', 'MISTRAL_API_KEY environment variable is required')
     throw new Error('MISTRAL_API_KEY environment variable is required')
   }
@@ -225,7 +241,9 @@ export const runMistralOCR = async (
       extractionModel: model,
       processingTime,
       pageCount,
-      characterCount: markdown.length
+      characterCount: markdown.length,
+      totalCost: getDocumentFlatRateUsd('mistral-ocr', model, pageCount),
+      actualCostUsd: getDocumentFlatRateUsd('mistral-ocr', model, pageCount)
     }
 
     return {

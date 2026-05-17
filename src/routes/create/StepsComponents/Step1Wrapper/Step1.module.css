@@ -1,13 +1,14 @@
 .sourceContainer {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: var(--space-6);
+  min-width: 0;
   margin-bottom: 1.75rem;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 48rem) {
   .sourceContainer {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: var(--space-5);
   }
 }

@@ -1,4 +1,4 @@
-import type { PromptType, PromptConfig } from '~/types'
+import type { PromptConfig,PromptType } from '~/types'
 
 const CHAPTER_SCHEMA = {
   type: 'object',
@@ -16,6 +16,8 @@ export const CHAPTERS: Partial<Record<PromptType, PromptConfig>> = {
     title: "Short Chapters",
     displayTitle: "Short Chapters",
     category: "Chapters",
+    inputTokens: 200,
+    outputTokens: 500,
     renderType: 'chapters',
     schema: {
       type: 'array',
@@ -36,6 +38,8 @@ Briefly introduces the episode's main themes, setting the stage for detailed dis
     title: "Medium Chapters",
     displayTitle: "Medium Chapters",
     category: "Chapters",
+    inputTokens: 200,
+    outputTokens: 1000,
     renderType: 'chapters',
     schema: {
       type: 'array',
@@ -57,6 +61,8 @@ Introduces the key themes and concepts explored in the episode, briefly outlinin
     title: "Long Chapters",
     displayTitle: "Long Chapters",
     category: "Chapters",
+    inputTokens: 200,
+    outputTokens: 2000,
     renderType: 'chapters',
     schema: {
       type: 'array',

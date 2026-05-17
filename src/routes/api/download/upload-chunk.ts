@@ -1,33 +1,44 @@
 import { json } from "@solidjs/router"
 import type { APIEvent } from "@solidjs/start/server"
 import * as v from "valibot"
-import { l, err } from "~/utils/logging"
-import { UploadChunkInputSchema, validationErrorResponse } from "~/types"
-import { executeCommand } from '~/routes/api/process/01-dl-audio/dl-utils'
+import { UploadChunkInputSchema,validationErrorResponse } from "~/types"
+import { err } from "~/utils/logger/logging"
+import { assembleUploadedChunks,ensureChunkSessionMetadata,probeUploadedFileDuration,resolveChunkUploadPaths } from './upload-chunk-helpers'
+import { writeUploadRegistryEntry } from './upload-registry'
+import { buildScopedChunkUploadId,enforceUploadRequestPolicy,ensureChunkUploadAllowed,ensureChunkUploadCapacity,sanitizeUploadSegment } from './upload-security'
 
-const joinPath = (...parts: Array<string | number>) => {
-  const segs: string[] = []
-  for (const part of parts) {
-    const s = String(part)
-    for (const seg of s.split("/")) {
-      if (seg === "") continue
-      segs.push(seg)
-    }
-  }
-  return segs.join("/")
+const writeChunkFile = async (
+  chunksDir: string,
+  chunkIndex: number,
+  chunk: File
+): Promise<void> => {
+  await Bun.write(`${chunksDir}/chunk_${chunkIndex}`, await chunk.arrayBuffer())
 }
 
-const safeSegment = (s: string) => {
-  let out = ""
-  for (let i = 0; i < s.length; i++) {
-    const ch = s[i]
-    out += ch === "/" || ch === "\0" ? "_" : ch
+const getUploadedChunks = async (chunksDir: string, totalChunks: number): Promise<number[]> => {
+  const uploadedChunks: number[] = []
+
+  for (let index = 0; index < totalChunks; index += 1) {
+    const chunkPath = `${chunksDir}/chunk_${index}`
+    if (await Bun.file(chunkPath).exists()) {
+      uploadedChunks.push(index)
+    }
   }
-  return out
+
+  return uploadedChunks
 }
 
 export async function POST({ request }: APIEvent) {
   try {
+    try {
+      await enforceUploadRequestPolicy(request.headers, 'chunk')
+    } catch (rateLimitError) {
+      return json(
+        { error: rateLimitError instanceof Error ? rateLimitError.message : 'Too many upload requests' },
+        { status: 429 }
+      )
+    }
+
     const formData = await request.formData()
     const chunk = formData.get("chunk")
 
@@ -52,69 +63,66 @@ export async function POST({ request }: APIEvent) {
     }
 
     const { chunkIndex, totalChunks } = metadataResult.output
-    const fileId = safeSegment(metadataResult.output.fileId)
-    const fileName = safeSegment(metadataResult.output.fileName)
+    const fileId = metadataResult.output.fileId
+    const originalFileName = metadataResult.output.fileName
+    const storedFileName = sanitizeUploadSegment(originalFileName, 200)
 
-    const uploadDir = "./uploads"
-    const chunksDir = joinPath(uploadDir, "chunks", fileId)
-
-    await Bun.$`mkdir -p ${chunksDir}`.quiet()
-
-    const chunkPath = joinPath(chunksDir, `chunk_${chunkIndex}`)
-    await Bun.write(chunkPath, await chunk.arrayBuffer())
-
-    const uploadedChunks: number[] = []
-    for (let i = 0; i < totalChunks; i++) {
-      const p = joinPath(chunksDir, `chunk_${i}`)
-      if (await Bun.file(p).exists()) uploadedChunks.push(i)
+    try {
+      ensureChunkUploadAllowed(chunk.size, chunkIndex, totalChunks)
+    } catch (validationError) {
+      return json(
+        { error: validationError instanceof Error ? validationError.message : 'Chunk rejected' },
+        { status: 413 }
+      )
     }
 
+    const scopedChunkUploadId = buildScopedChunkUploadId(fileId)
+    const { chunksDir } = resolveChunkUploadPaths(scopedChunkUploadId)
+
+    try {
+      await ensureChunkUploadCapacity(scopedChunkUploadId)
+    } catch (capacityError) {
+      return json(
+        { error: capacityError instanceof Error ? capacityError.message : 'Upload capacity reached' },
+        { status: 429 }
+      )
+    }
+
+    try {
+      await ensureChunkSessionMetadata(chunksDir, originalFileName, totalChunks)
+    } catch (sessionError) {
+      return json(
+        { error: sessionError instanceof Error ? sessionError.message : 'Upload session metadata mismatch' },
+        { status: 400 }
+      )
+    }
+
+    await writeChunkFile(chunksDir, chunkIndex, chunk)
+    const uploadedChunks = await getUploadedChunks(chunksDir, totalChunks)
+
     if (uploadedChunks.length === totalChunks) {
-      l(`All chunks received, assembling file: ${fileName}`)
-
-      const finalPath = joinPath(uploadDir, `${Date.now()}_${fileName}`)
-      const sink = Bun.file(finalPath).writer()
-
-      for (let i = 0; i < totalChunks; i++) {
-        const p = joinPath(chunksDir, `chunk_${i}`)
-        sink.write(await Bun.file(p).arrayBuffer())
-      }
-
-      await sink.end()
-
-      for (let i = 0; i < totalChunks; i++) {
-        const p = joinPath(chunksDir, `chunk_${i}`)
-        await Bun.file(p).delete().catch(() => {})
-      }
-
-      await Bun.$`rmdir ${chunksDir}`.quiet().nothrow()
-
-      const finalSize = (await Bun.file(finalPath).stat()).size
-      l(`File assembled successfully: ${finalPath} (${(finalSize / 1e9).toFixed(2)}GB)`)
-
-      let duration: number | undefined = undefined
       try {
-        const probeResult = await executeCommand('ffprobe', [
-          '-v', 'error',
-          '-show_entries', 'format=duration',
-          '-of', 'default=noprint_wrappers=1:nokey=1',
-          finalPath
-        ])
-        if (probeResult.exitCode === 0 && probeResult.stdout.trim()) {
-          duration = parseFloat(probeResult.stdout.trim())
-          l(`Uploaded file duration: ${duration}s`)
-        }
-      } catch (error) {
-        l(`Could not detect duration for uploaded file`)
-      }
+        const { finalPath, finalSize } = await assembleUploadedChunks(chunksDir, totalChunks, storedFileName)
+        const duration = await probeUploadedFileDuration(finalPath)
+        const uploadRef = await writeUploadRegistryEntry({
+          originalFileName,
+          storedFilePath: finalPath,
+          fileSize: finalSize,
+          ...(duration !== undefined ? { duration } : {})
+        })
 
-      return json({
-        complete: true,
-        filePath: finalPath,
-        fileName,
-        fileSize: finalSize,
-        ...(duration !== undefined && { duration })
-      })
+        return json({
+          complete: true,
+          uploadId: uploadRef.uploadId,
+          fileName: uploadRef.originalFileName,
+          fileSize: finalSize,
+          ...(duration !== undefined && { duration })
+        })
+      } catch (assemblyError) {
+        const message = assemblyError instanceof Error ? assemblyError.message : 'Failed to assemble upload'
+        const status = message === 'Upload exceeds maximum allowed size' ? 413 : 500
+        return json({ error: message }, { status })
+      }
     }
 
     return json({

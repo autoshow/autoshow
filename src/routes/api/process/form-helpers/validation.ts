@@ -1,8 +1,5 @@
 import * as v from 'valibot'
-import type { ProcessingInputValidation } from '~/types'
-
-type ValibotIssues = v.BaseIssue<unknown>[]
-type ValibotNonEmptyIssues = [v.BaseIssue<unknown>, ...v.BaseIssue<unknown>[]]
+import type { ProcessingInputValidation,ValibotIssues,ValibotNonEmptyIssues } from '~/types'
 
 const toNonEmptyIssues = (issues: ValibotIssues): ValibotNonEmptyIssues => {
   return issues as ValibotNonEmptyIssues
@@ -51,8 +48,8 @@ export const validationErrorResponse = (issues: ValibotIssues, status = 400): Re
 }
 
 export const validateProcessingInput = (input: ProcessingInputValidation): string | null => {
-  if (input.selectedPrompts.length === 0) {
-    return 'Please select at least one content type to generate'
+  if (input.llmEnabled && input.selectedPrompts.length === 0) {
+    return 'Please select at least one content type to generate when LLM text output is enabled'
   }
 
   if (input.imageGenEnabled && input.selectedImagePrompts.length === 0) {
@@ -64,15 +61,15 @@ export const validateProcessingInput = (input: ProcessingInputValidation): strin
   }
 
   const hasUrl = input.url && input.url.trim() && input.urlType
-  const hasUploadedFile = input.uploadedFilePath && input.uploadedFileName
-  const sourceCount = [hasUrl, hasUploadedFile].filter(Boolean).length
+  const hasUpload = input.uploadId
+  const sourceCount = [hasUrl, hasUpload].filter(Boolean).length
 
   if (sourceCount === 0) {
-    return 'Please provide a URL or upload a file'
+    return 'Please provide a URL or uploaded file reference'
   }
 
   if (sourceCount > 1) {
-    return 'Please provide only one source (URL or uploaded file)'
+    return 'Please provide only one source (URL or uploaded file reference)'
   }
 
   return null

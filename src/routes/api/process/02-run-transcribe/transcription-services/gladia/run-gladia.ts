@@ -1,11 +1,9 @@
-import { l, err } from '~/utils/logging'
-import { countTokens } from '~/utils/audio'
-import type { TranscriptionResult, Step2Metadata, IProgressTracker } from '~/types'
-import { uploadAudioToGladia } from './upload-audio'
+import type { IProgressTracker,Step2Metadata,TranscriptionResult } from '~/types'
+import { calculateActualCostUsd,countTokens,formatTranscriptOutput } from '../transcription-helpers'
 import { createGladiaTranscription } from './create-transcription'
-import { pollGladiaTranscription } from './poll-transcription'
 import { parseGladiaOutput } from './parse-gladia-output'
-import { formatTranscriptOutput } from '../transcription-helpers'
+import { pollGladiaTranscription } from './poll-transcription'
+import { uploadAudioToGladia } from './upload-audio'
 
 export const transcribeWithGladia = async (
   audioPath: string,
@@ -65,29 +63,21 @@ export const transcribeWithGladia = async (
       progressTracker?.completeStep(2, 'Gladia transcription complete')
     }
 
+    const actualCostUsd = calculateActualCostUsd('gladia', model, transcription.billingTimeSeconds)
+
     const metadata: Step2Metadata = {
       transcriptionService: 'gladia',
       transcriptionModel: model,
       processingTime,
-      tokenCount
-    }
-
-    l('Gladia transcription completed', {
-      processingTimeMs: processingTime,
       tokenCount,
-      transcriptLength: transcription.text.length,
-      segmentCount: transcription.segments.length,
-      outputPath,
-      segmentNumber,
-      totalSegments
-    })
+      actualCostUsd
+    }
 
     return {
       result: transcription,
       metadata
     }
   } catch (error) {
-    err('Failed to transcribe with Gladia', error)
     progressTracker?.error(2, 'Transcription failed', error instanceof Error ? error.message : 'Unknown error')
     throw error
   }

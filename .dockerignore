@@ -9,9 +9,10 @@ LICENSE
 Dockerfile*
 docker-compose*
 .dockerignore
-.env.local
-.env.example
-output
+.env
+.env.*
+data
+artifacts
 coverage
 dist
 build
@@ -19,7 +20,6 @@ build
 docs
 .github
 !.github/start.sh
-!tests
 repomix.sh
 repomix-output.txt
 .DS_Store
@@ -31,12 +31,9 @@ repomix-output.txt
 .autoshow
 docker-analysis-*.md
 .vinxi
-bun.lock
-tsconfig.json
 railway.json
 mise.local.toml
 .mise.local.toml
 mise.*.local.toml
 .mise.*.local.toml
 .mise
-build-analysis

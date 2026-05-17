@@ -15,6 +15,11 @@ jobs:
     name: Run Test Suite
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    permissions:
+      contents: read
+    env:
+      DATABASE_URL: sqlite://./data/autoshow.sqlite
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
 
     steps:
       - name: Checkout repository
@@ -23,7 +28,7 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: 1.3.14
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -31,49 +36,55 @@ jobs:
       - name: Type check
         run: bun run check
 
+      - name: Verify runner help
+        run: |
+          bun as runner
+          bun as runner --help
+
       - name: Build application
         run: bun run build
         env:
           NODE_ENV: production
 
-      - name: Run tests
+      - name: Start built server
         run: |
-          bun run .output/server/index.mjs > /tmp/autoshow-server.log 2>&1 &
-          SERVER_PID=$!
+          mkdir -p artifacts/logs
+          nohup bun run start > artifacts/logs/staging-server.log 2>&1 &
+          echo $! > staging-server.pid
+        env:
+          NODE_ENV: production
+          PORT: 4321
+          HOST: 0.0.0.0
 
-          cleanup() {
-            kill "$SERVER_PID" 2>/dev/null || true
-          }
-          trap cleanup EXIT
-
-          echo "Waiting for app server on http://localhost:4321..."
-          READY=0
-          for attempt in {1..60}; do
-            if curl -fsS http://localhost:4321/api/health >/dev/null; then
-              READY=1
-              break
+      - name: Wait for server to be ready
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4321/api/health > /dev/null; then
+              echo "Server ready"
+              exit 0
             fi
             sleep 1
           done
+          echo "Server failed to start"
+          tail -n 200 artifacts/logs/staging-server.log || true
+          exit 1
 
-          if [ "$READY" -ne 1 ]; then
-            echo "Server failed to become ready within 60 seconds."
-            echo "Last 200 lines of server logs:"
-            tail -n 200 /tmp/autoshow-server.log || true
-            exit 1
+      - name: Stop built server
+        if: always()
+        run: |
+          if [ -f staging-server.pid ]; then
+            kill "$(cat staging-server.pid)" || true
           fi
 
-          bun test:api
-        env:
-          NODE_ENV: test
-          BASE_URL: http://localhost:4321
-          PORT: 4321
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          HAPPYSCRIBE_API_KEY: ${{ secrets.HAPPYSCRIBE_API_KEY }}
-          HAPPYSCRIBE_ORG_ID: ${{ secrets.HAPPYSCRIBE_ORG_ID }}
-          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
-          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
-          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: staging-test-artifacts
+          path: |
+            artifacts/logs/
+            staging-server.pid
+          if-no-files-found: ignore
 
       - name: Test Summary
         if: always()

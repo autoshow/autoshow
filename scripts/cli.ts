@@ -1,51 +1,36 @@
-import { parseArgs } from "util"
 import { showHelp } from "./cli-help"
+import { getCliInvocation } from "./cli-argv"
+import { renderLines, writeStderr, writeStdout } from "./utils/terminal-output"
 
-const { values, positionals } = parseArgs({
-  args: Bun.argv.slice(2),
-  options: {
-    help: {
-      type: "boolean",
-      short: "h"
-    },
-    version: {
-      type: "boolean",
-      short: "v"
-    }
-  },
-  strict: false,
-  allowPositionals: true
-})
+const { command, subcommand, forwardedArgs, isTopLevelHelp, isTopLevelVersion } = getCliInvocation()
 
-if (values.version) {
-  console.log("1.0.0")
+if (isTopLevelVersion) {
+  writeStdout("1.0.0")
   process.exit(0)
 }
 
-if (values.help) {
+if (isTopLevelHelp) {
   showHelp()
 }
 
-const command = positionals[0]
-const subcommand = positionals[1]
-
 if (command === 'help') {
   showHelp()
-} else if (command === 'build-report') {
-  const { analyzeBuild } = await import('./build-report/build-report-commands')
-  await analyzeBuild()
-} else if (command === 'fetch-models') {
-  await import('./models/fetch-models')
-} else if (command === 'analyze-logs') {
-  await import('./test/analyze-logs')
-} else if (command === 'e2e') {
-  process.argv = ['bun', 'e2e', ...positionals.slice(1)]
-  await import('./test/e2e')
+} else if (command === 'docker') {
+  const { executeDockerCommand } = await import('./docker/docker-commands')
+  await executeDockerCommand(subcommand, forwardedArgs)
 } else if (command === 'config') {
   const { runConfigCheck } = await import('./config/config-commands')
   await runConfigCheck(subcommand)
+} else if (command === 'runner') {
+  const { runRunnerCommand } = await import('./test/run')
+  await runRunnerCommand(forwardedArgs)
 } else {
-  const { executeDockerCommand } = await import('./docker/docker-commands')
-  const shouldPrune = command === 'up' && subcommand === 'prune'
-  await executeDockerCommand(command, positionals, shouldPrune)
+  const errorMessage = command ? `Unknown command: ${command}` : 'No command provided'
+  writeStderr(errorMessage)
+  writeStdout(renderLines([
+    "Usage: bun as <command> [options]",
+    "Available commands: docker, runner, config",
+    "Run 'bun as help' for more information.",
+  ]))
+  process.exit(1)
 }

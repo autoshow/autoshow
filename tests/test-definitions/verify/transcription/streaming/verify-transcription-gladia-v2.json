@@ -1,0 +1,39 @@
+{
+  "id": "verify-transcription-gladia-v2",
+  "name": "Verify: Gladia Transcription",
+  "description": "Minimal verification test for Gladia v2 transcription",
+  "tags": [
+    "verify",
+    "transcription",
+    "gladia",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "gladia",
+    "model": "gladia-v2"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

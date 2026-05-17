@@ -1,0 +1,38 @@
+{
+  "id": "verify-llm-minimax-m21lightning",
+  "name": "Verify: MiniMax M2.1 Lightning",
+  "description": "Minimal verification test for MiniMax M2.1 Lightning LLM",
+  "tags": [
+    "verify",
+    "llm",
+    "minimax",
+    "minimal"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "minimax",
+    "model": "MiniMax-M2.1-lightning",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

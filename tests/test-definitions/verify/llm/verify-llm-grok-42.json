@@ -1,0 +1,39 @@
+{
+  "id": "verify-llm-grok-42",
+  "name": "Verify: Grok 4.2",
+  "description": "Minimal verification test for Grok 4.2 LLM",
+  "tags": [
+    "verify",
+    "llm",
+    "grok",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "grok",
+    "model": "grok-4.20-0309-non-reasoning",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

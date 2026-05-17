@@ -1,0 +1,45 @@
+{
+  "id": "verify-image-flux-pro",
+  "name": "Verify: Flux Pro Image",
+  "description": "Minimal verification test for Flux Pro image generation",
+  "tags": [
+    "verify",
+    "image",
+    "flux",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": true,
+    "service": "flux",
+    "model": "flux-2-pro",
+    "prompts": [
+      "thumbnail"
+    ],
+    "aspectRatio": "1:1"
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

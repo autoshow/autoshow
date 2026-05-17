@@ -1,4 +1,4 @@
-import type { ImagePromptType, ImagePromptConfig } from '~/types'
+import type { ImagePromptConfig,ImagePromptType } from '~/types'
 
 export const IMAGE_PROMPT_CONFIG: Record<ImagePromptType, ImagePromptConfig> = {
   keyMoment: {

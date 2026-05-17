@@ -1,8 +1,8 @@
 import type { APIEvent } from "@solidjs/start/server"
 import * as v from 'valibot'
-import { getDatabase, initializeSchema } from "~/database/db"
+import { getDatabase,initializeSchema } from "~/database/db"
 import { getJobById } from "~/database/jobs/get-job-query"
-import { JobIdParamSchema, validationErrorResponse } from '~/types'
+import { JobIdParamSchema,validationErrorResponse } from '~/types'
 
 export async function GET({ params }: APIEvent) {
   const idResult = v.safeParse(JobIdParamSchema, params.id)

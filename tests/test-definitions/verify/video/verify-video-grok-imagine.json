@@ -1,0 +1,46 @@
+{
+  "id": "verify-video-grok-imagine",
+  "name": "Verify: Grok Video",
+  "description": "Minimal verification test for Grok video generation",
+  "tags": [
+    "verify",
+    "video",
+    "grok",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": true,
+    "service": "grok",
+    "model": "grok-imagine-video",
+    "prompts": [
+      "social"
+    ],
+    "size": "720p",
+    "duration": 6
+  }
+}

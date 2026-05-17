@@ -1,0 +1,1 @@
+Analyze all code files in `src`, `scripts`, and `tests` and identify any dead code that can be removed, either functions, types, exported but not utilized variables, and anything else of that nature.

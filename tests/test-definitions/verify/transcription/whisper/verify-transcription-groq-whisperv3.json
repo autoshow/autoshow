@@ -1,0 +1,39 @@
+{
+  "id": "verify-transcription-groq-whisperv3",
+  "name": "Verify: Groq Whisper Large V3 Transcription",
+  "description": "Minimal verification test for Groq whisper-large-v3 transcription",
+  "tags": [
+    "verify",
+    "transcription",
+    "groq",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

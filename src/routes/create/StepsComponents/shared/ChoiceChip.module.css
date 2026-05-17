@@ -1,0 +1,22 @@
+.choiceLabel {
+  display: inline-flex;
+  max-width: 100%;
+  height: auto;
+}
+
+.choiceSurface {
+  --selectable-bg: var(--create-panel-muted);
+  --selectable-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.875rem;
+  padding: 0.5rem var(--space-4);
+  color: var(--create-panel-text);
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.35;
+  text-align: center;
+  text-wrap: balance;
+}

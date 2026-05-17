@@ -1,0 +1,63 @@
+.mediaSection {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+.sectionHeader {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--create-panel-text);
+}
+
+.sectionDescription {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.925rem;
+  line-height: 1.5;
+}
+
+.mediaSection .imageFieldset {
+  margin: 0;
+  padding: var(--space-2) 0 var(--space-3);
+}
+
+.mediaSection .imageFieldset > * + * {
+  margin-block-start: var(--space-3);
+}
+
+.mediaSection .imagePromptGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.mediaSection .imagePromptHelpText {
+  margin-top: var(--space-3);
+  line-height: 1.5;
+}
+
+@media (max-width: 42rem) {
+  .mediaSection .imagePromptGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 32rem) {
+  .mediaSection {
+    margin-top: var(--space-5);
+  }
+
+  .mediaSection .imageFieldset {
+    padding-block: var(--space-2);
+  }
+
+  .mediaSection .imagePromptGrid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,36 +1,34 @@
-import { l, err } from "~/utils/logging"
-import { formatFileSize } from '~/utils/audio'
-import { fetchUrlHeaders, getDocumentType } from '../dl-utils'
-import type { SupportedDocumentType, DocumentMetadata } from '~/types'
+import type { DocumentMetadata,SourceRoutesApiProcess01DlAudioDocumentMetadataDocumentDocumentUrlMetadata as DocumentUrlMetadata } from '~/types'
+import { PublicHttpMaxBytesExceededError } from '~/utils/security/public-http'
+import { fetchUrlHeaders,getDocumentType } from '../dl-utils'
+import { MAX_REMOTE_DOCUMENT_BYTES } from '../remote-source-limits'
 
-const MAX_DOCUMENT_SIZE = 300 * 1024 * 1024
-
-export const getDocumentMetadata = async (url: string): Promise<{ fileSize?: number, mimeType?: string, documentType?: SupportedDocumentType }> => {
+export const getDocumentMetadata = async (url: string): Promise<DocumentUrlMetadata> => {
   try {
-    l('Getting document metadata')
-    
+
     const { fileSize, mimeType } = await fetchUrlHeaders(url)
-    
+    const documentType = getDocumentType(url)
+
     if (fileSize !== undefined) {
-      l(`Document file size: ${formatFileSize(fileSize)}`)
-      if (fileSize > MAX_DOCUMENT_SIZE) {
-        err(`Document exceeds maximum size of ${formatFileSize(MAX_DOCUMENT_SIZE)}`)
+      if (fileSize > MAX_REMOTE_DOCUMENT_BYTES) {
+        return {
+          ...(fileSize !== undefined && { fileSize }),
+          ...(mimeType !== undefined && { mimeType }),
+          ...(documentType !== null && { documentType }),
+          error: new PublicHttpMaxBytesExceededError(MAX_REMOTE_DOCUMENT_BYTES, fileSize).message
+        }
       }
     }
-    
+
     if (mimeType !== undefined) {
-      l(`Document MIME type: ${mimeType}`)
     }
-    
-    const documentType = getDocumentType(url)
-    
-    return { 
+
+    return {
       ...(fileSize !== undefined && { fileSize }),
       ...(mimeType !== undefined && { mimeType }),
       ...(documentType !== null && { documentType })
     }
   } catch (error) {
-    err(`Failed to get document metadata`, error)
     return {}
   }
 }
@@ -40,15 +38,13 @@ export const extractDocumentMetadata = async (filePath: string, fileName: string
     const file = Bun.file(filePath)
     const fileSize = file.size
     const documentType = getDocumentType(filePath)
-    
+
     if (!documentType) {
       throw new Error(`Unsupported document type: ${filePath}`)
     }
-    
+
     const title = fileName.replace(/\.[^/.]+$/, '')
-    
-    l('Extracted document metadata', { title, fileSize, documentType })
-    
+
     return {
       title,
       fileSize,
@@ -56,7 +52,6 @@ export const extractDocumentMetadata = async (filePath: string, fileName: string
       documentType
     }
   } catch (error) {
-    err('Failed to extract document metadata', error)
     throw error
   }
 }

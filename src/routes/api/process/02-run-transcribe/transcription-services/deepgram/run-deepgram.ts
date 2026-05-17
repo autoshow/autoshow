@@ -1,10 +1,8 @@
 import * as v from 'valibot'
-import { l, err } from '~/utils/logging'
-import { countTokens } from '~/utils/audio'
-import type { TranscriptionResult, Step2Metadata, IProgressTracker } from '~/types'
+import type { IProgressTracker,Step2Metadata,TranscriptionResult } from '~/types'
 import { DeepgramResponseSchema } from '~/types'
+import { calculateActualCostUsd,countTokens,formatTranscriptOutput } from '../transcription-helpers'
 import { parseDeepgramOutput } from './parse-deepgram-output'
-import { formatTranscriptOutput } from '../transcription-helpers'
 
 const DEEPGRAM_API_KEY = process.env['DEEPGRAM_API_KEY']
 const DEEPGRAM_API_URL = 'https://api.deepgram.com/v1/listen'
@@ -79,10 +77,6 @@ const transcribeAudio = async (
         if (attempt < maxRetries - 1) {
           const delay = baseDelay * Math.pow(2, attempt)
           const cappedDelay = Math.min(delay, 30000)
-          l(`Deepgram rate limited or server error, retrying in ${cappedDelay}ms`, {
-            status: response.status,
-            attempt: attempt + 1
-          })
           await sleep(cappedDelay)
           continue
         }
@@ -105,10 +99,6 @@ const transcribeAudio = async (
       if (attempt < maxRetries - 1) {
         const delay = baseDelay * Math.pow(2, attempt)
         const cappedDelay = Math.min(delay, 30000)
-        l(`Deepgram request failed, retrying in ${cappedDelay}ms`, {
-          error: lastError.message,
-          attempt: attempt + 1
-        })
         await sleep(cappedDelay)
       }
     }
@@ -129,7 +119,6 @@ export const transcribeWithDeepgram = async (
 ): Promise<{ result: TranscriptionResult; metadata: Step2Metadata }> => {
   try {
     if (!DEEPGRAM_API_KEY) {
-      err('DEEPGRAM_API_KEY not found in environment')
       progressTracker?.error(2, 'Configuration error', 'DEEPGRAM_API_KEY environment variable is required')
       throw new Error('DEEPGRAM_API_KEY environment variable is required')
     }
@@ -166,29 +155,22 @@ export const transcribeWithDeepgram = async (
       progressTracker?.completeStep(2, 'Deepgram transcription complete')
     }
 
+    const audioDurationSeconds = response.metadata?.duration
+    const actualCostUsd = calculateActualCostUsd('deepgram', model, audioDurationSeconds)
+
     const metadata: Step2Metadata = {
       transcriptionService: 'deepgram',
       transcriptionModel: model,
       processingTime,
-      tokenCount
-    }
-
-    l('Deepgram transcription completed', {
-      processingTimeMs: processingTime,
       tokenCount,
-      transcriptLength: transcription.text.length,
-      segmentCount: transcription.segments.length,
-      outputPath,
-      segmentNumber,
-      totalSegments
-    })
+      actualCostUsd
+    }
 
     return {
       result: transcription,
       metadata
     }
   } catch (error) {
-    err('Failed to transcribe with Deepgram', error)
     progressTracker?.error(2, 'Transcription failed', error instanceof Error ? error.message : 'Unknown error')
     throw error
   }

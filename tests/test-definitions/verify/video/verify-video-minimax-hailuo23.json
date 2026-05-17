@@ -1,0 +1,46 @@
+{
+  "id": "verify-video-minimax-hailuo23",
+  "name": "Verify: MiniMax Hailuo 2.3 Video",
+  "description": "Minimal verification test for MiniMax Hailuo 2.3 video generation",
+  "tags": [
+    "verify",
+    "video",
+    "minimax",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": true,
+    "service": "minimax",
+    "model": "MiniMax-Hailuo-2.3",
+    "prompts": [
+      "social"
+    ],
+    "size": "768P",
+    "duration": 6
+  }
+}

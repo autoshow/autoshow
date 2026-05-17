@@ -1,0 +1,47 @@
+{
+  "id": "verify-music-deapi-acestepturbo",
+  "name": "Verify: deAPI ACE-Step Music",
+  "description": "Minimal verification test for deAPI music generation",
+  "tags": [
+    "verify",
+    "music",
+    "deapi",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": true,
+    "service": "deapi",
+    "genre": "pop",
+    "model": "AceStep_1_5_Turbo",
+    "preset": "cheap",
+    "durationSeconds": 10,
+    "instrumental": true,
+    "sampleRate": 16000,
+    "bitrate": 32000
+  },
+  "video": {
+    "enabled": false
+  }
+}

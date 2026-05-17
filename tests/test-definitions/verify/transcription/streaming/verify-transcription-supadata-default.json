@@ -1,0 +1,40 @@
+{
+  "id": "verify-transcription-supadata-default",
+  "name": "Verify: Supadata Transcription",
+  "description": "Minimal verification test for Supadata streaming transcription",
+  "tags": [
+    "verify",
+    "transcription",
+    "supadata",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "url",
+    "url": "https://www.youtube.com/watch?v=MORMZXEaONk",
+    "urlType": "streaming"
+  },
+  "transcription": {
+    "service": "supadata",
+    "model": "supadata-default"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

@@ -1,49 +1,57 @@
-import { Show, createSignal } from "solid-js"
-import type { StepsProps } from "~/types"
-import { getDefaultTranscriptionModelForService, getDefaultDocumentModel, getDefaultDocumentService, isDocumentExtension } from "~/models"
-import { err } from "~/utils/logging"
+import clsx from "clsx"
+import { Show,createSignal } from "solid-js"
+import {
+getDefaultDocumentModel,
+getDefaultDocumentService,
+getDocumentTypeFromExtension,
+isDocumentExtension,
+resolveDocumentRuntimeCapabilities
+} from "~/models"
+import type { SourceRoutesCreateStepsComponentsStep1WrapperFileProps as Props } from '~/types'
 import shared from "../shared/shared.module.css"
 import s from "./File.module.css"
+import { selectPreferredFileUploadMode,shouldFallbackToChunkedUpload,type FileUploadMode } from './file-upload-mode'
+import { SUPPORTED_FILE_ACCEPT } from './supported-file-accept'
 
 const CHUNK_SIZE = 5 * 1024 * 1024
 
-type Props = {
-  state: StepsProps['state']
-  setState: StepsProps['setState']
-  disabled: boolean | undefined
-}
-
 export default function File(props: Props) {
-  const [uploadMode, setUploadMode] = createSignal<'small' | 'chunked'>('small')
+  const [uploadMode, setUploadMode] = createSignal<FileUploadMode>('small')
 
-  const finalizeFileSource = (filePath: string, fileName: string, duration?: number) => {
+  const finalizeFileSource = (uploadId: string, fileName: string, fileSize: number, duration?: number) => {
     const isDocument = isDocumentExtension(fileName)
     if (isDocument) {
-      const defaultService = getDefaultDocumentService()
+      const documentType = getDocumentTypeFromExtension(fileName)
+      const runtimeCapabilities = resolveDocumentRuntimeCapabilities(props.documentRuntimeCapabilities)
+      const defaultService = getDefaultDocumentService(documentType ?? undefined, runtimeCapabilities)
       props.setState({
-        uploadedFilePath: filePath,
+        uploadId,
         uploadedFileName: fileName,
+        uploadedFileSize: fileSize,
         uploadedFileDuration: undefined,
+        sourceOrigin: "local-upload",
         uploadProgress: 100,
         urlValue: "",
         urlMetadata: null,
         urlVerified: false,
-        transcriptionOption: "groq",
-        transcriptionModel: getDefaultTranscriptionModelForService("groq"),
+        transcriptionOption: "",
+        transcriptionModel: "",
         documentService: defaultService,
-        documentModel: getDefaultDocumentModel(defaultService)
+        documentModel: getDefaultDocumentModel(defaultService, documentType ?? undefined, runtimeCapabilities)
       })
     } else {
       props.setState({
-        uploadedFilePath: filePath,
+        uploadId,
         uploadedFileName: fileName,
+        uploadedFileSize: fileSize,
         uploadedFileDuration: duration,
+        sourceOrigin: "local-upload",
         uploadProgress: 100,
         urlValue: "",
         urlMetadata: null,
         urlVerified: false,
-        transcriptionOption: "groq",
-        transcriptionModel: getDefaultTranscriptionModelForService("groq")
+        transcriptionOption: "",
+        transcriptionModel: ""
       })
     }
   }
@@ -73,7 +81,7 @@ export default function File(props: Props) {
       const progress = ((i + 1) / totalChunks) * 100
       props.setState("uploadProgress", progress)
       if (result.complete) {
-        finalizeFileSource(result.filePath, result.fileName, result.duration)
+        finalizeFileSource(result.uploadId, result.fileName, result.fileSize, result.duration)
         return
       }
     }
@@ -89,28 +97,122 @@ export default function File(props: Props) {
         props.setState("uploadProgress", progress)
       }
     })
-    
+
     const uploadPromise = new Promise<void>((resolve, reject) => {
-      xhr.addEventListener("load", () => {
+      const cleanup = () => {
+        xhr.removeEventListener("load", onLoad)
+        xhr.removeEventListener("error", onError)
+        xhr.removeEventListener("abort", onAbort)
+      }
+      const onLoad = () => {
+        cleanup()
         if (xhr.status === 200) {
           const result = JSON.parse(xhr.responseText)
-          finalizeFileSource(result.filePath, result.fileName, result.duration)
+          finalizeFileSource(result.uploadId, result.fileName, result.fileSize, result.duration)
           resolve()
         } else {
           reject(new Error("Upload failed"))
         }
-      })
-      xhr.addEventListener("error", () => {
+      }
+      const onError = () => {
+        cleanup()
         reject(new Error("Upload failed"))
-      })
-      xhr.addEventListener("abort", () => {
+      }
+      const onAbort = () => {
+        cleanup()
         reject(new Error("Upload aborted"))
-      })
+      }
+      xhr.addEventListener("load", onLoad)
+      xhr.addEventListener("error", onError)
+      xhr.addEventListener("abort", onAbort)
       xhr.open("POST", "/api/download/upload")
       xhr.send(formData)
     })
-    
+
     await uploadPromise
+  }
+
+  const uploadFileDirect = async (file: globalThis.File): Promise<boolean> => {
+    const contentType = file.type || "application/octet-stream"
+    const createResponse = await fetch("/api/download/upload-url", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        fileName: file.name,
+        fileSize: file.size,
+        contentType
+      })
+    })
+
+    const createResult = await createResponse.json().catch(() => ({}))
+    if (!createResponse.ok) {
+      if (shouldFallbackToChunkedUpload(createResponse.status)) {
+        return false
+      }
+      throw new Error(createResult.error || "Failed to prepare upload")
+    }
+
+    const xhr = new XMLHttpRequest()
+    xhr.upload.addEventListener("progress", (e) => {
+      if (e.lengthComputable) {
+        const progress = Math.min(95, (e.loaded / e.total) * 95)
+        props.setState("uploadProgress", progress)
+      }
+    })
+
+    await new Promise<void>((resolve, reject) => {
+      const cleanup = () => {
+        xhr.removeEventListener("load", onLoad)
+        xhr.removeEventListener("error", onError)
+        xhr.removeEventListener("abort", onAbort)
+      }
+      const onLoad = () => {
+        cleanup()
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve()
+        } else {
+          reject(new Error("Direct upload failed"))
+        }
+      }
+      const onError = () => {
+        cleanup()
+        reject(new Error("Direct upload failed"))
+      }
+      const onAbort = () => {
+        cleanup()
+        reject(new Error("Direct upload aborted"))
+      }
+      xhr.addEventListener("load", onLoad)
+      xhr.addEventListener("error", onError)
+      xhr.addEventListener("abort", onAbort)
+      xhr.open("PUT", createResult.uploadUrl)
+      xhr.setRequestHeader("content-type", contentType)
+      xhr.send(file)
+    })
+
+    props.setState("uploadProgress", 97)
+
+    const completeResponse = await fetch("/api/download/complete-upload", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        uploadSessionId: createResult.uploadSessionId,
+        objectKey: createResult.objectKey,
+        fileName: file.name,
+        fileSize: file.size
+      })
+    })
+    const completeResult = await completeResponse.json().catch(() => ({}))
+    if (!completeResponse.ok) {
+      throw new Error(completeResult.error || "Failed to complete upload")
+    }
+
+    finalizeFileSource(completeResult.uploadId, completeResult.fileName, completeResult.fileSize, completeResult.duration)
+    return true
   }
 
   const handleFileChange = async (file: globalThis.File | null): Promise<void> => {
@@ -118,28 +220,31 @@ export default function File(props: Props) {
     if (!file) return
     props.setState("isUploading", true)
     props.setState("uploadError", "")
-    props.setState("uploadedFilePath", "")
+    props.setState("uploadId", "")
     props.setState("uploadedFileName", "")
+    props.setState("uploadedFileSize", undefined)
     props.setState("uploadProgress", 0)
-    
-    if (file.size > 100 * 1024 * 1024) {
-      setUploadMode('chunked')
-    } else {
-      setUploadMode('small')
-    }
-    
+    props.setState("sourceOrigin", null)
+
+    const preferredUploadMode = selectPreferredFileUploadMode(file.size)
+    setUploadMode(preferredUploadMode)
+
     try {
-      if (file.size > 100 * 1024 * 1024) {
-        await uploadFileChunked(file)
-      } else {
+      if (preferredUploadMode === 'small') {
         await uploadFileSimple(file)
+      } else {
+        const directUploadCompleted = await uploadFileDirect(file)
+        if (!directUploadCompleted) {
+          setUploadMode('chunked')
+          props.setState("uploadProgress", 0)
+          await uploadFileChunked(file)
+        }
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to upload file"
       props.setState("uploadError", errorMessage)
       props.setState("selectedFile", null)
       props.setState("uploadProgress", 0)
-      err('File upload failed', error)
     } finally {
       props.setState("isUploading", false)
     }
@@ -162,16 +267,16 @@ export default function File(props: Props) {
   }
 
   return (
-    <div class={s.sourceColumn}>
-      <div class={s.formGroup}>
+    <div class={clsx(shared.sourcePanel, s.sourcePanelFile)}>
+      <div>
         <label for="fileUpload" class={shared.label}>
-          Upload File (Audio, Video, or Document)
+          Upload File (Audio, Video, Document, or Image)
         </label>
         <div class={s.fileUploadContainer}>
-          <input 
+          <input
             id="fileUpload"
             type="file"
-            accept="audio/*,video/*,.mp3,.wav,.m4a,.mp4,.mov,.avi,.mkv,.flac,.ogg,.pdf,.png,.jpg,.jpeg,.tiff,.tif,.txt,.docx,application/pdf,image/png,image/jpeg,image/tiff,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            accept={SUPPORTED_FILE_ACCEPT}
             onChange={onFileInputChange}
             disabled={props.disabled}
             class={s.fileInput}
@@ -182,8 +287,8 @@ export default function File(props: Props) {
               <span class={s.fileSize}>
                 {formatBytes(props.state.selectedFile?.size || 0)}
               </span>
-              <Show when={uploadMode() === 'chunked'}>
-                <span class={s.uploadMode}>Chunked upload</span>
+              <Show when={uploadMode() !== 'small'}>
+                <span class={s.uploadMode}>{uploadMode() === 'direct' ? 'Direct upload' : 'Chunked upload'}</span>
               </Show>
             </div>
             <Show when={props.state.uploadProgress > 0 && props.state.uploadProgress < 100}>
@@ -194,9 +299,12 @@ export default function File(props: Props) {
             </Show>
           </Show>
         </div>
-        <p class={shared.helpText}>
-          Supports audio, video, PDF, DOCX, and PPTX. Files over 100MB use chunked upload.
-        </p>
+        <ul class={s.exampleList}>
+          <li><span class={s.exampleName}>podcast-episode.mp3</span><span class={s.exampleDesc}>MP3, WAV, M4A, FLAC, OGG, AAC, WMA, MPEG/MPGA</span></li>
+          <li><span class={s.exampleName}>meeting-recording.mp4</span><span class={s.exampleDesc}>MP4, MOV, AVI, MKV, WEBM, WMV, FLV, M4V</span></li>
+          <li><span class={s.exampleName}>research-paper.pdf</span><span class={s.exampleDesc}>PDF, DOCX, PPTX, XLSX, TXT document</span></li>
+          <li><span class={s.exampleName}>screenshot.png</span><span class={s.exampleDesc}>PNG, JPG/JPEG, TIFF/TIF image</span></li>
+        </ul>
       </div>
     </div>
   )

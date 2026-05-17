@@ -1,10 +1,12 @@
-import type { PromptType, PromptConfig } from '~/types'
+import type { PromptConfig,PromptType } from '~/types'
 
 export const SOCIAL_MEDIA_POSTS: Partial<Record<PromptType, PromptConfig>> = {
   facebook: {
     title: "Facebook Post",
     displayTitle: "Facebook Social Post",
     category: "Social Media Posts",
+    inputTokens: 200,
+    outputTokens: 300,
     renderType: 'text',
     schema: {
       type: 'string',
@@ -21,6 +23,8 @@ Have you ever wondered how web applications have transformed over the last decad
     title: "Instagram Post",
     displayTitle: "Instagram Social Post",
     category: "Social Media Posts",
+    inputTokens: 200,
+    outputTokens: 250,
     renderType: 'text',
     schema: {
       type: 'string',
@@ -46,6 +50,8 @@ What caught my attention most? The shift toward full-stack thinking and how deve
     title: "LinkedIn Post",
     displayTitle: "LinkedIn Social Post",
     category: "Social Media Posts",
+    inputTokens: 200,
+    outputTokens: 400,
     renderType: 'text',
     schema: {
       type: 'string',
@@ -62,6 +68,8 @@ Today's web developers need to master a blend of skills, from client-side framew
     title: "TikTok Post",
     displayTitle: "TikTok Social Post",
     category: "Social Media Posts",
+    inputTokens: 200,
+    outputTokens: 200,
     renderType: 'text',
     schema: {
       type: 'string',
@@ -85,6 +93,8 @@ Which trend surprised you most? Tell me in the comments! 👇
     title: "X Post",
     displayTitle: "X Social Post",
     category: "Social Media Posts",
+    inputTokens: 200,
+    outputTokens: 150,
     renderType: 'text',
     schema: {
       type: 'string',

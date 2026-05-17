@@ -1,10 +1,8 @@
-import { l, err } from '~/utils/logging'
-import { countTokens } from '~/utils/audio'
-import type { TranscriptionResult, Step2Metadata, VideoMetadata, ProcessingOptions, IProgressTracker } from '~/types'
+import type { IProgressTracker,ProcessingOptions,Step2Metadata,TranscriptionResult,VideoMetadata } from '~/types'
+import { calculateActualCostUsd,countTokens,formatTranscriptOutput } from '../transcription-helpers'
 import { createGladiaTranscription } from './create-transcription'
-import { pollGladiaTranscription } from './poll-transcription'
 import { parseGladiaOutput } from './parse-gladia-output'
-import { formatTranscriptOutput } from '../transcription-helpers'
+import { pollGladiaTranscription } from './poll-transcription'
 
 export const transcribeStreamingWithGladia = async (
   url: string,
@@ -44,28 +42,21 @@ export const transcribeStreamingWithGladia = async (
 
     progressTracker.completeStep(2, 'Gladia transcription complete')
 
+    const actualCostUsd = calculateActualCostUsd('gladia', model, transcription.billingTimeSeconds)
+
     const step2Metadata: Step2Metadata = {
       transcriptionService: 'gladia',
       transcriptionModel: model,
       processingTime,
-      tokenCount
-    }
-
-    l('Gladia streaming transcription completed', {
-      processingTimeMs: processingTime,
       tokenCount,
-      transcriptLength: transcription.text.length,
-      segmentCount: transcription.segments.length,
-      outputPath,
-      sourceUrl: url
-    })
+      actualCostUsd
+    }
 
     return {
       result: transcription,
       metadata: step2Metadata
     }
   } catch (error) {
-    err('Failed to transcribe streaming URL with Gladia', error)
     progressTracker.error(2, 'Transcription failed', error instanceof Error ? error.message : 'Unknown error')
     throw error
   }

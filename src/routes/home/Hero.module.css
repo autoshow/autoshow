@@ -1,0 +1,109 @@
+.hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: calc(var(--space-8) + var(--nav-height)) var(--space-5) var(--space-7);
+  text-align: center;
+  background: var(--bg-primary);
+  overflow: hidden;
+}
+
+.hero::before,
+.hero::after {
+  content: "";
+  position: absolute;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  background: rgba(23, 33, 44, 0.7);
+  box-shadow: var(--shadow-sm);
+}
+
+.hero::before {
+  top: 18%;
+  left: 6%;
+  width: 12rem;
+  height: 12rem;
+  transform: rotate(-8deg);
+}
+
+.hero::after {
+  right: 6%;
+  bottom: 12%;
+  width: 10rem;
+  height: 10rem;
+  transform: rotate(10deg);
+}
+
+.content {
+  position: relative;
+  z-index: var(--z-base);
+  width: min(100%, 56rem);
+  --surface-shadow: var(--shadow-sm);
+}
+
+.title {
+  margin-bottom: var(--space-4);
+  font-size: clamp(2.8rem, 8vw, 4.75rem);
+  font-weight: 800;
+  line-height: 1.05;
+  color: var(--text-primary);
+}
+
+.subtitle {
+  max-width: 42rem;
+  margin: 0 auto var(--space-6);
+  font-size: clamp(1.05rem, 2.6vw, 1.3rem);
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+.ctaText {
+  position: relative;
+}
+
+.agentLinks {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+.agentLabel {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.agentLink {
+  color: var(--accent-blue);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.agentLink:hover {
+  color: var(--accent-blue-light);
+}
+
+@media (max-width: 48rem) {
+  .hero {
+    padding: calc(var(--space-7) + var(--nav-height)) var(--space-4) var(--space-6);
+  }
+
+  .hero::before,
+  .hero::after {
+    display: none;
+  }
+}
+
+@media (max-width: 30rem) {
+  .hero {
+    padding: calc(var(--space-6) + var(--nav-height)) var(--space-4) var(--space-5);
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "id": "llm-openai-gpt54nano",
+  "name": "LLM: openai gpt-5.4-nano",
+  "description": "Test openai LLM service with gpt-5.4-nano model",
+  "tags": [
+    "audio",
+    "llm",
+    "openai"
+  ],
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "openai",
+    "model": "gpt-5.4-nano",
+    "prompts": [
+      "shortSummary",
+      "mediumSummary",
+      "longSummary",
+      "bulletPoints",
+      "takeaways",
+      "faq",
+      "quotes",
+      "titles",
+      "shortChapters",
+      "mediumChapters",
+      "longChapters",
+      "facebook",
+      "instagram",
+      "linkedin",
+      "tiktok",
+      "x",
+      "poetryCollection",
+      "screenplay",
+      "shortStory",
+      "contentStrategy",
+      "emailNewsletter",
+      "seoArticle",
+      "pressRelease",
+      "courseCurriculum",
+      "questions",
+      "assessmentGenerator",
+      "flashcards",
+      "howToGuide",
+      "studyGuide",
+      "trainingManual",
+      "troubleshootingGuide",
+      "competitiveAnalysis",
+      "trendAnalysis",
+      "meetingActions",
+      "voiceReflection",
+      "goalSetting",
+      "careerPlan",
+      "progressAnalysis"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  },
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  }
+}

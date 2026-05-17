@@ -1,0 +1,42 @@
+{
+  "id": "verify-tts-runway-elevenmultilingualv2",
+  "name": "Verify: Runway TTS",
+  "description": "Minimal verification test for Runway text-to-speech",
+  "tags": [
+    "verify",
+    "tts",
+    "runway",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": true,
+    "service": "runway",
+    "voice": "Leslie",
+    "model": "eleven_multilingual_v2"
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

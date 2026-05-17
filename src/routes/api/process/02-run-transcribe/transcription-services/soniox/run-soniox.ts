@@ -1,13 +1,50 @@
-import { l, err } from '~/utils/logging'
-import { countTokens } from '~/utils/audio'
-import type { TranscriptionResult, Step2Metadata, IProgressTracker } from '~/types'
-import { uploadAudioToSoniox } from './upload-audio'
+import type { IProgressTracker,Step2Metadata,TranscriptionResult } from '~/types'
+import { calculateActualCostUsd,countTokens,formatTranscriptOutput } from '../transcription-helpers'
 import { createSonioxTranscription } from './create-transcription'
-import { pollSonioxTranscription } from './poll-transcription'
 import { getSonioxTranscript } from './get-transcript'
 import { parseSonioxOutput } from './parse-soniox-output'
-import { cleanupSonioxResources } from './cleanup'
-import { formatTranscriptOutput } from '../transcription-helpers'
+import { pollSonioxTranscription } from './poll-transcription'
+import { uploadAudioToSoniox } from './upload-audio'
+
+const SONIOX_API_BASE = 'https://api.soniox.com/v1'
+
+const cleanupSonioxResources = async (
+  apiKey: string,
+  transcriptionId?: string,
+  fileId?: string
+): Promise<void> => {
+  if (transcriptionId) {
+    try {
+      const response = await fetch(`${SONIOX_API_BASE}/transcriptions/${transcriptionId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`
+        }
+      })
+
+      if (response.ok) {
+      } else {
+      }
+    } catch (error) {
+    }
+  }
+
+  if (fileId) {
+    try {
+      const response = await fetch(`${SONIOX_API_BASE}/files/${fileId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`
+        }
+      })
+
+      if (response.ok) {
+      } else {
+      }
+    } catch (error) {
+    }
+  }
+}
 
 const SONIOX_API_KEY = process.env['SONIOX_API_KEY']
 
@@ -26,7 +63,6 @@ export const transcribeWithSoniox = async (
 
   try {
     if (!SONIOX_API_KEY) {
-      err('SONIOX_API_KEY not found in environment')
       progressTracker?.error(2, 'Configuration error', 'SONIOX_API_KEY environment variable is required')
       throw new Error('SONIOX_API_KEY environment variable is required')
     }
@@ -53,7 +89,7 @@ export const transcribeWithSoniox = async (
 
     progressTracker?.updateStepProgress(2, baseProgress + 20, 'Waiting for Soniox transcription')
 
-    await pollSonioxTranscription(
+    const pollResult = await pollSonioxTranscription(
       transcriptionId,
       SONIOX_API_KEY,
       progressTracker,
@@ -80,30 +116,24 @@ export const transcribeWithSoniox = async (
       progressTracker?.completeStep(2, 'Soniox transcription complete')
     }
 
+    const audioDurationSeconds = pollResult.audio_duration_ms != null
+      ? pollResult.audio_duration_ms / 1000
+      : undefined
+    const actualCostUsd = calculateActualCostUsd('soniox', model, audioDurationSeconds)
+
     const metadata: Step2Metadata = {
       transcriptionService: 'soniox',
       transcriptionModel: model,
       processingTime,
-      tokenCount
-    }
-
-    l('Soniox transcription completed', {
-      processingTimeMs: processingTime,
       tokenCount,
-      transcriptLength: transcription.text.length,
-      segmentCount: transcription.segments.length,
-      outputPath,
-      segmentNumber,
-      totalSegments,
-      transcriptionId
-    })
+      actualCostUsd
+    }
 
     return {
       result: transcription,
       metadata
     }
   } catch (error) {
-    err('Failed to transcribe with Soniox', error)
     progressTracker?.error(2, 'Transcription failed', error instanceof Error ? error.message : 'Unknown error')
     throw error
   } finally {

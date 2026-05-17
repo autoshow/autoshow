@@ -1,0 +1,42 @@
+{
+  "id": "verify-tts-deepgram-aura2thaliaen",
+  "name": "Verify: Deepgram Aura 2 Thalia",
+  "description": "Minimal verification test for Deepgram Aura 2 Thalia text-to-speech",
+  "tags": [
+    "verify",
+    "tts",
+    "deepgram",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": true,
+    "service": "deepgram",
+    "voice": "aura-2-thalia-en",
+    "model": "aura-2-thalia-en"
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

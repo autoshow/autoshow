@@ -1,0 +1,47 @@
+.cardGrid {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.cols2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.cols3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.cols4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.card {
+  height: 100%;
+}
+
+.cardTitle {
+  margin-bottom: var(--space-3);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.cardDescription {
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 64rem) {
+  .cols4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 48rem) {
+  .cols2,
+  .cols3,
+  .cols4 {
+    grid-template-columns: 1fr;
+  }
+}

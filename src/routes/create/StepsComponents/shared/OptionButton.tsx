@@ -1,12 +1,7 @@
-import type { JSXElement } from "solid-js"
+import clsx from "clsx"
 import { Show } from "solid-js"
-import s from "./OptionButton.module.css"
-
-type TogglePromptOptions = {
-  current: () => string[]
-  setter: (prompts: string[]) => void
-  maxItems?: number | undefined
-}
+import type { SourceRoutesCreateStepsComponentsSharedOptionButtonProps as Props,SourceRoutesCreateStepsComponentsSharedOptionButtonTogglePromptOptions as TogglePromptOptions } from '~/types'
+import shared from "./shared.module.css"
 
 export function togglePrompt(prompt: string, options: TogglePromptOptions): void {
   const { current, setter, maxItems } = options
@@ -20,52 +15,45 @@ export function togglePrompt(prompt: string, options: TogglePromptOptions): void
   }
 }
 
-type Props = {
-  title: string
-  description?: string | undefined
-  selected: boolean
-  disabled?: boolean | undefined
-  onClick: () => void
-  variant?: 'fancy' | 'simple' | undefined
-  service?: string | undefined
-  speed?: string | undefined
-  quality?: string | undefined
-  children?: JSXElement | undefined
-}
-
-export default function OptionButton(props: Props): JSXElement {
-  const isFancy = () => props.variant !== 'simple'
-
-  const buttonClass = () => {
-    if (isFancy()) {
-      return props.selected ? s.optionButtonSelected : s.optionButton
-    }
-    return props.selected ? s.optionButtonSimpleSelected : s.optionButtonSimple
-  }
-
-  const titleClass = () => isFancy() ? s.optionTitle : s.optionTitleSimple
+export default function OptionButton(props: Props) {
+  const isFancy = () => props.variant !== "simple"
+  const inputType = () => props.inputType ?? "radio"
 
   return (
-    <button
-      type="button"
-      class={buttonClass()}
-      onClick={props.onClick}
-      disabled={props.disabled}
-    >
-      <Show when={props.service}>
-        <div class={s.optionService}>{props.service}</div>
-      </Show>
-      <div class={titleClass()}>{props.title}</div>
-      <Show when={props.description}>
-        <div class={s.optionDescription}>{props.description}</div>
-      </Show>
-      <Show when={props.speed && props.quality}>
-        <div class={s.optionMeta}>
-          <span class={s.optionSpeed}>Speed: {props.speed}</span>
-          <span class={s.optionQuality}>Quality: {props.quality}</span>
-        </div>
-      </Show>
-      {props.children}
-    </button>
+    <label class={clsx(shared.selectableLabel, props.disabled && shared.selectableLabelDisabled)}>
+      <input
+        type={inputType()}
+        name={props.name}
+        value={props.value}
+        checked={props.selected}
+        onChange={() => props.onClick()}
+        disabled={props.disabled}
+        class={shared.hiddenControl}
+      />
+      <span
+        class={clsx(
+          shared.selectableSurface,
+          shared.selectableContent,
+          isFancy() ? shared.selectableContentFancy : shared.selectableContentSimple,
+          props.selected && shared.selectableSurfaceSelected,
+        )}
+      >
+        <Show when={props.service}>
+          <span class={shared.selectableKickerRow}>
+            <span class={shared.selectableKicker}>{props.service}</span>
+            <Show when={props.costLabel}>
+              <span class={shared.selectableCostLabel}>{props.costLabel}</span>
+            </Show>
+          </span>
+        </Show>
+        <span class={isFancy() ? shared.selectableTitle : shared.selectableTitleCompact}>
+          {props.title}
+        </span>
+        <Show when={props.description}>
+          <span class={shared.selectableDescription}>{props.description}</span>
+        </Show>
+        {props.children}
+      </span>
+    </label>
   )
 }

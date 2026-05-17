@@ -1,0 +1,46 @@
+{
+  "id": "verify-video-glm-cogvideox",
+  "name": "Verify: GLM CogVideoX-3 Video",
+  "description": "Minimal verification test for GLM CogVideoX-3 video generation",
+  "tags": [
+    "verify",
+    "video",
+    "glm",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": true,
+    "service": "glm",
+    "model": "cogvideox-3",
+    "prompts": [
+      "social"
+    ],
+    "size": "1280x720",
+    "duration": 5
+  }
+}

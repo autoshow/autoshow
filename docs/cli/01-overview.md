@@ -1,64 +1,34 @@
 # CLI Overview
 
-Helper commands for managing the application, Docker containers, and build analysis.
-
-## Outline
-
-- [Main CLI Command](#main-cli-command)
-- [Available Commands](#available-commands)
-- [Help](#help)
-- [Quick Start](#quick-start)
-- [Repository Context](#repository-context)
-
-## Main CLI Command
+AutoShow exposes a helper CLI through the `as` package script:
 
 ```bash
-bun as [command]
+bun as <command> [options]
 ```
 
-## Available Commands
+Top-level commands are implemented in `scripts/cli.ts`. Each command now has its own doc file, with `runner` documented under the testing docs:
 
-- `help` - Display help information
-- `config` - Display environment configuration
-- `stop` - Stop Docker Compose services
-- `build` - Build Docker image
-- `start` - Start Docker containers
-- `logs` - Follow Docker container logs
-- `prune` - Remove all Docker containers, images, volumes, and networks
-- `info` - Show comprehensive Docker Compose information
-- `docker-report` - Analyze Docker image size and composition
-- `build-report` - Analyze SolidStart build for optimization
-- `e2e` - Run end-to-end tests in isolated container
-- `fetch-models` - Update model definitions from provider APIs
+| Command | Docs | Purpose |
+|---------|------|---------|
+| `docker` | [Docker](./03-docker.md) | Compose lifecycle and image analysis |
+| `runner` | [Runner](../tests/03-unit-api-security.md) | E2E and browser test runner docs |
+| `config` | [Configuration Checks](./02-config.md) | Interactive Resend and Google Drive validation |
+| `help` | [Help and Version](./07-help.md) | CLI help output and version flags |
 
-## Help
+## General Usage
 
 ```bash
 bun as help
 bun as --help
-bun as -h
+bun as --version
 ```
 
-## Quick Start
+Use [Runner](../tests/03-unit-api-security.md), [Playwright Browser Tests](../tests/01-playwright.md), and [E2E Suites](../tests/02-e2e.md) for `bun as runner ...` examples and suite details.
+
+## Common Examples
 
 ```bash
-bun dev
+bun as docker up
+bun as config
+bun as help
 ```
-
-Visit http://localhost:4321
-
-For a containerized run:
-
-```bash
-bun up
-```
-
-## Repository Context
-
-Generate repository context file with Repomix:
-
-```bash
-bun repo
-```
-
-Modify `INCLUDE_PATHS` and `IGNORE_PATHS` in `.github/repomix.sh` to customize output.

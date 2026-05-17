@@ -1,31 +1,53 @@
-# Music Generation Models (Step 7)
+# Music Generation Models (Step 4: Image, Video, and Music)
 
-AI music generation services for creating background music and audio content.
+Music generation is currently configured for three providers.
 
 ## Outline
 
-- [Cost Rankings](#cost-rankings-per-minute)
-- [Performance Rankings](#performance-rankings)
+- [Current Registry](#current-registry)
+- [Music Option Values](#music-option-values)
+- [Selection Example](#selection-example)
 - [Notes](#notes)
+- [Security Context](#security-context)
 
----
+## Current Registry
 
-## Cost Rankings (per minute)
+| Service | Model ID | Speed | Quality | Cost/Min | Supported Genres | Env Variable |
+|---------|----------|-------|---------|----------|------------------|--------------|
+| `elevenlabs` | `music_v1` | A | A | `$0.80` | `pop`, `rock`, `rap`, `country`, `folk`, `jazz` | `ELEVENLABS_API_KEY` |
+| `minimax` | `music-2.5` | C | A | `$0.50` | `pop`, `rock`, `rap`, `country`, `electronic`, `jazz` | `MINIMAX_API_KEY` |
+| `deapi` | `AceStep_1_5_Turbo` | B | B | `$0.10` | `pop`, `rock`, `rap`, `country`, `electronic`, `jazz` | `DEAPI_API_KEY` |
 
-| Rank | Provider   | Model     | Time    | Speed | $/Min | $/Sec | Cents/Min | Centicents/Min | Env Variable         |
-|------|------------|-----------|---------|-------|-------|-------|-----------|----------------|----------------------|
-| 1    | ElevenLabs | music_v1  | 61.83s  | B     | $0.80 | $0.01 | 80¢       | 8000           | `ELEVENLABS_API_KEY` |
-| 2    | MiniMax    | music-2.5 | 187.64s | C     | TBD   | TBD   | TBD       | TBD            | `MINIMAX_API_KEY`    |
+## Music Option Values
 
-## Performance Rankings
+| Field | Allowed Values |
+|------|----------------|
+| `musicPreset` | `cheap`, `balanced`, `quality` |
+| `musicDurationSeconds` | integer from `3` to `300` |
+| `musicInstrumental` | `true` or `false` |
+| `musicSampleRate` | `16000`, `24000`, `32000`, `44100` |
+| `musicBitrate` | `32000`, `64000`, `128000`, `256000` |
 
-| Rank | Provider   | Style   | Time    | Speed | Quality | Features                  |
-|------|------------|---------|---------|-------|---------|---------------------------|
-| 1    | ElevenLabs | default | 61.83s  | B     | A       | Production-ready          |
-| 2    | MiniMax    | default | 187.64s | C     | A       | Structured lyrics support |
+## Selection Example
+
+```bash
+-F "musicGenEnabled=true" \
+-F "musicService=deapi" \
+-F "musicModel=AceStep_1_5_Turbo" \
+-F "selectedMusicGenre=pop" \
+-F "musicPreset=cheap" \
+-F "musicDurationSeconds=60" \
+-F "musicInstrumental=false"
+```
 
 ## Notes
 
-- **Use async workflows** for all music generation
-- **ElevenLabs:** $0.80/min based on plan rate, 61.83s generation time
-- **MiniMax:** Slower at 187.64s but supports structured lyrics with verse/chorus/bridge tags
+- Default music service: `elevenlabs`
+- Default music model: `music_v1`
+- When `musicInstrumental=false`, AutoShow uses the selected Step 3 LLM for lyric generation when available; otherwise it falls back to `openai` + `gpt-5.4`.
+- The process form flag is `musicGenEnabled`.
+
+## Security Context
+
+- Music generation runs through processing jobs at [`POST /api/process`](../api/process.md).
+- Output audio is served through global media APIs.

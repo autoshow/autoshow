@@ -1,0 +1,46 @@
+{
+  "id": "verify-video-runway-gen45",
+  "name": "Verify: Runway Gen4.5 Video",
+  "description": "Minimal verification test for Runway Gen4.5 video generation",
+  "tags": [
+    "verify",
+    "video",
+    "runway",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": true,
+    "service": "runway",
+    "model": "gen4.5",
+    "prompts": [
+      "social"
+    ],
+    "size": "1280x720",
+    "duration": 4
+  }
+}

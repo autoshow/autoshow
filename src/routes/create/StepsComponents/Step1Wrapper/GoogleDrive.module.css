@@ -1,0 +1,109 @@
+.sourcePanelDrive {
+  min-width: 0;
+  border: 1px solid var(--create-accent-primary);
+}
+
+.driveActions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.driveHelpText {
+  margin-top: 0;
+  margin-bottom: var(--space-2);
+}
+
+.driveButton {
+  min-height: 2.875rem;
+  width: fit-content;
+  max-width: 100%;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--create-accent-primary);
+  border-radius: var(--radius-lg);
+  background: var(--create-accent-primary);
+  color: var(--bg-primary);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.driveButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.driveInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-width: 0;
+  padding: var(--space-4);
+  background: var(--create-panel-muted);
+  border: 1px solid var(--create-panel-border);
+  border-radius: var(--radius-lg);
+}
+
+.driveFileName {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.driveFileSize {
+  margin-left: var(--space-4);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.progressContainer {
+  position: relative;
+  width: 100%;
+  height: var(--space-5);
+  margin-top: var(--space-3);
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: var(--create-panel-muted);
+}
+
+.progressBar {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--accent-blue);
+}
+
+.progressText {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  color: var(--text-primary);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  transform: translate(-50%, -50%);
+}
+
+.configMessage {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 32rem) {
+  .driveButton {
+    width: 100%;
+  }
+
+  .driveInfo {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .driveFileSize {
+    margin-left: 0;
+  }
+}

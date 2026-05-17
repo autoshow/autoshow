@@ -1,5 +1,5 @@
 import type { SQL } from "bun"
-import { JobSchema, validateOrThrow, type Job } from "~/types"
+import { JobSchema,validateOrThrow,type Job } from "~/types"
 
 export const getJobById = async (db: SQL, id: string): Promise<Job | null> => {
   const rows = await db`SELECT * FROM jobs WHERE id = ${id}`

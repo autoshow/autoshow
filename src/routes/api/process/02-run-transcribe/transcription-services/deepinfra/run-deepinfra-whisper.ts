@@ -1,11 +1,30 @@
-import OpenAI from 'openai'
-import { l, err } from '~/utils/logging'
-import { countTokens } from '~/utils/audio'
-import type { TranscriptionResult, Step2Metadata, IProgressTracker } from '~/types'
+import type { SourceRoutesApiProcess02RunTranscribeTranscriptionServicesDeepinfraRunDeepinfraWhisperBuildDeepInfraTranscriptionMetadataOptions as BuildDeepInfraTranscriptionMetadataOptions,SourceRoutesApiProcess02RunTranscribeTranscriptionServicesDeepinfraParseDeepinfraOutputDeepInfraNativeResponse as DeepInfraNativeResponse,IProgressTracker,Step2Metadata,TranscriptionResult } from '~/types'
+import {
+calculateActualCostUsd,countTokens,formatTranscriptOutput,
+resolveTranscriptionDurationSeconds
+} from '../transcription-helpers'
 import { parseDeepInfraOutput } from './parse-deepinfra-output'
-import { formatTranscriptOutput } from '../transcription-helpers'
 
 const DEEPINFRA_API_KEY = process.env['DEEPINFRA_API_KEY']
+
+const buildDeepInfraTranscriptionMetadata = ({
+  model,
+  processingTime,
+  tokenCount,
+  totalCost,
+  durationSeconds,
+}: BuildDeepInfraTranscriptionMetadataOptions): Step2Metadata => {
+  const actualCostUsd = calculateActualCostUsd('deepinfra', model, durationSeconds)
+
+  return {
+    transcriptionService: 'deepinfra',
+    transcriptionModel: model,
+    processingTime,
+    tokenCount,
+    ...(totalCost != null ? { totalCost } : {}),
+    ...(actualCostUsd != null ? { actualCostUsd } : {}),
+  }
+}
 
 export const transcribeWithDeepInfra = async (
   audioPath: string,
@@ -19,7 +38,6 @@ export const transcribeWithDeepInfra = async (
 ): Promise<{ result: TranscriptionResult, metadata: Step2Metadata }> => {
   try {
     if (!DEEPINFRA_API_KEY) {
-      err('DEEPINFRA_API_KEY not found in environment')
       progressTracker?.error(2, 'Configuration error', 'DEEPINFRA_API_KEY environment variable is required')
       throw new Error('DEEPINFRA_API_KEY environment variable is required')
     }
@@ -31,31 +49,36 @@ export const transcribeWithDeepInfra = async (
     }
 
     const startTime = Date.now()
-    const client = new OpenAI({
-      apiKey: DEEPINFRA_API_KEY,
-      baseURL: 'https://api.deepinfra.com/v1/openai'
-    })
 
     progressTracker?.updateStepProgress(2, baseProgress + 20, 'Sending audio to DeepInfra')
 
     const audioFile = Bun.file(audioPath)
-    const audioBuffer = await audioFile.arrayBuffer()
-    const fileName = audioPath.split('/').pop() || 'audio.wav'
-    const audioFileObj = new File([audioBuffer], fileName, { type: 'audio/wav' })
+    const durationSecondsPromise = resolveTranscriptionDurationSeconds(undefined, audioPath)
+    const formData = new FormData()
+    formData.append('audio', audioFile)
 
-    const response = await client.audio.transcriptions.create({
-      file: audioFileObj,
-      model,
-      response_format: 'verbose_json',
-      timestamp_granularities: ['segment']
+    const response = await fetch(`https://api.deepinfra.com/v1/inference/${model}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `bearer ${DEEPINFRA_API_KEY}`
+      },
+      body: formData
     })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(`DeepInfra API error (${response.status}): ${errorText}`)
+    }
+
+    const data = await response.json() as DeepInfraNativeResponse
 
     progressTracker?.updateStepProgress(2, baseProgress + 80, 'Processing transcription results')
 
-    const transcription = parseDeepInfraOutput(response, segmentOffsetMinutes)
+    const transcription = parseDeepInfraOutput(data, segmentOffsetMinutes)
 
     const processingTime = Date.now() - startTime
     const tokenCount = countTokens(transcription.text)
+    const durationSeconds = await durationSecondsPromise
 
     const segmentSuffix = segmentNumber ? `_segment_${String(segmentNumber).padStart(3, '0')}` : ''
     const outputPath = `${outputDir}/transcription${segmentSuffix}.txt`
@@ -66,21 +89,12 @@ export const transcribeWithDeepInfra = async (
       progressTracker?.completeStep(2, 'Transcription complete')
     }
 
-    const metadata: Step2Metadata = {
-      transcriptionService: 'deepinfra',
-      transcriptionModel: model,
+    const metadata = buildDeepInfraTranscriptionMetadata({
+      model,
       processingTime,
-      tokenCount
-    }
-
-    l('DeepInfra transcription completed', {
-      processingTimeMs: processingTime,
       tokenCount,
-      transcriptLength: transcription.text.length,
-      segmentCount: transcription.segments.length,
-      outputPath,
-      segmentNumber,
-      totalSegments
+      totalCost: transcription.cost,
+      durationSeconds,
     })
 
     return {
@@ -88,7 +102,6 @@ export const transcribeWithDeepInfra = async (
       metadata
     }
   } catch (error) {
-    err('Failed to transcribe with DeepInfra', error)
     progressTracker?.error(2, 'Transcription failed', error instanceof Error ? error.message : 'Unknown error')
     throw error
   }

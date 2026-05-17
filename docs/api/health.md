@@ -1,114 +1,47 @@
 # Health Check
 
-Monitor application health and service availability.
+Service health endpoint for uptime and dependency status.
 
 ## Outline
 
 - [Endpoint](#endpoint)
-- [Description](#description)
-- [Request](#request)
+- [Access](#access)
+- [Status Codes](#status-codes)
 - [Response](#response)
-- [Fields](#fields)
-- [Example](#example)
 - [Notes](#notes)
 
 ## Endpoint
 
-```
+```text
 GET /api/health
 ```
 
-## Description
+## Access
 
-Checks database connectivity, service configuration status, and system health. Used for monitoring and load balancer health checks.
+Public endpoint (no authentication required).
 
-## Request
+## Status Codes
 
-No parameters required.
+- `200` - Healthy
+- `503` - Degraded (database connection failed)
+- `500` - Internal health-check failure
 
 ## Response
 
-**Status Codes:**
-- `200` - All systems healthy
-- `503` - Service degraded (database unavailable)
-- `500` - Health check failed
-
-**Success Response (200):**
-
 ```json
 {
-  "status": "healthy",
-  "timestamp": "2025-11-22T10:30:00.000Z",
-  "uptime": 3600.5,
-  "environment": "production",
-  "database": "connected",
-  "services": {
-    "groq": "configured",
-    "deepinfra": "configured",
-    "happyscribe": "configured",
-    "fal": "configured",
-    "openai": "configured"
-  },
-  "responseTime": "15ms"
+  "status": "healthy"
 }
 ```
 
-**Degraded Response (503):**
+The `status` field is one of `healthy`, `degraded`, or `error`.
 
-```json
-{
-  "status": "degraded",
-  "timestamp": "2025-11-22T10:30:00.000Z",
-  "uptime": 3600.5,
-  "environment": "production",
-  "database": "disconnected",
-  "services": {
-    "groq": "configured",
-    "deepinfra": "configured",
-    "happyscribe": "not configured",
-    "fal": "configured",
-    "openai": "configured"
-  },
-  "responseTime": "20ms"
-}
-```
-
-**Error Response (500):**
-
-```json
-{
-  "status": "error",
-  "timestamp": "2025-11-22T10:30:00.000Z",
-  "error": "Database connection failed"
-}
-```
-
-## Fields
-
-| Field                | Type   | Description                                                 |
-|----------------------|--------|-------------------------------------------------------------|
-| `status`             | string | Overall health status: `healthy`, `degraded`, or `error`    |
-| `timestamp`          | string | ISO 8601 timestamp of the check                             |
-| `uptime`             | number | Server uptime in seconds                                    |
-| `environment`        | string | Current environment (`development`, `production`, etc.)     |
-| `database`           | string | Database connection status: `connected` or `disconnected`   |
-| `services`           | object | Configuration status for external services                  |
-| `services.groq`      | string | Groq API key status                                         |
-| `services.deepinfra` | string | DeepInfra API key status                                    |
-| `services.happyscribe` | string | HappyScribe API key status                                  |
-| `services.fal`       | string | Fal API key status                                          |
-| `services.openai`    | string | OpenAI API key status                                       |
-| `responseTime`       | string | Time taken to complete health check                         |
-
-## Example
-
-```bash
-curl http://localhost:4321/api/health
-```
+- `healthy` (`200`) - Database connection verified.
+- `degraded` (`503`) - Database check failed but the server is still running.
+- `error` (`500`) - The health-check handler itself threw an unexpected error.
 
 ## Notes
 
-- Check runs synchronously and blocks until complete
-- Database check includes schema initialization
-- Service status only indicates API key presence, not validity
-- Suitable for automated monitoring and alerting systems
+- Checks database connectivity by calling `getDatabase()` and `initializeSchema()`.
+- Does not test third-party API keys or upstream provider availability.
+- Security headers middleware still applies to this API response.
