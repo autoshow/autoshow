@@ -143,6 +143,18 @@ export const TRANSCRIPTION_CONFIG: TranscriptionConfig = {
         }
       ]
     },
+    sixtydb: {
+      name: "60db Speech-to-Text",
+      models: [
+        {
+          id: "60db-stt-v1",
+          name: "60db STT",
+          description: "Multilingual transcription with speaker diarization and word timestamps (max 10MB / 1hr per request)",
+          speed: "A",
+          quality: "A"
+        }
+      ]
+    },
     soniox: {
       name: "Soniox",
       models: [
@@ -195,7 +207,7 @@ export const isWhisperService = (service: TranscriptionServiceType): boolean => 
 }
 
 export const isDiarizationService = (service: TranscriptionServiceType): boolean => {
-  return service === 'fal' || service === 'gladia' || service === 'elevenlabs' || service === 'rev' || service === 'assembly' || service === 'deepgram' || service === 'soniox'
+  return service === 'fal' || service === 'gladia' || service === 'elevenlabs' || service === 'rev' || service === 'assembly' || service === 'deepgram' || service === 'soniox' || service === 'sixtydb'
 }
 
 export const isStreamingService = (service: TranscriptionServiceType): boolean => {

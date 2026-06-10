@@ -65,6 +65,7 @@ function formatSelectedPrompts(prompts: string | null | undefined): string {
 function getTtsServiceName(service: string | null | undefined): string {
   if (service === "openai") return TTS_CONFIG.openai.name
   if (service === "elevenlabs") return TTS_CONFIG.elevenlabs.name
+  if (service === "sixtydb") return TTS_CONFIG.sixtydb.name
   return service || "Unknown"
 }
 

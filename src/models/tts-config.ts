@@ -75,6 +75,21 @@ export const TTS_CONFIG: TTSConfig = {
       { id: "daniel", name: "Daniel", description: "Male, calm and measured" },
       { id: "troy", name: "Troy", description: "Male, natural and conversational" }
     ]
+  },
+  sixtydb: {
+    name: "60db Text-to-Speech",
+    models: [
+      {
+        id: "sixtydb-tts-v1",
+        name: "60db",
+        description: "Multilingual speech synthesis with voice cloning support",
+        speed: "A",
+        quality: "A"
+      }
+    ],
+    voices: [
+      { id: "default", name: "Default", description: "60db system default voice" }
+    ]
   }
 }
 

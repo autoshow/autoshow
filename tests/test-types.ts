@@ -148,7 +148,7 @@ export interface TestDefinitionDocument {
 
 export interface TestDefinitionTTS {
   enabled: boolean
-  service?: "openai" | "elevenlabs" | "groq"
+  service?: "openai" | "elevenlabs" | "groq" | "sixtydb"
   voice?: string
   model?: string
 }

@@ -12,7 +12,8 @@ export const TranscriptionServiceTypeSchema = v.union([
   v.literal('rev'),
   v.literal('assembly'),
   v.literal('deepgram'),
-  v.literal('soniox')
+  v.literal('soniox'),
+  v.literal('sixtydb')
 ])
 
 export const TranscriptionSegmentSchema = v.object({
@@ -28,7 +29,7 @@ export const TranscriptionResultSchema = v.object({
 })
 
 export const Step2MetadataSchema = v.object({
-  transcriptionService: v.union([v.literal('groq'), v.literal('deepinfra'), v.literal('happyscribe'), v.literal('fal'), v.literal('gladia'), v.literal('elevenlabs'), v.literal('rev'), v.literal('assembly'), v.literal('deepgram'), v.literal('soniox')]),
+  transcriptionService: v.union([v.literal('groq'), v.literal('deepinfra'), v.literal('happyscribe'), v.literal('fal'), v.literal('gladia'), v.literal('elevenlabs'), v.literal('rev'), v.literal('assembly'), v.literal('deepgram'), v.literal('soniox'), v.literal('sixtydb')]),
   transcriptionModel: v.pipe(v.string(), v.nonEmpty()),
   processingTime: v.pipe(v.number(), v.minValue(0)),
   tokenCount: v.pipe(v.number(), v.integer(), v.minValue(0))
@@ -138,7 +139,7 @@ export const GladiaTranscriptionStatusResponseSchema = v.object({
   })))
 })
 
-export const TranscriptionServiceSchema = v.union([v.literal('groq'), v.literal('deepinfra'), v.literal('happyscribe'), v.literal('fal'), v.literal('gladia'), v.literal('elevenlabs'), v.literal('rev'), v.literal('assembly'), v.literal('deepgram'), v.literal('soniox')])
+export const TranscriptionServiceSchema = v.union([v.literal('groq'), v.literal('deepinfra'), v.literal('happyscribe'), v.literal('fal'), v.literal('gladia'), v.literal('elevenlabs'), v.literal('rev'), v.literal('assembly'), v.literal('deepgram'), v.literal('soniox'), v.literal('sixtydb')])
 
 export const Step2CombinedMetadataSchema = v.union([Step2MetadataSchema, Step2DocumentMetadataSchema])
 
@@ -256,6 +257,38 @@ export const ElevenLabsScribeResponseSchema = v.object({
 
 export type ElevenLabsScribeWord = v.InferOutput<typeof ElevenLabsScribeWordSchema>
 export type ElevenLabsScribeResponse = v.InferOutput<typeof ElevenLabsScribeResponseSchema>
+
+export const SixtyDbSttWordSchema = v.object({
+  word: v.string(),
+  start: v.optional(v.pipe(v.number(), v.minValue(0))),
+  end: v.optional(v.pipe(v.number(), v.minValue(0))),
+  confidence: v.optional(v.pipe(v.number(), v.minValue(0), v.maxValue(1)))
+})
+
+export const SixtyDbSttSegmentSchema = v.object({
+  start: v.pipe(v.number(), v.minValue(0)),
+  end: v.pipe(v.number(), v.minValue(0)),
+  text: v.string(),
+  language: v.optional(v.nullable(v.string())),
+  confidence: v.optional(v.pipe(v.number(), v.minValue(0), v.maxValue(1))),
+  speaker: v.optional(v.nullable(v.string())),
+  speakers: v.optional(v.array(v.string())),
+  words: v.optional(v.array(SixtyDbSttWordSchema))
+})
+
+export const SixtyDbSttResponseSchema = v.object({
+  request_id: v.optional(v.string()),
+  text: v.string(),
+  language: v.optional(v.nullable(v.string())),
+  language_name: v.optional(v.nullable(v.string())),
+  duration_sec: v.optional(v.pipe(v.number(), v.minValue(0))),
+  segments: v.optional(v.array(SixtyDbSttSegmentSchema)),
+  words: v.optional(v.array(SixtyDbSttWordSchema))
+})
+
+export type SixtyDbSttWord = v.InferOutput<typeof SixtyDbSttWordSchema>
+export type SixtyDbSttSegment = v.InferOutput<typeof SixtyDbSttSegmentSchema>
+export type SixtyDbSttResponse = v.InferOutput<typeof SixtyDbSttResponseSchema>
 
 export const OpenAITranscriptionSegmentSchema = v.object({
   id: v.pipe(v.number(), v.integer(), v.minValue(0)),

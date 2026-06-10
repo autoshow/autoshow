@@ -20,7 +20,8 @@ export const ServicesConfigSchema = v.object({
       rev: transcriptionServiceConfigSchema,
       assembly: transcriptionServiceConfigSchema,
       deepgram: transcriptionServiceConfigSchema,
-      soniox: transcriptionServiceConfigSchema
+      soniox: transcriptionServiceConfigSchema,
+      sixtydb: transcriptionServiceConfigSchema
     }),
     streaming: v.object({
       happyscribe: transcriptionServiceConfigSchema,
@@ -38,7 +39,8 @@ export const ServicesConfigSchema = v.object({
   tts: v.object({
     openai: ttsServiceConfigSchema,
     elevenlabs: ttsServiceConfigSchema,
-    groq: ttsServiceConfigSchema
+    groq: ttsServiceConfigSchema,
+    sixtydb: ttsServiceConfigSchema
   }),
   imageGen: v.object({
     openai: imageGenServiceConfigSchema,

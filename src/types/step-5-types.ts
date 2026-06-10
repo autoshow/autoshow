@@ -4,13 +4,14 @@ import type { ServicesConfig } from './services-types'
 export const TTSServiceTypeSchema = v.union([
   v.literal('openai'),
   v.literal('elevenlabs'),
-  v.literal('groq')
+  v.literal('groq'),
+  v.literal('sixtydb')
 ])
 
 export type TTSServiceType = v.InferOutput<typeof TTSServiceTypeSchema>
 
 export const Step5MetadataSchema = v.object({
-  ttsService: v.union([v.literal('openai'), v.literal('elevenlabs'), v.literal('groq')]),
+  ttsService: v.union([v.literal('openai'), v.literal('elevenlabs'), v.literal('groq'), v.literal('sixtydb')]),
   ttsModel: v.pipe(v.string(), v.nonEmpty()),
   ttsVoice: v.pipe(v.string(), v.nonEmpty()),
   processingTime: v.pipe(v.number(), v.minValue(0)),
@@ -21,7 +22,7 @@ export const Step5MetadataSchema = v.object({
   ttsS3Url: v.optional(v.string(), undefined)
 })
 
-export const TTSServiceSchema = v.union([v.literal('openai'), v.literal('elevenlabs'), v.literal('groq')])
+export const TTSServiceSchema = v.union([v.literal('openai'), v.literal('elevenlabs'), v.literal('groq'), v.literal('sixtydb')])
 
 export type Step5Metadata = v.InferOutput<typeof Step5MetadataSchema>
 

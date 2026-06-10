@@ -94,7 +94,7 @@ export default function ShowNoteContent(props: Props) {
             >
               <source
                 src={props.getAudioUrl(props.note.id, props.note.tts_audio_file!)}
-                type={props.note.tts_service === 'elevenlabs' ? 'audio/mpeg' : 'audio/wav'}
+                type={props.note.tts_service === 'elevenlabs' || props.note.tts_service === 'sixtydb' ? 'audio/mpeg' : 'audio/wav'}
               />
               Your browser does not support the audio element.
             </audio>
@@ -103,6 +103,8 @@ export default function ShowNoteContent(props: Props) {
                 ? TTS_CONFIG.openai.name
                 : props.note.tts_service === 'elevenlabs'
                 ? TTS_CONFIG.elevenlabs.name
+                : props.note.tts_service === 'sixtydb'
+                ? TTS_CONFIG.sixtydb.name
                 : props.note.tts_service || "Unknown"}</span>
               <span>Voice: {props.note.tts_voice}</span>
               <Show when={props.note.tts_audio_duration}>

@@ -112,7 +112,7 @@ export const resolveMediaOptions = (form: ProcessingFormData, features: FeatureF
   const parsedMusicBitrate = features.musicGenEnabled && form.musicBitrate ? parseInt(form.musicBitrate) : undefined
 
   return {
-    ttsService: features.ttsEnabled && form.ttsService ? form.ttsService as 'openai' | 'elevenlabs' | 'groq' : undefined,
+    ttsService: features.ttsEnabled && form.ttsService ? form.ttsService as 'openai' | 'elevenlabs' | 'groq' | 'sixtydb' : undefined,
     ttsVoice: features.ttsEnabled && form.ttsVoice ? form.ttsVoice : undefined,
     ttsModel: features.ttsEnabled && form.ttsModel ? form.ttsModel : undefined,
 

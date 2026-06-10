@@ -69,6 +69,8 @@ export default function ShowNoteHeader(props: Props) {
               ? TTS_CONFIG.openai.name
               : props.note.tts_service === 'elevenlabs'
               ? TTS_CONFIG.elevenlabs.name
+              : props.note.tts_service === 'sixtydb'
+              ? TTS_CONFIG.sixtydb.name
               : props.note.tts_service || "Unknown"}
           </span>
         </Show>

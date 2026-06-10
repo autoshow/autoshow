@@ -7,9 +7,9 @@ Full-stack application for automatically processing videos and audio with AI tra
 ## Features
 
 - **Audio Processing**: Extract audio from YouTube videos, streaming platforms, or direct file uploads
-- **AI Transcription**: Groq Whisper, DeepInfra, Fal, Gladia, ElevenLabs, Rev, AssemblyAI, Deepgram, Soniox, or HappyScribe
+- **AI Transcription**: Groq Whisper, DeepInfra, Fal, Gladia, ElevenLabs, Rev, AssemblyAI, Deepgram, Soniox, 60db, or HappyScribe
 - **LLM Summarization**: OpenAI GPT, Claude, or Google Gemini models for generating episode descriptions, summaries, and chapters
-- **Text-to-Speech**: Convert summaries to audio with OpenAI or ElevenLabs voices
+- **Text-to-Speech**: Convert summaries to audio with OpenAI, ElevenLabs, Groq, or 60db voices
 - **Image Generation**: Create cover images from AI-generated prompts
 - **Music Generation**: Generate background music with ElevenLabs in multiple genres
 - **Docker Support**: Containerized deployment with analysis and optimization tools

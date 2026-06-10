@@ -68,7 +68,7 @@ The pipeline includes:
 
 | Field                 | Type   | Required | Description                                                                                                                                                                       |
 |-----------------------|--------|----------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `transcriptionOption` | string | Yes      | Service: `groq`, `deepinfra`, `happyscribe`, `fal`, `gladia`, `elevenlabs`, `rev`, `assembly`, `deepgram`, `soniox`                             |
+| `transcriptionOption` | string | Yes      | Service: `groq`, `deepinfra`, `happyscribe`, `fal`, `gladia`, `elevenlabs`, `rev`, `assembly`, `deepgram`, `soniox`, `sixtydb`                  |
 | `transcriptionModel`  | string | Yes      | Model ID (service-specific; must match selected service) |
 
 ### Optional Features
@@ -76,7 +76,7 @@ The pipeline includes:
 | Field                   | Type   | Required    | Description                                                                      |
 |-------------------------|--------|-------------|----------------------------------------------------------------------------------|
 | `ttsEnabled`            | string | No          | Enable TTS: `"true"` or `"false"` (default: `"false"`)                           |
-| `ttsService`            | string | Conditional | TTS service (if enabled): `openai`, `elevenlabs`, or `groq`                      |
+| `ttsService`            | string | Conditional | TTS service (if enabled): `openai`, `elevenlabs`, `groq`, or `sixtydb`           |
 | `ttsVoice`              | string | Conditional | Voice ID/name (if TTS enabled)                                                   |
 | `ttsModel`              | string | Conditional | TTS model (if TTS enabled)                                                       |
 | `imageGenEnabled`       | string | No          | Enable image generation: `"true"` or `"false"` (default: `"false"`)              |

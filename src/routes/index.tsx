@@ -114,9 +114,9 @@ export default function ShowNotes() {
                       </span>
                       <Show when={note.tts_enabled === true}>
                         <span class={s.tagTts}>
-                          {note.tts_service === "openai"
-                            ? TTS_CONFIG.openai.name
-                            : TTS_CONFIG.elevenlabs.name}
+                          {note.tts_service && TTS_CONFIG[note.tts_service]
+                            ? TTS_CONFIG[note.tts_service].name
+                            : note.tts_service || "Unknown"}
                         </span>
                       </Show>
                       <Show when={note.image_gen_enabled === true}>

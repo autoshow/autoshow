@@ -66,7 +66,7 @@ export const buildProcessingOptions = (form: ProcessingFormData): ProcessingOpti
   }
 
   if (features.ttsEnabled) {
-    const ttsService = requireValue(media.ttsService, 'TTS service') as 'openai' | 'elevenlabs' | 'groq'
+    const ttsService = requireValue(media.ttsService, 'TTS service') as 'openai' | 'elevenlabs' | 'groq' | 'sixtydb'
     const ttsModel = requireValue(media.ttsModel, 'TTS model')
     requireValue(media.ttsVoice, 'TTS voice')
     if (!isValidTTSModel(ttsService, ttsModel)) {

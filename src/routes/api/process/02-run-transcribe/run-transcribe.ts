@@ -9,6 +9,7 @@ import { transcribeWithRev } from './transcription-services/rev/run-rev'
 import { transcribeWithAssembly } from './transcription-services/assembly/run-assembly'
 import { transcribeWithDeepgram } from './transcription-services/deepgram/run-deepgram'
 import { transcribeWithSoniox } from './transcription-services/soniox/run-soniox'
+import { transcribeWith60db } from './transcription-services/sixtydb/run-60db-stt'
 import { splitAudioFile, getAudioDuration } from './audio-splitter'
 
 const getTranscriber = (service: TranscriptionServiceType | undefined) => {
@@ -29,6 +30,8 @@ const getTranscriber = (service: TranscriptionServiceType | undefined) => {
       return transcribeWithDeepgram
     case 'soniox':
       return transcribeWithSoniox
+    case 'sixtydb':
+      return transcribeWith60db
     case 'groq':
     default:
       return transcribeWithGroq

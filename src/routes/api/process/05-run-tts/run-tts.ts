@@ -3,6 +3,7 @@ import { l, err } from '~/utils/logging'
 import { runOpenAITTS } from './tts-services/run-openai-tts'
 import { runElevenLabsTTS } from './tts-services/run-elevenlabs-tts'
 import { runGroqTTS } from './tts-services/run-groq-tts'
+import { run60dbTTS } from './tts-services/run-60db-tts'
 
 export const runTTS = async (
   text: string,
@@ -27,6 +28,9 @@ export const runTTS = async (
   if (service === 'elevenlabs') {
     l('Routing to ElevenLabs TTS service', { service })
     result = await runElevenLabsTTS(text, outputDir, voice, model, progressTracker, jobId)
+  } else if (service === 'sixtydb') {
+    l('Routing to 60db TTS service', { service })
+    result = await run60dbTTS(text, outputDir, voice, model, progressTracker, jobId)
   } else if (service === 'openai') {
     l('Routing to OpenAI TTS service', { service })
     result = await runOpenAITTS(text, outputDir, voice, model, progressTracker, instructions, jobId)
