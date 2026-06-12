@@ -1,12 +1,10 @@
-import { l, err } from '~/utils/logging'
-import { GladiaTranscriptionInitResponseSchema, validateOrThrow, type GladiaTranscriptionInitResponse, type GladiaTranscriptionOptions } from '~/types'
+import { GladiaTranscriptionInitResponseSchema,validateOrThrow,type GladiaTranscriptionInitResponse,type GladiaTranscriptionOptions } from '~/types'
 
 const GLADIA_API_BASE = 'https://api.gladia.io'
 const GLADIA_API_KEY = process.env['GLADIA_API_KEY']
 
 export const createGladiaTranscription = async (options: GladiaTranscriptionOptions): Promise<GladiaTranscriptionInitResponse> => {
   if (!GLADIA_API_KEY) {
-    err('GLADIA_API_KEY not found in environment')
     throw new Error('GLADIA_API_KEY environment variable is required')
   }
 
@@ -32,17 +30,12 @@ export const createGladiaTranscription = async (options: GladiaTranscriptionOpti
   
   if (!response.ok) {
     const errorText = await response.text()
-    err(`Failed to create Gladia transcription. Status: ${response.status}`, { error: errorText })
     throw new Error(`Failed to create Gladia transcription: ${response.statusText} - ${errorText}`)
   }
   
   const rawData = await response.json()
   const data = validateOrThrow(GladiaTranscriptionInitResponseSchema, rawData, 'Invalid Gladia transcription init response')
   
-  l('Gladia transcription job created', {
-    transcriptionId: data.id,
-    resultUrl: data.result_url
-  })
   
   return data
 }

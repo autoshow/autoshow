@@ -1,70 +1,200 @@
-.summaryBlock {
-  background: var(--bg-secondary);
-  padding: 1.5rem;
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-}
-
 .subsectionTitle {
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--text-primary);
-  margin-bottom: 0.75rem;
+  margin-bottom: var(--space-3);
 }
 
-.summaryText {
+.markdownText {
   color: var(--text-secondary);
   font-size: 1.05rem;
   line-height: 1.8;
+  overflow-x: auto;
+}
+
+.markdownText > :first-child {
+  margin-top: 0;
+}
+
+.markdownText > :last-child {
+  margin-bottom: 0;
+}
+
+.markdownText p {
   margin: 0;
 }
 
-.bulletList {
-  margin: 0;
-  padding-left: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+.markdownText p + p,
+.markdownText p + ul,
+.markdownText p + ol,
+.markdownText ul + p,
+.markdownText ol + p,
+.markdownText table + p,
+.markdownText p + table,
+.markdownText blockquote + p,
+.markdownText pre + p,
+.markdownText p + pre {
+  margin-top: var(--space-4);
 }
 
-.bulletItem {
+.markdownText h1,
+.markdownText h2,
+.markdownText h3,
+.markdownText h4,
+.markdownText h5,
+.markdownText h6 {
+  color: var(--text-primary);
+  line-height: 1.25;
+  font-weight: 700;
+  margin: var(--space-5) 0 var(--space-3);
+}
+
+.markdownText h1 {
+  font-size: 1.45rem;
+}
+
+.markdownText h2 {
+  font-size: 1.35rem;
+}
+
+.markdownText h3 {
+  font-size: 1.2rem;
+}
+
+.markdownText h4,
+.markdownText h5,
+.markdownText h6 {
+  font-size: 1.05rem;
+}
+
+.markdownText ul,
+.markdownText ol {
+  margin: var(--space-4) 0;
+  padding-left: var(--space-5);
+}
+
+.markdownText li {
+  margin: 0 0 var(--space-2);
   color: var(--text-secondary);
-  font-size: 1rem;
+}
+
+.markdownText li:last-child {
+  margin-bottom: 0;
+}
+
+.markdownText input[type="checkbox"] {
+  margin: 0 var(--space-2) 0 0;
+  vertical-align: middle;
+}
+
+.markdownText blockquote {
+  margin: var(--space-4) 0;
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--accent-blue);
+  color: var(--text-secondary);
+  background: var(--bg-card);
+}
+
+.markdownText hr {
+  margin: var(--space-5) 0;
+  border: 0;
+  border-top: 1px solid var(--border-color);
+}
+
+.markdownText code {
+  padding: 0.1rem 0.3rem;
+  border-radius: var(--radius-sm);
+  background: var(--bg-code);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+}
+
+.markdownText pre {
+  margin: var(--space-4) 0;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--bg-code);
+  overflow-x: auto;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.92rem;
   line-height: 1.6;
 }
 
-.takeawayList {
-  margin: 0;
-  padding-left: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+.markdownText pre code {
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  font-size: inherit;
 }
 
+.markdownText a {
+  color: var(--accent-blue);
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
+}
+
+.markdownText a:hover {
+  color: var(--accent-blue-light);
+}
+
+.markdownText del {
+  color: var(--text-muted);
+}
+
+.markdownText table {
+  width: 100%;
+  min-width: 32rem;
+  margin: var(--space-4) 0;
+  border-collapse: collapse;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.markdownText th,
+.markdownText td {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-color);
+  text-align: left;
+  vertical-align: top;
+}
+
+.markdownText th {
+  color: var(--text-primary);
+  background: var(--bg-card);
+  font-weight: 600;
+}
+
+.bulletList,
+.takeawayList {
+  margin: 0;
+  padding-left: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.bulletItem,
 .takeawayItem {
   color: var(--text-secondary);
   font-size: 1rem;
-  line-height: 1.7;
+  line-height: 1.65;
 }
 
-.faqList {
+.faqList,
+.chapterList {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-}
-
-.faqItem {
-  padding: 1rem;
-  background: var(--bg-card);
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
 }
 
 .faqQuestion {
   color: var(--text-primary);
   font-size: 1rem;
   font-weight: 600;
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 var(--space-2);
 }
 
 .faqAnswer {
@@ -74,33 +204,20 @@
   margin: 0;
 }
 
-.chapterList {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.chapter {
-  padding: 1rem;
-  background: var(--bg-card);
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-}
-
 .chapterHeader {
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: var(--space-3);
 }
 
 .timestamp {
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.875rem;
   color: var(--accent-blue);
-  background: rgba(56, 139, 253, 0.1);
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
+  background: var(--bg-secondary);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
   font-weight: 500;
 }
 

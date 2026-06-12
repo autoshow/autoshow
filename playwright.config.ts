@@ -1,18 +1,41 @@
 import { defineConfig } from '@playwright/test'
+import { PLAYWRIGHT_OUTPUT_ROOT } from './src/utils/artifact-paths'
+
+const baseURL = process.env.PLAYWRIGHT_BASE_URL || process.env.BASE_URL || 'http://localhost:3000'
+const disableWebServer = process.env.PLAYWRIGHT_DISABLE_WEBSERVER === '1'
+const reuseExistingServer = process.env.PLAYWRIGHT_REUSE_EXISTING_SERVER === '1'
+const outputDir = process.env.PLAYWRIGHT_OUTPUT_DIR || PLAYWRIGHT_OUTPUT_ROOT
+const defaultWorkers = process.env.PLAYWRIGHT_WORKERS || '5'
+const perTestTimeoutMs = 15 * 60 * 1000
+const suiteTimeoutMs = 60 * 60 * 1000
 
 export default defineConfig({
   testDir: './tests/playwright',
-  timeout: 3600000,
-  workers: 1,
+  timeout: perTestTimeoutMs,
+  globalTimeout: suiteTimeoutMs,
+  workers: Number(defaultWorkers),
   fullyParallel: false,
+  outputDir,
+  reporter: process.env.PLAYWRIGHT_JUNIT_REPORT
+    ? [['list'], ['junit', { outputFile: process.env.PLAYWRIGHT_JUNIT_REPORT }]]
+    : 'list',
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL,
     trace: 'on-first-retry',
   },
-  webServer: {
-    command: 'bun dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: true,
-    timeout: 3600000,
-  },
+  ...(disableWebServer
+    ? {}
+    : {
+        webServer: {
+          command: 'bun dev',
+          env: {
+            NODE_ENV: 'test',
+            RESEND_API_KEY: '',
+            VITE_SITE_URL: baseURL,
+          },
+          url: baseURL,
+          reuseExistingServer,
+          timeout: 3600000,
+        },
+      }),
 })

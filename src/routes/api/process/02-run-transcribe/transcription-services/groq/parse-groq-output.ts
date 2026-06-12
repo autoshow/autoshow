@@ -1,8 +1,8 @@
-import type { TranscriptionSegment, OpenAIVerboseTranscription } from '~/types'
-import { formatTimestamp } from '~/utils/audio'
+import type { TranscriptionSegment,VerboseTranscription } from '~/types'
+import { formatTimestamp } from '../transcription-helpers'
 
 export const parseGroqOutput = (
-  response: OpenAIVerboseTranscription,
+  response: VerboseTranscription,
   offsetMinutes: number = 0
 ): { text: string, segments: TranscriptionSegment[] } => {
   const offsetSeconds = offsetMinutes * 60

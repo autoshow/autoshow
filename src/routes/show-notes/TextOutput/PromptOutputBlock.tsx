@@ -1,14 +1,9 @@
-import { Show, For, Switch, Match } from "solid-js"
+import clsx from "clsx"
+import { For,Match,Show,Switch } from "solid-js"
+import type { FAQItem,SourceRoutesShowNotesTextOutputPromptOutputBlockProps as Props,StructuredChapter } from '~/types'
+import MarkdownText from "./MarkdownText"
+import shared from "../shared.module.css"
 import s from "./PromptOutputBlock.module.css"
-import type { PromptRenderType } from "~/types"
-import type { StructuredLLMResponse, StructuredChapter, FAQItem, PromptType } from "~/types"
-
-type Props = {
-  textOutput: StructuredLLMResponse
-  promptKey: PromptType
-  displayTitle: string
-  renderType: PromptRenderType
-}
 
 export default function PromptOutputBlock(props: Props) {
   const value = () => props.textOutput[props.promptKey]
@@ -19,39 +14,39 @@ export default function PromptOutputBlock(props: Props) {
     return true
   }
 
-  const textValue = (): string => {
+  const textValue = () => {
     const v = value()
     return typeof v === 'string' ? v : ''
   }
 
-  const stringListValue = (): string[] => {
+  const stringListValue = () => {
     const v = value()
     return Array.isArray(v) && v.every(item => typeof item === 'string') ? v : []
   }
 
-  const faqValue = (): FAQItem[] => {
+  const faqValue = () => {
     const v = value()
     if (!Array.isArray(v)) return []
-    return v.filter((item): item is FAQItem => 
+    return v.filter(item =>
       typeof item === 'object' && item !== null && 'question' in item && 'answer' in item
-    )
+    ) as FAQItem[]
   }
 
-  const chaptersValue = (): StructuredChapter[] => {
+  const chaptersValue = () => {
     const v = value()
     if (!Array.isArray(v)) return []
-    return v.filter((item): item is StructuredChapter => 
+    return v.filter(item =>
       typeof item === 'object' && item !== null && 'timestamp' in item && 'title' in item
-    )
+    ) as StructuredChapter[]
   }
 
   return (
     <Show when={hasValue()}>
-      <div class={s.summaryBlock}>
+      <div class={clsx(shared.contentCard, shared.contentCardPadded)}>
         <h3 class={s.subsectionTitle}>{props.displayTitle}</h3>
         <Switch>
           <Match when={props.renderType === 'text'}>
-            <p class={s.summaryText}>{textValue()}</p>
+            <MarkdownText source={textValue()} html={props.markdownHtml ?? null} />
           </Match>
           <Match when={props.renderType === 'stringList'}>
             <ul class={s.bulletList}>
@@ -71,7 +66,7 @@ export default function PromptOutputBlock(props: Props) {
             <div class={s.faqList}>
               <For each={faqValue()}>
                 {(item) => (
-                  <div class={s.faqItem}>
+                  <div class={shared.nestedCard}>
                     <p class={s.faqQuestion}>Q: {item.question}</p>
                     <p class={s.faqAnswer}>A: {item.answer}</p>
                   </div>
@@ -83,7 +78,7 @@ export default function PromptOutputBlock(props: Props) {
             <div class={s.chapterList}>
               <For each={chaptersValue()}>
                 {(chapter) => (
-                  <div class={s.chapter}>
+                  <div class={shared.nestedCard}>
                     <div class={s.chapterHeader}>
                       <span class={s.timestamp}>{chapter.timestamp}</span>
                       <span class={s.chapterTitle}>{chapter.title}</span>

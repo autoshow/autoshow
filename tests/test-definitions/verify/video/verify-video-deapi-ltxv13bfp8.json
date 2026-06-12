@@ -1,0 +1,47 @@
+{
+  "id": "verify-video-deapi-ltxv13bfp8",
+  "name": "Verify: deAPI LTX Video",
+  "description": "Minimal verification test for deAPI text-to-video generation",
+  "tags": [
+    "verify",
+    "video",
+    "deapi",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": true,
+    "service": "deapi",
+    "model": "Ltxv_13B_0_9_8_Distilled_FP8",
+    "prompts": [
+      "social"
+    ],
+    "size": "1280x720",
+    "duration": 4,
+    "aspectRatio": "16:9"
+  }
+}

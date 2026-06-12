@@ -1,16 +1,17 @@
-import { l, err } from '~/utils/logging'
-import type { ProcessingOptions, Step1Metadata, IProgressTracker } from '~/types'
-import { convertFileToAudio, extractLocalFileMetadata, createFileMetadata } from '~/routes/api/process/01-dl-audio/file/dl-file'
+import { convertFileToAudio,createFileMetadata,extractLocalFileMetadata } from '~/routes/api/process/01-dl-audio/file/dl-file'
 import { transcribe } from '~/routes/api/process/02-run-transcribe/run-transcribe'
-import { createOutputDirectory, runPostTranscriptionPipeline } from '../processing-helpers'
+import type { CompletedPipelineResult,IProgressTracker,ProcessingOptions,Step1Metadata } from '~/types'
+import { createOutputDirectory,runPostTranscriptionPipeline } from '../processing-helpers'
+import { getMaxAudioInputBytes } from '../remote-source-limits'
 
-export const processFile = async (options: ProcessingOptions, progressTracker: IProgressTracker, jobId: string): Promise<string> => {
+export const processFile = async (
+  options: ProcessingOptions,
+  progressTracker: IProgressTracker,
+  jobId: string
+): Promise<CompletedPipelineResult> => {
   progressTracker.startStep(1, 'Processing local file')
 
-  l('Processing local file', { url: options.url })
-
   if (!options.localFilePath || !options.localFileName) {
-    err('Local file path and name are required')
     progressTracker.error(1, 'Missing file information', 'Local file path and name are required for file processing')
     throw new Error('Local file path and name are required for file processing')
   }
@@ -58,9 +59,14 @@ const processLocalFileAudio = async (options: ProcessingOptions): Promise<{ audi
 
   const file = Bun.file(options.localFilePath)
   const fileSize = file.size
+  const maxUploadSize = getMaxAudioInputBytes()
 
   if (fileSize < 1000) {
     throw new Error(`File is too small (${fileSize} bytes), likely corrupted or empty`)
+  }
+
+  if (fileSize > maxUploadSize) {
+    throw new Error(`File exceeds maximum upload size of ${(maxUploadSize / 1024 / 1024).toFixed(1)} MB (got ${(fileSize / 1024 / 1024).toFixed(1)} MB)`)
   }
 
   const showNoteId = options.outputDir.split('/').pop() || 'unknown'

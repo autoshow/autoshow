@@ -1,59 +1,77 @@
-import { For } from "solid-js"
+import { createMemo } from "solid-js"
+import {
+DOCUMENT_CONFIG,
+getAvailableDocumentModels,
+getDocumentServicesForType,
+resolveDocumentRuntimeCapabilities
+} from "~/models"
+import type {
+SourceRoutesCreateStepsComponentsStep2WrapperDocumentDocumentCandidate as DocumentCandidate,
+DocumentExtractionServiceType,
+SourceRoutesCreateStepsComponentsStep2WrapperDocumentProps as Props
+} from '~/types'
+import { estimateDocumentDisplayCost } from "~/utils/cost-helpers"
+import { CuratedModelPicker } from "../shared"
+import { buildCandidateKey,estimateDocumentModelCostScore,getDocumentModelQuality } from "../shared/curated-models"
 import shared from "../shared/shared.module.css"
-import { ModelButton, ModelGrid } from "../shared"
-import { DOCUMENT_CONFIG } from "~/models"
-import type { DocumentExtractionServiceType, DocumentConfig } from "~/types"
-
-type Props = {
-  transcriptionOption: string
-  setTranscriptionOption: (value: string) => void
-  documentService: string
-  setDocumentService: (value: string) => void
-  documentModel: string
-  setDocumentModel: (value: string) => void
-  disabled: boolean | undefined
-}
-
-type DocumentEntry = [DocumentExtractionServiceType, DocumentConfig[DocumentExtractionServiceType]]
-
-function getDocumentEntries(config: DocumentConfig): DocumentEntry[] {
-  return (Object.keys(config) as DocumentExtractionServiceType[]).map(key => [key, config[key]])
-}
 
 export default function Document(props: Props) {
-  const documentEntries = getDocumentEntries(DOCUMENT_CONFIG)
+  const runtimeCapabilities = () => resolveDocumentRuntimeCapabilities(props.documentRuntimeCapabilities)
+
+  const documentServices = (): DocumentExtractionServiceType[] => {
+    if (!props.documentType) {
+      return Object.keys(DOCUMENT_CONFIG) as DocumentExtractionServiceType[]
+    }
+
+    return getDocumentServicesForType(props.documentType, runtimeCapabilities())
+  }
 
   const handleDocumentModelClick = (serviceId: string, modelId: string): void => {
-    props.setTranscriptionOption(serviceId)
-    props.setDocumentService(serviceId)
-    props.setDocumentModel(modelId)
+    props.selectDocumentModel(serviceId, modelId)
   }
 
-  const isDocumentModelSelected = (serviceId: string, modelId: string): boolean => {
-    return props.documentService === serviceId && props.documentModel === modelId
-  }
+  const documentCandidates = createMemo(() => {
+    return documentServices().flatMap((serviceId) => {
+      const serviceConfig = DOCUMENT_CONFIG[serviceId]
+      const modelIds = props.documentType
+        ? getAvailableDocumentModels(serviceId, props.documentType, runtimeCapabilities())
+        : serviceConfig.models.map(model => model.id)
+
+      return modelIds.flatMap((modelId) => {
+        const model = serviceConfig.models.find(candidate => candidate.id === modelId)
+        if (!model) return []
+
+        const quality = getDocumentModelQuality(serviceId, model.id)
+
+        return [{
+          key: buildCandidateKey(serviceId, model.id),
+          serviceId,
+          serviceName: serviceConfig.name,
+          modelId: model.id,
+          modelName: model.name,
+          description: model.description,
+          speedProfile: model.speedProfile,
+          quality,
+          costScore: estimateDocumentModelCostScore(serviceId, model.id, props.documentType),
+          cost: estimateDocumentDisplayCost(serviceId, model.id, props.documentType) ?? null
+        } satisfies DocumentCandidate]
+      })
+    })
+  })
 
   return (
-    <div class={shared.formGroup}>
-      <label class={shared.label}>Select Document Extraction Model</label>
-      <ModelGrid>
-        <For each={documentEntries}>
-          {([serviceId, serviceConfig]) => (
-            <For each={serviceConfig.models}>
-              {(model) => (
-                <ModelButton
-                  service={serviceConfig.name}
-                  name={model.name}
-                  description={model.description}
-                  selected={isDocumentModelSelected(serviceId, model.id)}
-                  disabled={props.disabled}
-                  onClick={() => handleDocumentModelClick(serviceId, model.id)}
-                />
-              )}
-            </For>
-          )}
-        </For>
-      </ModelGrid>
-    </div>
+    <fieldset class={shared.fieldset}>
+      <legend class={shared.legend}>Select Document Extraction Model</legend>
+      <CuratedModelPicker
+        candidates={documentCandidates()}
+        operation="document"
+        selectedKey={buildCandidateKey(props.documentService, props.documentModel)}
+        selectionActive={props.documentModelSelected}
+        modelInputName="ui-document-model"
+        disabled={props.disabled}
+        onSelect={(candidate) => handleDocumentModelClick(candidate.serviceId, candidate.modelId)}
+        getCostLabel={(c) => c.cost ? `${c.cost.centsLabel}¢` : undefined}
+      />
+    </fieldset>
   )
 }

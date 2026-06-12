@@ -1,0 +1,1 @@
+export type SourceRoutesCreateStepsComponentsSharedProcessingRequestSerializedProcessingRequest = Record<string, string>

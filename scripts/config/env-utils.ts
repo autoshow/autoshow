@@ -2,40 +2,6 @@ import { join } from 'path'
 
 const ENV_PATH = join(process.cwd(), '.env')
 
-export async function readEnvFile(): Promise<Map<string, string>> {
-  const env = new Map<string, string>()
-  
-  try {
-    const file = Bun.file(ENV_PATH)
-    if (!await file.exists()) {
-      return env
-    }
-    
-    const content = await file.text()
-    const lines = content.split('\n')
-    
-    for (const line of lines) {
-      const trimmed = line.trim()
-      if (trimmed === '' || trimmed.startsWith('#')) {
-        continue
-      }
-      
-      const eqIndex = trimmed.indexOf('=')
-      if (eqIndex === -1) {
-        continue
-      }
-      
-      const key = trimmed.slice(0, eqIndex)
-      const value = trimmed.slice(eqIndex + 1)
-      env.set(key, value)
-    }
-  } catch {
-    return env
-  }
-  
-  return env
-}
-
 export async function updateEnvFile(updates: Record<string, string>): Promise<void> {
   const file = Bun.file(ENV_PATH)
   let content = ''
@@ -88,4 +54,21 @@ export function maskSecret(value: string, prefixLen = 8, suffixLen = 4): string 
 
 export function getEnvVar(key: string): string | undefined {
   return process.env[key]
+}
+
+/**
+ * Writes `updates` to `.env` and populates `process.env` so that subsequent
+ * `getEnvVar()` calls see the new values in the same process.
+ * Returns `true` when at least one key was written, `false` when `updates` is empty.
+ */
+export async function commitEnvUpdates(updates: Record<string, string>): Promise<boolean> {
+  if (Object.keys(updates).length === 0) return false
+
+  await updateEnvFile(updates)
+
+  for (const [key, value] of Object.entries(updates)) {
+    process.env[key] = value
+  }
+
+  return true
 }

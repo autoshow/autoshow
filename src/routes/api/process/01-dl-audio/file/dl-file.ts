@@ -1,15 +1,14 @@
-import { l, err } from '~/utils/logging'
-import type { VideoMetadata, Step1Metadata, ConvertToAudioResult } from '~/types'
+import type { ConvertToAudioResult,Step1Metadata,VideoMetadata } from '~/types'
 import {
-  executeCommand,
-  sanitizeFilename,
-  getDuration,
-  formatDuration,
-  convertSmallFile,
-  convertLargeFile,
-  getAudioFileInfo,
-  VIDEO_EXTENSIONS,
-  LARGE_FILE_THRESHOLD
+convertLargeFile,
+convertSmallFile,
+executeCommand,
+formatDuration,
+getAudioFileInfo,
+getDuration,
+LARGE_FILE_THRESHOLD,
+sanitizeFilename,
+VIDEO_EXTENSIONS
 } from '../dl-utils'
 
 export const extractLocalFileMetadata = async (filePath: string, fileName: string): Promise<VideoMetadata> => {
@@ -35,7 +34,6 @@ export const extractLocalFileMetadata = async (filePath: string, fileName: strin
       channelUrl: undefined
     }
   } catch (error) {
-    err(`Failed to extract local file metadata`, error)
     return {
       title: fileName.replace(/\.[^/.]+$/, ''),
       duration: 'Unknown',
@@ -79,17 +77,16 @@ export const convertFileToAudio = async (
     const fileSize = inputFile.size
     const inputFilename = inputPath.split('/').pop() || 'audio'
     
-    l('Step 1: Download/Convert Audio', {
-      inputFile: inputFilename,
-      fileSize: `${fileSize} bytes`
-    })
     
     if (fileSize < 1000) {
       throw new Error(`File is too small (${fileSize} bytes), likely corrupted or empty`)
     }
     
-    const namePart = inputFilename.replace(/\.[^/.]+$/, '')
+    const namePart = inputFilename.replace(/\.[^/.]+$/, '').replace(/\.\./g, '')
     const sanitizedName = sanitizeFilename(namePart)
+    if (!sanitizedName) {
+      throw new Error('Invalid filename: sanitization produced an empty name')
+    }
     const baseName = `${filePrefix}-${sanitizedName}`
     
     const isVideo = VIDEO_EXTENSIONS.test(inputFilename)
@@ -98,7 +95,6 @@ export const convertFileToAudio = async (
     const wavPath = `${outputDir}/${baseName}.wav`
     const mp3Path = `${outputDir}/${baseName}.mp3`
     
-    l('Converting to audio', { wavPath, mp3Path })
 
     if (isLargeFile) {
       await convertLargeFile(inputPath, wavPath, mp3Path, isVideo)
@@ -106,7 +102,6 @@ export const convertFileToAudio = async (
       await convertSmallFile(inputPath, wavPath, mp3Path, isVideo)
     }
 
-    l('Converted to audio successfully')
     
     const duration = await getDuration(wavPath)
 
@@ -121,7 +116,6 @@ export const convertFileToAudio = async (
 
     return result
   } catch (error) {
-    err(`Failed to convert to audio`, error)
     throw error
   }
 }

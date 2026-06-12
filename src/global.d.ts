@@ -14,3 +14,8 @@ declare module "*.module.sass" {
   const classes: { [key: string]: string }
   export default classes
 }
+
+interface ImportMetaEnv {
+  readonly VITE_GOOGLE_DRIVE_CLIENT_ID?: string
+  readonly VITE_GOOGLE_DRIVE_API_KEY?: string
+}

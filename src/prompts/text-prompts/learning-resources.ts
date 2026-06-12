@@ -1,10 +1,12 @@
-import type { PromptType, PromptConfig } from '~/types'
+import type { PromptConfig,PromptType } from '~/types'
 
 export const LEARNING_RESOURCES: Partial<Record<PromptType, PromptConfig>> = {
   flashcards: {
     title: "Flashcards",
     displayTitle: "Flashcards",
     category: "Learning Resources",
+    inputTokens: 200,
+    outputTokens: 800,
     renderType: 'faq',
     schema: {
       type: 'array',
@@ -47,6 +49,8 @@ A: Process A focuses on automation while Process B emphasizes manual oversight.`
     title: "How-To Guide",
     displayTitle: "How-To Guide",
     category: "Learning Resources",
+    inputTokens: 200,
+    outputTokens: 1000,
     renderType: 'text',
     schema: {
       type: 'string',
@@ -93,6 +97,8 @@ What to do after completing this guide or related procedures to consider.`
     title: "Study Guide",
     displayTitle: "Study Guide",
     category: "Learning Resources",
+    inputTokens: 200,
+    outputTokens: 1200,
     renderType: 'text',
     schema: {
       type: 'string',
@@ -130,6 +136,8 @@ What to do after completing this guide or related procedures to consider.`
     title: "Training Manual",
     displayTitle: "Training Manual",
     category: "Learning Resources",
+    inputTokens: 200,
+    outputTokens: 1500,
     renderType: 'text',
     schema: {
       type: 'string',
@@ -198,6 +206,8 @@ What to do after completing this guide or related procedures to consider.`
     title: "Troubleshooting Guide",
     displayTitle: "Troubleshooting Guide",
     category: "Learning Resources",
+    inputTokens: 200,
+    outputTokens: 1000,
     renderType: 'text',
     schema: {
       type: 'string',

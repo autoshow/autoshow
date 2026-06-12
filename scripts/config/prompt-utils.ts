@@ -1,7 +1,6 @@
 import * as readline from 'readline'
-
-const RESET = '\x1b[0m'
-const errorColor = Bun.color('#ef4444', 'ansi-16m') || ''
+import { RESET, errorColor } from '../utils/ansi-colors'
+import { writeStdout } from '../utils/terminal-output'
 
 export async function prompt(question: string): Promise<string> {
   const rl = readline.createInterface({
@@ -34,38 +33,27 @@ export async function promptWithValidation(
     if (error === null) {
       return answer
     }
-    console.log(`${errorColor}✗ ${error}${RESET}`)
+    writeStdout(`${errorColor}✗ ${error}${RESET}`)
   }
 }
 
-export function validateNotEmpty(input: string): string | null {
+export function validateResendApiKey(input: string): string | null {
   if (input.length === 0) {
     return 'Value cannot be empty'
+  }
+  if (!input.startsWith('re_')) {
+    return 'API key must start with re_'
   }
   return null
 }
 
-export function validateUrl(input: string): string | null {
+export function validateFromEmail(input: string): string | null {
   if (input.length === 0) {
     return 'Value cannot be empty'
   }
-  try {
-    const url = new URL(input)
-    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-      return 'URL must use http or https protocol'
-    }
-    return null
-  } catch {
-    return 'Invalid URL format'
-  }
-}
-
-export function validateSecretLength(input: string): string | null {
-  if (input.length === 0) {
-    return 'Value cannot be empty'
-  }
-  if (input.length < 32) {
-    return `Secret must be at least 32 characters (got ${input.length})`
+  const pattern = /^(?:.+\s)?<?[\w.-]+@[\w.-]+\.\w+>?$/
+  if (!pattern.test(input)) {
+    return 'Invalid format. Use "Name <email@domain>" or "email@domain"'
   }
   return null
 }

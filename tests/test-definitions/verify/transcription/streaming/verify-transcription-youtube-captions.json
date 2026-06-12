@@ -1,0 +1,40 @@
+{
+  "id": "verify-transcription-youtube-captions",
+  "name": "Verify: YouTube Captions Transcription",
+  "description": "Minimal verification test for YouTube Captions transcription",
+  "tags": [
+    "verify",
+    "transcription",
+    "youtube",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "url",
+    "url": "https://www.youtube.com/watch?v=MORMZXEaONk",
+    "urlType": "youtube"
+  },
+  "transcription": {
+    "service": "youtube",
+    "model": "captions"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

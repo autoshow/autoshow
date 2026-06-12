@@ -1,0 +1,44 @@
+{
+  "id": "verify-image-gemini-3pro",
+  "name": "Verify: Gemini Pro Image",
+  "description": "Minimal verification test for Gemini 3 Pro image generation",
+  "tags": [
+    "verify",
+    "image",
+    "gemini",
+    "minimal"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": true,
+    "service": "gemini",
+    "model": "gemini-3-pro-image-preview",
+    "prompts": [
+      "thumbnail"
+    ],
+    "aspectRatio": "1:1"
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

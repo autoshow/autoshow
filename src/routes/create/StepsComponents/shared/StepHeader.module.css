@@ -1,31 +1,71 @@
-.stepHeading {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-top: 2.5rem;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 3px solid transparent;
-  border-image: linear-gradient(90deg, var(--accent-blue) 0%, rgba(96, 165, 250, 0.3) 100%);
-  border-image-slice: 1;
+.stepHeader {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+  margin: 0 0 var(--space-5);
 }
 
-.stepHeading:first-of-type {
-  margin-top: 1.5rem;
+.stepHeading {
+  min-width: 0;
+  margin: 0;
+  color: var(--create-panel-text);
+  scroll-margin-top: var(--wizard-progress-scroll-margin, calc(var(--nav-height) + env(safe-area-inset-top) + var(--space-8)));
+}
+
+.stepHeading:focus-visible {
+  outline: 2px solid var(--create-accent-primary);
+  outline-offset: 0.25rem;
+}
+
+.stepBadge {
+  display: inline-block;
+  align-items: center;
+  max-width: 100%;
+  padding-bottom: var(--space-2);
+  border-bottom: 4px solid var(--create-accent-primary);
+  color: var(--create-panel-text);
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1.08;
+  text-wrap: balance;
+  letter-spacing: 0;
 }
 
 .instructionBanner {
-  margin-top: 1.5rem;
-  margin-bottom: 2rem;
-  font-size: 1.25rem;
+  min-width: 0;
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--create-panel-border-soft);
+  border-radius: var(--radius-lg);
+  background: var(--create-panel-strong);
+  box-shadow: inset 0 0 0 1px var(--create-accent-warm-soft);
+  color: var(--text-secondary);
+  font-size: 1.05rem;
   font-weight: 600;
-  color: var(--text-primary);
-  text-align: center;
-  padding: 1.5rem 2rem;
-  background: linear-gradient(135deg, rgba(96, 165, 250, 0.15) 0%, rgba(167, 139, 250, 0.15) 100%);
-  border: 2px solid rgba(96, 165, 250, 0.3);
-  border-radius: 12px;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 4px 12px rgba(96, 165, 250, 0.2);
-  line-height: 1.6;
+  line-height: 1.55;
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 48rem) {
+  .stepBadge {
+    font-size: 1.7rem;
+  }
+}
+
+@media (max-width: 32rem) {
+  .stepHeader {
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+  }
+
+  .stepBadge {
+    font-size: 1.45rem;
+    line-height: 1.15;
+  }
+
+  .instructionBanner {
+    padding: var(--space-3);
+    font-size: 0.95rem;
+  }
 }

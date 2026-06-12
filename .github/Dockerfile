@@ -1,4 +1,6 @@
-FROM oven/bun:1.3.7-alpine AS builder
+ARG BUN_BASE_IMAGE=oven/bun:1.3.14-alpine
+
+FROM ${BUN_BASE_IMAGE} AS builder
 
 WORKDIR /app
 
@@ -10,7 +12,7 @@ COPY . .
 
 RUN bun run build
 
-FROM oven/bun:1.3.7-alpine AS runtime
+FROM ${BUN_BASE_IMAGE} AS runtime
 
 LABEL org.opencontainers.image.title="autoshow-bun"
 LABEL org.opencontainers.image.description="AI-powered video transcriptions and summaries"
@@ -28,21 +30,18 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup && \
     ca-certificates \
     bash \
     python3 \
+    su-exec \
     yt-dlp && \
     rm -rf /root/.cache/* /tmp/* && \
-    mkdir -p /home/appuser/.autoshow /app/output /app/uploads /app/data && \
-    chown -R appuser:appgroup /home/appuser/.autoshow /app/output /app/uploads /app/data
+    mkdir -p /home/appuser/.autoshow /app/artifacts/output /app/artifacts/uploads /app/artifacts/logs /app/artifacts/test-results /app/data && \
+    chown -R appuser:appgroup /home/appuser/.autoshow /app/artifacts /app/data
 
 WORKDIR /app
 
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.output ./.output
-COPY --from=builder /app/tests ./tests
 COPY --chmod=755 .github/start.sh /usr/local/bin/start.sh
-COPY scripts ./scripts
-
-USER appuser
 
 EXPOSE 4321
 

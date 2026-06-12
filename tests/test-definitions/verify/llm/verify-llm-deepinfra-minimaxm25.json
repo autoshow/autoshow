@@ -1,0 +1,39 @@
+{
+  "id": "verify-llm-deepinfra-minimaxm25",
+  "name": "Verify: DeepInfra MiniMax M2.5",
+  "description": "Minimal verification test for DeepInfra-hosted MiniMax M2.5 LLM",
+  "tags": [
+    "verify",
+    "llm",
+    "deepinfra",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "deepinfra",
+    "model": "MiniMaxAI/MiniMax-M2.5",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

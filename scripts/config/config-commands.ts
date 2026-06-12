@@ -1,12 +1,43 @@
-const errorColor = Bun.color('#ef4444', 'ansi-16m') || ''
-const RESET = '\x1b[0m'
+import { checkResend } from './check-resend'
+import { checkGoogleDrive } from './check-google-drive'
+import { RESET, successColor, errorColor } from '../utils/ansi-colors'
+import { writeStderr, writeStdout } from '../utils/terminal-output'
 
 export async function runConfigCheck(subcommand?: string): Promise<void> {
+  if (subcommand === 'resend') {
+    const passed = await checkResend()
+    if (!passed) {
+      process.exit(1)
+    }
+    return
+  }
+
+  if (subcommand === 'google-drive') {
+    const passed = await checkGoogleDrive()
+    if (!passed) {
+      process.exit(1)
+    }
+    return
+  }
+
   if (subcommand) {
-    console.error(`${errorColor}Unknown config subcommand: ${subcommand}${RESET}`)
-    console.log('No config subcommands are currently available.')
+    writeStderr(`${errorColor}Unknown config subcommand: ${subcommand}${RESET}`)
+    writeStdout('Available: resend, google-drive')
     process.exit(1)
   }
 
-  console.log('No config checks are currently configured.')
+  const results = {
+    resend: await checkResend()
+  }
+
+  const failed = Object.values(results).filter(r => !r).length
+
+  writeStdout('')
+
+  if (failed > 0) {
+    writeStderr(`${errorColor}${failed} of 1 configurations incomplete.${RESET}`)
+    process.exit(1)
+  }
+
+  writeStdout(`${successColor}✓ All configurations complete.${RESET}`)
 }

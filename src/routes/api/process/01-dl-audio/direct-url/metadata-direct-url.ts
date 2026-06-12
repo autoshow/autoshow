@@ -1,6 +1,11 @@
-import { extractTitleFromUrl } from '~/utils/audio'
-import type { Step1Metadata, VideoMetadata } from '~/types'
-import { formatDuration, getAudioFileInfo } from '../dl-utils'
+import type { Step1Metadata,VideoMetadata } from '~/types'
+import { formatDuration,getAudioFileInfo } from '../dl-utils'
+
+const extractTitleFromUrl = (url: string): string => {
+  const urlPathName = url.split('/').pop()?.split('?')[0] || ''
+  const nameWithoutExtension = urlPathName.replace(/\.[^/.]+$/, '')
+  return nameWithoutExtension || url
+}
 
 export const extractMetadataForDirectUrl = (url: string, urlDuration?: number): VideoMetadata => {
   return {
@@ -22,7 +27,7 @@ export const createDirectUrlMetadata = (
 ): Step1Metadata => {
   const { fileName: audioFileName, fileSize: audioFileSize } = getAudioFileInfo(audioPath)
   const duration = urlDuration ? formatDuration(urlDuration) : 'unknown'
-  
+
   return {
     videoUrl: url,
     videoTitle: extractTitleFromUrl(url),

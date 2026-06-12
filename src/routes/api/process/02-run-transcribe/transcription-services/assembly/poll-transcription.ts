@@ -1,6 +1,5 @@
-import { l, err } from '~/utils/logging'
-import type { AssemblyTranscriptResponse, IProgressTracker } from '~/types'
-import { AssemblyTranscriptResponseSchema, validateOrThrow } from '~/types'
+import type { AssemblyTranscriptResponse,IProgressTracker } from '~/types'
+import { AssemblyTranscriptResponseSchema,validateOrThrow } from '~/types'
 
 const ASSEMBLY_API_BASE = 'https://api.assemblyai.com/v2'
 const MAX_POLL_TIME_MS = 20 * 60 * 1000
@@ -24,7 +23,6 @@ const fetchWithRetry = async (
       if (response.status === 429 || response.status >= 500) {
         const errorText = await response.text()
         lastError = new Error(`HTTP ${response.status}: ${errorText}`)
-        l('AssemblyAI request failed, retrying', { status: response.status, attempt: attempt + 1 })
         await sleep(delay)
         delay = Math.min(delay * 2, 30000)
         continue
@@ -33,7 +31,6 @@ const fetchWithRetry = async (
       return response
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error))
-      l('AssemblyAI request error, retrying', { error: lastError.message, attempt: attempt + 1 })
       await sleep(delay)
       delay = Math.min(delay * 2, 30000)
     }
@@ -65,7 +62,6 @@ export const pollAssemblyTranscription = async (
 
     if (!response.ok) {
       const errorText = await response.text()
-      err(`AssemblyAI status check failed. Status: ${response.status}`, { error: errorText })
       throw new Error(`AssemblyAI status check failed: ${response.statusText} - ${errorText}`)
     }
 
@@ -73,7 +69,6 @@ export const pollAssemblyTranscription = async (
     const result = validateOrThrow(AssemblyTranscriptResponseSchema, data, 'Invalid AssemblyAI transcript response')
 
     const elapsed = Math.round((Date.now() - pollStartTime) / 1000)
-    l('AssemblyAI transcript status', { id: transcriptId, status: result.status, elapsedSeconds: elapsed })
 
     if (result.status === 'completed') {
       return result
@@ -81,7 +76,6 @@ export const pollAssemblyTranscription = async (
 
     if (result.status === 'error') {
       const errorMessage = result.error || 'Unknown error'
-      err('AssemblyAI transcription failed', { id: transcriptId, error: errorMessage })
       throw new Error(`AssemblyAI transcription failed: ${errorMessage}`)
     }
 

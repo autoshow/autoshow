@@ -1,0 +1,42 @@
+{
+  "id": "verify-tts-deapi-kokoro",
+  "name": "Verify: deAPI Kokoro TTS",
+  "description": "Minimal verification test for deAPI Kokoro text-to-speech",
+  "tags": [
+    "verify",
+    "tts",
+    "deapi",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": true,
+    "service": "deapi",
+    "voice": "af_sky",
+    "model": "Kokoro"
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

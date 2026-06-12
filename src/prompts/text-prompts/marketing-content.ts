@@ -1,10 +1,12 @@
-import type { PromptType, PromptConfig } from '~/types'
+import type { PromptConfig,PromptType } from '~/types'
 
 export const MARKETING_CONTENT: Partial<Record<PromptType, PromptConfig>> = {
   contentStrategy: {
     title: "Content Strategy",
     displayTitle: "90-Day Content Calendar",
     category: "Marketing Content",
+    inputTokens: 200,
+    outputTokens: 1000,
     renderType: 'text',
     schema: {
       type: 'string',
@@ -81,6 +83,8 @@ export const MARKETING_CONTENT: Partial<Record<PromptType, PromptConfig>> = {
     title: "Email Newsletter",
     displayTitle: "Email Newsletter",
     category: "Marketing Content",
+    inputTokens: 200,
+    outputTokens: 600,
     renderType: 'text',
     schema: {
       type: 'string',
@@ -158,6 +162,8 @@ P.S. Found this useful? Share it with a fellow developer who might benefit!
     title: "SEO Article",
     displayTitle: "SEO-Optimized Article",
     category: "Marketing Content",
+    inputTokens: 200,
+    outputTokens: 1500,
     renderType: 'text',
     schema: {
       type: 'string',
@@ -220,6 +226,8 @@ A: Concise answer optimized for featured snippets.
     title: "Press Release",
     displayTitle: "Press Release",
     category: "Marketing Content",
+    inputTokens: 200,
+    outputTokens: 800,
     renderType: 'text',
     schema: {
       type: 'string',

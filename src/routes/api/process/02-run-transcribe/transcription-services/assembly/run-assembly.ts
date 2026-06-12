@@ -1,13 +1,28 @@
-import { l, err } from '~/utils/logging'
-import { countTokens } from '~/utils/audio'
-import type { TranscriptionResult, Step2Metadata, IProgressTracker } from '~/types'
-import { uploadAudioToAssembly } from './upload-audio'
+import type { SourceRoutesApiProcess02RunTranscribeTranscriptionServicesAssemblyRunAssemblyBuildAssemblyTranscriptionMetadataOptions as BuildAssemblyTranscriptionMetadataOptions,IProgressTracker,Step2Metadata,TranscriptionResult } from '~/types'
+import { calculateActualCostUsd,countTokens,formatTranscriptOutput } from '../transcription-helpers'
 import { createAssemblyTranscription } from './create-transcription'
-import { pollAssemblyTranscription } from './poll-transcription'
 import { parseAssemblyOutput } from './parse-assembly-output'
-import { formatTranscriptOutput } from '../transcription-helpers'
+import { pollAssemblyTranscription } from './poll-transcription'
+import { uploadAudioToAssembly } from './upload-audio'
 
 const ASSEMBLYAI_API_KEY = process.env['ASSEMBLYAI_API_KEY']
+
+const buildAssemblyTranscriptionMetadata = ({
+  model,
+  processingTime,
+  tokenCount,
+  audioDurationSeconds,
+}: BuildAssemblyTranscriptionMetadataOptions): Step2Metadata => {
+  const actualCostUsd = calculateActualCostUsd('assembly', model, audioDurationSeconds)
+
+  return {
+    transcriptionService: 'assembly',
+    transcriptionModel: model,
+    processingTime,
+    tokenCount,
+    ...(actualCostUsd != null ? { actualCostUsd } : {}),
+  }
+}
 
 export const transcribeWithAssembly = async (
   audioPath: string,
@@ -15,13 +30,12 @@ export const transcribeWithAssembly = async (
   segmentOffsetMinutes: number = 0,
   segmentNumber?: number,
   totalSegments?: number,
-  model: string = 'universal',
+  model: string = 'universal-3-pro',
   progressTracker?: IProgressTracker,
   baseProgress: number = 0
 ): Promise<{ result: TranscriptionResult; metadata: Step2Metadata }> => {
   try {
     if (!ASSEMBLYAI_API_KEY) {
-      err('ASSEMBLYAI_API_KEY not found in environment')
       progressTracker?.error(2, 'Configuration error', 'ASSEMBLYAI_API_KEY environment variable is required')
       throw new Error('ASSEMBLYAI_API_KEY environment variable is required')
     }
@@ -71,22 +85,11 @@ export const transcribeWithAssembly = async (
       progressTracker?.completeStep(2, 'AssemblyAI transcription complete')
     }
 
-    const metadata: Step2Metadata = {
-      transcriptionService: 'assembly',
-      transcriptionModel: model,
+    const metadata = buildAssemblyTranscriptionMetadata({
+      model,
       processingTime,
-      tokenCount
-    }
-
-    l('AssemblyAI transcription completed', {
-      processingTimeMs: processingTime,
       tokenCount,
-      transcriptLength: transcription.text.length,
-      segmentCount: transcription.segments.length,
-      outputPath,
-      segmentNumber,
-      totalSegments,
-      transcriptId
+      audioDurationSeconds: transcript.audio_duration ?? undefined,
     })
 
     return {
@@ -94,7 +97,6 @@ export const transcribeWithAssembly = async (
       metadata
     }
   } catch (error) {
-    err('Failed to transcribe with AssemblyAI', error)
     progressTracker?.error(2, 'Transcription failed', error instanceof Error ? error.message : 'Unknown error')
     throw error
   }

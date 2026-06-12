@@ -1,10 +1,12 @@
-import type { PromptType, PromptConfig } from '~/types'
+import type { PromptConfig,PromptType } from '~/types'
 
 export const CREATIVE_WRITING: Partial<Record<PromptType, PromptConfig>> = {
   poetryCollection: {
     title: "Poetry Collection",
     displayTitle: "Poetry Collection",
     category: "Creative Writing",
+    inputTokens: 200,
+    outputTokens: 800,
     renderType: 'text',
     schema: {
       type: 'string',
@@ -61,6 +63,8 @@ Tomorrow's blueprint.
     title: "Screenplay",
     displayTitle: "Screenplay",
     category: "Creative Writing",
+    inputTokens: 200,
+    outputTokens: 1500,
     renderType: 'text',
     schema: {
       type: 'string',
@@ -122,6 +126,8 @@ We can lead this transformation or be left behind.
     title: "Short Story",
     displayTitle: "Short Story",
     category: "Creative Writing",
+    inputTokens: 200,
+    outputTokens: 2000,
     renderType: 'text',
     schema: {
       type: 'string',

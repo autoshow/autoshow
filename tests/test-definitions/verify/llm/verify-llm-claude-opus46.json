@@ -1,0 +1,38 @@
+{
+  "id": "verify-llm-claude-opus46",
+  "name": "Verify: Claude Opus 4.6",
+  "description": "Minimal verification test for Claude Opus 4.6 LLM",
+  "tags": [
+    "verify",
+    "llm",
+    "claude",
+    "minimal"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "claude",
+    "model": "claude-opus-4-6",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

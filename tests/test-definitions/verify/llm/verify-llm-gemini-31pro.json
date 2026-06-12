@@ -1,0 +1,38 @@
+{
+  "id": "verify-llm-gemini-31pro",
+  "name": "Verify: Gemini 3.1 Pro",
+  "description": "Minimal verification test for Gemini 3.1 Pro LLM",
+  "tags": [
+    "verify",
+    "llm",
+    "gemini",
+    "minimal"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "gemini",
+    "model": "gemini-3.1-pro-preview",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

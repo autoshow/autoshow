@@ -1,26 +1,16 @@
-import { For, Show, Switch, Match } from "solid-js"
+import clsx from "clsx"
+import { For,Match,Show,Switch } from "solid-js"
+import ui from "~/styles/ui.module.css"
+import type { SourceRoutesCreateProgressComponentsProgressTrackerProps as Props } from '~/types'
+import { JOB_PROGRESS_DISPLAY_STEPS } from "~/utils/job-progress"
 import s from "./ProgressTracker.module.css"
-import type { ProgressUpdate } from "~/types"
-
-type Props = {
-  progress: ProgressUpdate
-}
 
 export default function ProgressTracker(props: Props) {
-  const allSteps = [
-    { number: 1, name: 'Download Audio' },
-    { number: 2, name: 'Transcription' },
-    { number: 3, name: 'Content Selection' },
-    { number: 4, name: 'LLM Generation' },
-    { number: 5, name: 'Text-to-Speech' },
-    { number: 6, name: 'Image Generation' },
-    { number: 7, name: 'Music Generation' },
-    { number: 8, name: 'Video Generation' }
-  ]
-
   const stepStatuses = () => {
-    return allSteps.map(step => {
-      if (step.number < props.progress.step) {
+    return JOB_PROGRESS_DISPLAY_STEPS.map(step => {
+      if (props.progress.skippedSteps?.includes(step.number)) {
+        return { ...step, status: 'skipped' }
+      } else if (step.number < props.progress.step) {
         return { ...step, status: 'completed' }
       } else if (step.number === props.progress.step) {
         return { ...step, status: props.progress.status }
@@ -31,22 +21,24 @@ export default function ProgressTracker(props: Props) {
   }
 
   const getStepClass = (status: string) => {
-    const classes = [s.step]
-    if (status === 'completed') classes.push(s.stepCompleted)
-    if (status === 'processing') classes.push(s.stepProcessing)
-    if (status === 'error') classes.push(s.stepError)
-    if (status === 'pending') classes.push(s.stepPending)
-    if (status === 'skipped') classes.push(s.stepSkipped)
-    return classes.join(' ')
+    return clsx(
+      s.step,
+      status === "completed" && s.stepCompleted,
+      status === "processing" && s.stepProcessing,
+      status === "error" && s.stepError,
+      status === "pending" && s.stepPending,
+      status === "skipped" && s.stepSkipped,
+    )
   }
 
   return (
     <div class={s.container}>
       <div class={s.header}>
         <h3 class={s.title}>Processing Your Content</h3>
-        <div class={s.overallProgress}>
-          <div class={s.overallProgressBar} style={{ width: `${props.progress.overallProgress}%` }} />
+        <div class={s.overallProgress} style={{ "--overall-progress": `${props.progress.overallProgress}%` }}>
+          <div class={s.overallProgressBar} style={{ transform: `scaleX(${props.progress.overallProgress / 100})` }} />
           <span class={s.overallProgressText}>{props.progress.overallProgress}%</span>
+          <span class={s.overallProgressTextFilled} aria-hidden="true">{props.progress.overallProgress}%</span>
         </div>
       </div>
 
@@ -60,7 +52,7 @@ export default function ProgressTracker(props: Props) {
                     <span class={s.stepIcon}>✓</span>
                   </Match>
                   <Match when={step.status === 'processing'}>
-                    <span class={s.stepSpinner} />
+                    <span class={s.stepSpinner}>…</span>
                   </Match>
                   <Match when={step.status === 'error'}>
                     <span class={s.stepIcon}>✖</span>
@@ -74,7 +66,7 @@ export default function ProgressTracker(props: Props) {
                 <div class={s.stepName}>{step.name}</div>
                 <Show when={step.number === props.progress.step && step.status === 'processing'}>
                   <div class={s.stepProgress}>
-                    <div class={s.stepProgressBar} style={{ width: `${props.progress.stepProgress}%` }} />
+                    <div class={s.stepProgressBar} style={{ transform: `scaleX(${props.progress.stepProgress / 100})` }} />
                   </div>
                 </Show>
               </div>
@@ -93,7 +85,7 @@ export default function ProgressTracker(props: Props) {
       </div>
 
       <Show when={props.progress.error}>
-        <div class={s.errorBox}>
+        <div class={clsx(ui.status, ui.statusDanger, s.errorBox)}>
           <strong>Error:</strong> {props.progress.error}
         </div>
       </Show>

@@ -1,35 +1,67 @@
-# Video Generation Models (Step 8)
+# Video Generation Models (Step 4: Image, Video, and Music)
 
-AI video generation services for creating video content from prompts.
+The video registry exposes the curated text-to-video services configured in `src/models/models-config/video-config.ts`.
+
+Speed grades below are the current `deriveSpeedLabel(...)` outputs from the registry's representative five-second video workload.
 
 ## Outline
 
-- [Cost Rankings](#cost-rankings-per-second-of-video)
+- [Current Registry](#current-registry)
+- [Prompt Types](#prompt-types)
+- [Selection Example](#selection-example)
 - [Notes](#notes)
+- [Security Context](#security-context)
 
----
+## Current Registry
 
-## Cost Rankings (per second of video)
+| Service | Model ID | Speed | Quality | Cost/Sec | Sizes | Durations | Aspect Ratios | Env Variable |
+|---------|----------|-------|---------|----------|-------|-----------|---------------|--------------|
+| `gemini` | `veo-3.1-generate-preview` | A | A | `$0.40` | `720p`, `1080p`, `4k` | `4`, `6`, `8` | `16:9`, `9:16` | `GEMINI_API_KEY` |
+| `gemini` | `veo-3.1-fast-generate-preview` | A | B | `$0.35` | `720p`, `1080p`, `4k` | `4`, `6`, `8` | `16:9`, `9:16` | `GEMINI_API_KEY` |
+| `runway` | `gen4.5` | B | A+ | `$0.12` | `1920x1080`, `1080x1920`, `1280x720`, `720x1280` | `4`, `6`, `8` | size-driven | `RUNWAYML_API_SECRET` |
+| `deepinfra` | `Wan-AI/Wan2.1-T2V-1.3B` | B | B | `$0.02` | `832x480`, `480x832` | `4`, `8` | `16:9`, `9:16` | `DEEPINFRA_API_KEY` |
+| `minimax` | `MiniMax-Hailuo-2.3` | B | A | `$0.04` | `768P`, `1080P`, `720P` | `6`, `10` | size-driven | `MINIMAX_API_KEY` |
+| `minimax` | `MiniMax-Hailuo-02` | B | A | `$0.04` | `768P`, `1080P`, `720P` | `6`, `10` | size-driven | `MINIMAX_API_KEY` |
+| `minimax` | `T2V-01-Director` | C | B | `$0.04` | `768P`, `1080P`, `720P` | `6`, `10` | size-driven | `MINIMAX_API_KEY` |
+| `minimax` | `T2V-01` | B | B | `$0.04` | `768P`, `1080P`, `720P` | `6`, `10` | size-driven | `MINIMAX_API_KEY` |
+| `grok` | `grok-imagine-video` | A | A | `$0.05` | `720p`, `480p` | `1` through `15` | `16:9`, `4:3`, `1:1`, `9:16`, `3:4`, `3:2`, `2:3` | `XAI_API_KEY` |
+| `glm` | `cogvideox-3` | B | A | `$0.04` | `1920x1080`, `1080x1920`, `1280x720` | `5` | size-driven | `GLM_API_KEY` |
+| `glm` | `viduq1-text` | C | B | `$0.08` | `1920x1080`, `1080x1920`, `1280x720` | `5` | size-driven | `GLM_API_KEY` |
+| `deapi` | `Ltxv_13B_0_9_8_Distilled_FP8` | B | B | `$0.02` | `1280x720`, `720x1280`, `1024x1024` | `4`, `8` | `16:9`, `9:16`, `1:1` | `DEAPI_API_KEY` |
 
-| Rank | Provider | Model                         | Time    | Speed | Resolution           | $/Sec | $/Min | Cents/Sec | Cents/Min | Env Variable          |
-|------|----------|-------------------------------|---------|-------|----------------------|-------|-------|-----------|-----------|-----------------------|
-| 1    | OpenAI   | sora-2                        | 79.00s  | B     | 720x1280; 1280x720   | $0.10 | $6    | 10¢       | 600¢      | `OPENAI_API_KEY`      |
-| 2    | OpenAI   | sora-2-pro                    | TBD     | -     | 720x1280; 1280x720   | $0.30 | $18   | 30¢       | 1800¢     | `OPENAI_API_KEY`      |
-| 3    | Google   | veo-3.1-fast-generate-preview | TBD     | -     | 720p                 | $0.35 | $21   | 35¢       | 2100¢     | `GEMINI_API_KEY`      |
-| 4    | Google   | veo-3.1-generate-preview      | 36.78s  | A     | 720p/1080p/4K        | $0.40 | $24   | 40¢       | 2400¢     | `GEMINI_API_KEY`      |
-| 5    | OpenAI   | sora-2-pro                    | TBD     | -     | 1024x1792; 1792x1024 | $0.50 | $30   | 50¢       | 3000¢     | `OPENAI_API_KEY`      |
-| 6    | MiniMax  | T2V-01                        | 192.76s | C     | 720P                 | TBD   | TBD   | TBD       | TBD       | `MINIMAX_API_KEY`     |
-| 7    | MiniMax  | T2V-01-Director               | TBD     | -     | 720P                 | TBD   | TBD   | TBD       | TBD       | `MINIMAX_API_KEY`     |
-| 8    | MiniMax  | MiniMax-Hailuo-02             | TBD     | -     | 768P/1080P           | TBD   | TBD   | TBD       | TBD       | `MINIMAX_API_KEY`     |
-| 9    | MiniMax  | MiniMax-Hailuo-2.3            | TBD     | -     | 768P/1080P           | TBD   | TBD   | TBD       | TBD       | `MINIMAX_API_KEY`     |
-| 10   | Grok     | grok-imagine-video            | 26.74s  | A     | 720p/480p            | TBD   | TBD   | TBD       | TBD       | `XAI_API_KEY`         |
+## Prompt Types
+
+Current video prompt ids are:
+
+- `explainer`
+- `highlight`
+- `intro`
+- `outro`
+- `social`
+
+## Selection Example
+
+```bash
+-F "videoGenEnabled=true" \
+-F "videoService=deepinfra" \
+-F "videoModel=Wan-AI/Wan2.1-T2V-1.3B" \
+-F "videoSize=832x480" \
+-F "videoAspectRatio=16:9" \
+-F "videoDuration=4" \
+-F "selectedVideoPrompts=explainer"
+```
 
 ## Notes
 
-- **Use async workflows** for all video generation
-- **Grok Video:** Fastest at 26.74s with good quality
-- **Gemini Veo 3.1:** Fast at 36.78s, 1080p and 4K only available for 8s duration
-- **OpenAI Sora 2:** 79.00s generation time with high quality
-- **MiniMax T2V-01:** Slowest at 192.76s but supports longer videos
-- **MiniMax Hailuo 2.3:** Latest flagship with camera controls
-- **Video is production-ready:** All options practical for async workflows
+- Default video service: `runway`
+- Default video model: `gen4.5`
+- Default video size and duration: `1280x720` and `8`
+- Scene descriptions use the selected Step 3 LLM when available; otherwise the scene-description helper falls back to `openai` + `gpt-5.4`.
+- The process form still accepts `selectedVideoPrompts` as a comma-separated list, but the current create flow limits the picker to one video prompt.
+- For providers without an explicit aspect-ratio list, the selected size determines the output orientation.
+- Some adapters can return a more precise runtime cost than the static registry entry; the Step 4 media stage will prefer the adapter-provided cost when available.
+
+## Security Context
+
+- Video generation runs through processing jobs at [`POST /api/process`](../api/process.md).
+- Generated videos and thumbnails are served through global media APIs.

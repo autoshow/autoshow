@@ -1,7 +1,5 @@
-import { l } from '~/utils/logging'
-import { formatTimestamp } from '~/utils/audio'
-import type { TranscriptionSegment, AssemblyTranscriptResponse, AssemblyTranscriptWord } from '~/types'
-import { adjustTimestamp } from '../transcription-helpers'
+import type { AssemblyTranscriptResponse,AssemblyTranscriptWord,TranscriptionSegment } from '~/types'
+import { adjustTimestamp,formatTimestamp } from '../transcription-helpers'
 
 const normalizeSpeaker = (speaker: string | number | undefined): string | undefined => {
   if (speaker === undefined || speaker === null) return undefined
@@ -111,15 +109,6 @@ export const parseAssemblyOutput = (
     })
   }
 
-  const speakerSet = new Set(segments.map(seg => seg.speaker).filter(Boolean))
-
-  l('Parsed AssemblyAI transcript', {
-    utteranceCount: response.utterances?.length ?? 0,
-    wordCount: response.words?.length ?? 0,
-    segmentCount: segments.length,
-    transcriptLength: fullText.length,
-    speakerCount: speakerSet.size
-  })
 
   return {
     text: fullText,

@@ -1,7 +1,5 @@
-import { l } from '~/utils/logging'
-import { formatTimestamp } from '~/utils/audio'
-import type { TranscriptionSegment, SonioxTranscriptResponse, SonioxToken } from '~/types'
-import { adjustTimestamp } from '../transcription-helpers'
+import type { SonioxToken,SonioxTranscriptResponse,TranscriptionSegment } from '~/types'
+import { adjustTimestamp,formatTimestamp } from '../transcription-helpers'
 
 const normalizeSpeaker = (speaker: string | number | undefined): string | undefined => {
   if (speaker === undefined || speaker === null) return undefined
@@ -93,14 +91,6 @@ export const parseSonioxOutput = (
     })
   }
 
-  const speakerSet = new Set(segments.map(seg => seg.speaker).filter(Boolean))
-
-  l('Parsed Soniox transcript', {
-    tokenCount: response.tokens?.length ?? 0,
-    segmentCount: segments.length,
-    transcriptLength: fullText.length,
-    speakerCount: speakerSet.size
-  })
 
   return {
     text: fullText,

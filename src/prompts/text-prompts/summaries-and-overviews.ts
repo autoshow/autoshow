@@ -1,10 +1,12 @@
-import type { PromptType, PromptConfig } from '~/types'
+import type { PromptConfig,PromptType } from '~/types'
 
 export const SUMMARIES_AND_OVERVIEWS: Partial<Record<PromptType, PromptConfig>> = {
   shortSummary: {
     title: "Short Summary",
     displayTitle: "Episode Description",
     category: "Summaries",
+    inputTokens: 150,
+    outputTokens: 50,
     renderType: 'text',
     schema: {
       type: 'string',
@@ -21,6 +23,8 @@ One sentence description encapsulating the content within roughly 180 characters
     title: "Medium Summary",
     displayTitle: "Episode Overview",
     category: "Summaries",
+    inputTokens: 150,
+    outputTokens: 150,
     renderType: 'text',
     schema: {
       type: 'string',
@@ -37,6 +41,8 @@ A medium-length summary of the transcript, typically 300-600 characters or about
     title: "Long Summary",
     displayTitle: "Episode Summary",
     category: "Summaries",
+    inputTokens: 150,
+    outputTokens: 300,
     renderType: 'text',
     schema: {
       type: 'string',
@@ -53,6 +59,8 @@ A concise summary of the transcript, typically 600-1200 characters or about 100-
     title: "Bullet Points",
     displayTitle: "Key Points",
     category: "Overviews",
+    inputTokens: 100,
+    outputTokens: 300,
     renderType: 'stringList',
     schema: {
       type: 'array',
@@ -70,6 +78,8 @@ A concise summary of the transcript, typically 600-1200 characters or about 100-
     title: "Key Takeaways",
     displayTitle: "Key Takeaways",
     category: "Overviews",
+    inputTokens: 150,
+    outputTokens: 200,
     renderType: 'numberedList',
     schema: {
       type: 'array',
@@ -87,6 +97,8 @@ A concise summary of the transcript, typically 600-1200 characters or about 100-
     title: "FAQ",
     displayTitle: "FAQ",
     category: "Overviews",
+    inputTokens: 200,
+    outputTokens: 800,
     renderType: 'faq',
     schema: {
       type: 'array',
@@ -112,6 +124,8 @@ A: JavaScript, APIs, and markup.`
     title: "Important Quotes",
     displayTitle: "Important Quotes",
     category: "Overviews",
+    inputTokens: 150,
+    outputTokens: 200,
     renderType: 'numberedList',
     schema: {
       type: 'array',
@@ -131,6 +145,8 @@ A: JavaScript, APIs, and markup.`
     title: "Potential Titles",
     displayTitle: "Potential Titles",
     category: "Overviews",
+    inputTokens: 200,
+    outputTokens: 150,
     renderType: 'numberedList',
     schema: {
       type: 'array',

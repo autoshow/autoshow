@@ -1,0 +1,42 @@
+{
+  "id": "verify-tts-elevenlabs-flash25",
+  "name": "Verify: ElevenLabs TTS (Flash v2.5)",
+  "description": "Minimal verification test for ElevenLabs Flash v2.5 text-to-speech",
+  "tags": [
+    "verify",
+    "tts",
+    "elevenlabs",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": true,
+    "service": "elevenlabs",
+    "voice": "JBFqnCBsd6RMkjVDRZzb",
+    "model": "eleven_flash_v2_5"
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

@@ -1,12 +1,10 @@
-import { l } from '~/utils/logging'
-import { formatTimestamp } from '~/utils/audio'
-import type { TranscriptionSegment, GladiaTranscriptionStatusResponse, GladiaUtterance } from '~/types'
-import { adjustTimestamp } from '../transcription-helpers'
+import type { GladiaTranscriptionStatusResponse,GladiaUtterance,TranscriptionSegment } from '~/types'
+import { adjustTimestamp,formatTimestamp } from '../transcription-helpers'
 
 export const parseGladiaOutput = (
   response: GladiaTranscriptionStatusResponse,
   offsetMinutes: number = 0
-): { text: string, segments: TranscriptionSegment[] } => {
+): { text: string, segments: TranscriptionSegment[], billingTimeSeconds: number } => {
   const result = response.result
 
   if (!result || !result.transcription) {
@@ -28,19 +26,10 @@ export const parseGladiaOutput = (
     }
   })
 
-  const speakerSet = new Set(segments.map(seg => seg.speaker).filter(Boolean))
-
-  l('Parsed Gladia transcript', {
-    utteranceCount: utterances.length,
-    segmentCount: segments.length,
-    transcriptLength: full_transcript.length,
-    speakerCount: speakerSet.size,
-    audioDuration: result.metadata.audio_duration,
-    transcriptionTime: result.metadata.transcription_time
-  })
 
   return {
     text: full_transcript,
-    segments
+    segments,
+    billingTimeSeconds: result.metadata.billing_time
   }
 }

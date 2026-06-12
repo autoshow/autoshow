@@ -1,5 +1,4 @@
-import { l, err } from '~/utils/logging'
-import { AssemblyUploadResponseSchema, validateOrThrow } from '~/types'
+import { AssemblyUploadResponseSchema,validateOrThrow } from '~/types'
 
 const ASSEMBLY_API_BASE = 'https://api.assemblyai.com/v2'
 
@@ -35,13 +34,6 @@ export const uploadAudioToAssembly = async (
 
   const contentType = getContentType(audioPath)
 
-  l('Uploading audio to AssemblyAI', {
-    fileName: audioPath.split('/').pop(),
-    fileSize,
-    bufferSize: audioBuffer.byteLength,
-    contentType
-  })
-
   const response = await fetch(`${ASSEMBLY_API_BASE}/upload`, {
     method: 'POST',
     headers: {
@@ -53,14 +45,11 @@ export const uploadAudioToAssembly = async (
 
   if (!response.ok) {
     const errorText = await response.text()
-    err(`AssemblyAI upload failed. Status: ${response.status}`, { error: errorText })
     throw new Error(`AssemblyAI upload failed: ${response.statusText} - ${errorText}`)
   }
 
   const data = await response.json()
   const result = validateOrThrow(AssemblyUploadResponseSchema, data, 'Invalid AssemblyAI upload response')
-
-  l('AssemblyAI upload complete', { uploadUrl: result.upload_url.substring(0, 50) + '...' })
 
   return result.upload_url
 }

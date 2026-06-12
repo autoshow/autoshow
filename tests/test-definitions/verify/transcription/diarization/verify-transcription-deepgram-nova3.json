@@ -1,0 +1,39 @@
+{
+  "id": "verify-transcription-deepgram-nova3",
+  "name": "Verify: Deepgram Nova 3 Transcription",
+  "description": "Minimal verification test for Deepgram Nova 3 transcription with speaker diarization",
+  "tags": [
+    "verify",
+    "transcription",
+    "deepgram",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "deepgram",
+    "model": "nova-3"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

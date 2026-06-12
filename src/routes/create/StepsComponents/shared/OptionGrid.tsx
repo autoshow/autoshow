@@ -1,13 +1,10 @@
-import type { JSXElement } from "solid-js"
-import s from "./OptionGrid.module.css"
+import clsx from "clsx"
+import type { SourceRoutesCreateStepsComponentsSharedOptionGridProps as Props } from '~/types'
+import shared from "./shared.module.css"
 
-type Props = {
-  children: JSXElement
-}
-
-export default function OptionGrid(props: Props): JSXElement {
+export default function OptionGrid(props: Props) {
   return (
-    <div class={s.optionGrid}>
+    <div class={clsx(shared.selectableGrid, props.class)}>
       {props.children}
     </div>
   )

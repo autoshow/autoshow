@@ -1,12 +1,28 @@
-import type { VideoPromptType, VideoPromptConfig, VideoSize, TranscriptionResult, VideoMetadata } from '~/types'
+import type { VideoPromptConfig,VideoPromptType,SourcePromptsVideoPromptsWrapVideoPromptOptions as WrapVideoPromptOptions } from '~/types'
 
-const SORA_SAFETY_PREFIX = `Note: Avoid depicting violence, explicit content, real public figures, or clearly illegal activities.
+const VIDEO_SAFETY_PREFIX = `Note: Avoid depicting violence, explicit content, real public figures, clearly illegal activities, or named/identifiable real people from the source material.
+If the scene implies a person, render an anonymous adult subject described only by role, clothing, or mood. Do not use real names, exact likenesses, or recognizable logos/trademarks.
 
 SCENE DESCRIPTION:
 `
 
-export const wrapWithSafetyPrefix = (sceneDescription: string): string => {
-  return SORA_SAFETY_PREFIX + sceneDescription
+const LABEL_PREFIX_PATTERN = /\b(Shot Type|Subject|Action\/Motion|Setting|Lighting|Camera Movement):\s*/g
+
+const buildCompactSafetyPrompt = (sceneDescription: string): string => {
+  const plainScene = sceneDescription
+    .replace(LABEL_PREFIX_PATTERN, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+  return `Safe cinematic video prompt. Use anonymous adult subjects only. Avoid real names, public figures, exact likenesses, logos, violence, explicit content, and illegal activity. ${plainScene}`.trim()
+}
+
+export const wrapWithSafetyPrefix = (sceneDescription: string, options: WrapVideoPromptOptions = {}): string => {
+  if (options.mode === 'compact') {
+    return buildCompactSafetyPrompt(sceneDescription)
+  }
+
+  return VIDEO_SAFETY_PREFIX + sceneDescription
 }
 
 export const VIDEO_PROMPT_CONFIG: Record<VideoPromptType, VideoPromptConfig> = {
@@ -43,48 +59,3 @@ export const VIDEO_PROMPT_CONFIG: Record<VideoPromptType, VideoPromptConfig> = {
 }
 
 export const VIDEO_PROMPT_TYPES = Object.keys(VIDEO_PROMPT_CONFIG) as VideoPromptType[]
-
-export const buildVideoScenePrompt = (
-  metadata: VideoMetadata,
-  transcription: TranscriptionResult,
-  videoType: VideoPromptType,
-  size: VideoSize,
-  duration: number
-): string => {
-  const config = VIDEO_PROMPT_CONFIG[videoType]
-  
-  const isPortrait = size === '1080x1920' || size === '720x1280'
-  const orientationNote = isPortrait 
-    ? 'The video is in PORTRAIT orientation (vertical) - compose shots accordingly with subjects centered and vertical framing.'
-    : 'The video is in LANDSCAPE orientation (horizontal) - compose shots with cinematic widescreen framing.'
-
-  return `You are an expert video director and cinematographer. Based on the following content, write a detailed scene description for ${config.typeDescription}.
-
-${config.styleInstructions}
-
-Video Specifications:
-- Duration: ${duration} seconds
-- Resolution: ${size}
-- ${orientationNote}
-
-Content Title: ${metadata.title}
-${metadata.author ? `Author/Creator: ${metadata.author}` : ''}
-
-Content Summary (from transcript):
-${transcription.text.substring(0, 3000)}
-
-Write a single, cohesive scene description that Sora can render as one continuous ${duration}-second video. Include:
-
-1. **Shot Type**: Camera angle and framing (wide shot, close-up, tracking shot, aerial view, etc.)
-2. **Subject**: Main visual focus - be creative and specific to THIS content's themes
-3. **Action/Motion**: What movement or changes occur throughout the ${duration} seconds
-4. **Setting**: The environment or backdrop that fits the content's mood
-5. **Lighting**: Lighting style that enhances the visual storytelling
-6. **Camera Movement**: How the camera moves during the shot
-
-Be creative and specific to the actual content. The scene should visually represent the themes and ideas from the transcript.
-
-Write ONLY the scene description, no additional commentary.
-
-Scene Description:`
-}

@@ -1,0 +1,44 @@
+{
+  "id": "verify-document-openai-gpt54pro",
+  "name": "Verify: OpenAI gpt-5.4-pro",
+  "description": "Minimal verification test for OpenAI document extraction with gpt-5.4-pro",
+  "tags": [
+    "verify",
+    "document",
+    "openai",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "url",
+    "url": "https://ajc.pics/autoshow/textract-1.pdf",
+    "urlType": "document"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "document": {
+    "service": "openai",
+    "model": "gpt-5.4-pro"
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

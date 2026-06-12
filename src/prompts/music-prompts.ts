@@ -1,4 +1,4 @@
-import type { MusicGenre, TranscriptionResult, VideoMetadata } from '~/types'
+import type { MusicGenre } from '~/types'
 
 export const getGenrePromptEnhancement = (genre: MusicGenre): string => {
   const genreDescriptions: Record<MusicGenre, string> = {
@@ -11,51 +11,4 @@ export const getGenrePromptEnhancement = (genre: MusicGenre): string => {
   }
   
   return genreDescriptions[genre] ?? 'with genre-appropriate instrumentation, structure, and production'
-}
-
-export const buildLyricsPrompt = (
-  metadata: VideoMetadata,
-  transcription: TranscriptionResult,
-  genre: MusicGenre,
-  targetDurationSeconds: number
-): string => {
-  const genreInstructions: Record<MusicGenre, string> = {
-    rap: 'Write rap lyrics with rhythmic flow, clever wordplay, and urban storytelling. Include verses and a catchy hook. The lyrics should have a clear rhyme scheme and be suitable for hip-hop production.',
-    rock: 'Write rock lyrics with powerful imagery, emotional depth, and anthemic qualities. Include verses and a memorable chorus. The lyrics should work well with electric guitar-driven music.',
-    pop: 'Write pop lyrics that are catchy, relatable, and radio-friendly. Include verses and an infectious chorus with a strong hook. The lyrics should be easy to sing along to.',
-    country: 'Write country lyrics with storytelling, heartfelt emotion, and authentic Americana themes. Include verses and a singable chorus. The lyrics should paint vivid pictures and connect with everyday experiences.',
-    folk: 'Write folk lyrics with poetic imagery, traditional storytelling, and acoustic sensibility. Include verses and a simple, memorable chorus. The lyrics should feel organic and timeless.',
-    jazz: 'Write jazz lyrics with sophisticated wordplay, smooth phrasing, and musical sophistication. Include verses and a melodic chorus. The lyrics should complement improvisation and swing rhythms.'
-  }
-
-  const instruction = genreInstructions[genre]
-  const wordTarget = targetDurationSeconds <= 30
-    ? '40-80'
-    : targetDurationSeconds <= 60
-      ? '80-140'
-      : targetDurationSeconds <= 90
-        ? '120-200'
-        : targetDurationSeconds <= 120
-          ? '160-260'
-          : '200-400'
-
-  return `Based on the following transcript, write original song lyrics in the ${genre} genre.
-
-${instruction}
-
-Video Title: ${metadata.title}
-${metadata.author ? `Author: ${metadata.author}` : ''}
-
-Transcript Summary:
-${transcription.text.substring(0, 2000)}
-
-Important instructions:
-- DO NOT use any copyrighted lyrics or reference specific band/artist names
-- Create 100% original lyrics inspired by the themes and topics in the transcript
-- Make the lyrics complete with verses and chorus
-- Keep the total length to approximately ${wordTarget} words
-- The lyrics should be suitable for a ${targetDurationSeconds}-second song
-- Write ONLY the lyrics, no additional commentary or explanations
-
-Lyrics:`
 }

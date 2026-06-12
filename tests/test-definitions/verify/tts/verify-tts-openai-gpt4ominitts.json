@@ -1,0 +1,42 @@
+{
+  "id": "verify-tts-openai-gpt4ominitts",
+  "name": "Verify: OpenAI TTS",
+  "description": "Minimal verification test for OpenAI text-to-speech",
+  "tags": [
+    "verify",
+    "tts",
+    "openai",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": true,
+    "service": "openai",
+    "voice": "alloy",
+    "model": "gpt-4o-mini-tts"
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

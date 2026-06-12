@@ -1,0 +1,44 @@
+{
+  "id": "verify-document-glm-ocr",
+  "name": "Verify: GLM OCR",
+  "description": "Minimal verification test for GLM OCR document parsing",
+  "tags": [
+    "verify",
+    "document",
+    "glm-ocr",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "url",
+    "url": "https://ajc.pics/autoshow/textract-1.pdf",
+    "urlType": "document"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "document": {
+    "service": "glm",
+    "model": "glm-ocr"
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

@@ -1,0 +1,87 @@
+import { getDefaultDocumentModel,getDefaultDocumentService,getDefaultImageModelForService,getDefaultMusicGenre,getDefaultMusicModelForService,getDefaultMusicService,getDefaultTranscriptionModelForService,getDefaultTTSModel,getDefaultVideoModel,getDefaultVideoSize } from '~/models'
+import type { StepsState,VideoGenServiceType } from '~/types'
+
+export const getDefaultVideoService = (): VideoGenServiceType => {
+  return 'runway'
+}
+
+const DEFAULT_MUSIC_SERVICE = getDefaultMusicService()
+const DEFAULT_MUSIC_GENRE = getDefaultMusicGenre(DEFAULT_MUSIC_SERVICE)
+const DEFAULT_MUSIC_MODEL = getDefaultMusicModelForService(DEFAULT_MUSIC_SERVICE)
+const DEFAULT_LLM_SERVICE = 'groq'
+const DEFAULT_LLM_MODEL = 'openai/gpt-oss-20b'
+const DEFAULT_VIDEO_SERVICE = getDefaultVideoService()
+
+export const createInitialStepsState = (): StepsState => ({
+  transcriptionOption: 'groq',
+  transcriptionModel: getDefaultTranscriptionModelForService('groq'),
+  transcriptionModelSelected: false,
+  selectedPrompts: [],
+  llmEnabled: false,
+  ttsWithLlm: false,
+  writeModeSelected: false,
+  llmService: DEFAULT_LLM_SERVICE,
+  llmModel: DEFAULT_LLM_MODEL,
+  llmModelSelected: false,
+  llmCustomInstructions: '',
+  ttsService: 'openai',
+  ttsVoice: 'coral',
+  ttsModel: getDefaultTTSModel('openai'),
+  ttsModelSelected: false,
+  ttsVoiceSelected: false,
+  ttsDecisionMade: false,
+  imageEnabled: false,
+  mediaDecisionSelected: false,
+  imageService: 'openai',
+  imageModel: getDefaultImageModelForService('openai'),
+  imageModelSelected: false,
+  imageDimensionOrRatio: '1024x1024',
+  imageDimensionSelected: false,
+  selectedImagePrompts: [],
+  imagePromptSelected: false,
+  imageCustomInstructions: '',
+  musicEnabled: false,
+  musicService: DEFAULT_MUSIC_SERVICE,
+  musicModel: DEFAULT_MUSIC_MODEL,
+  musicModelSelected: false,
+  selectedMusicGenre: DEFAULT_MUSIC_GENRE,
+  musicGenreSelected: false,
+  musicPreset: 'cheap',
+  musicPresetSelected: false,
+  musicDurationSeconds: 60,
+  musicDurationSelected: false,
+  musicInstrumental: false,
+  musicSampleRate: undefined,
+  musicBitrate: undefined,
+  musicCustomInstructions: '',
+  videoEnabled: false,
+  videoService: DEFAULT_VIDEO_SERVICE,
+  selectedVideoPrompts: [],
+  videoPromptSelected: false,
+  videoModel: getDefaultVideoModel(DEFAULT_VIDEO_SERVICE),
+  videoModelSelected: false,
+  videoSize: getDefaultVideoSize(DEFAULT_VIDEO_SERVICE),
+  videoSizeSelected: false,
+  videoDuration: 8,
+  videoDurationSelected: false,
+  videoAspectRatio: '16:9',
+  videoAspectRatioSelected: false,
+  videoCustomInstructions: '',
+  selectedFile: null,
+  uploadId: '',
+  uploadedFileName: '',
+  uploadedFileSize: undefined,
+  uploadedFileDuration: undefined,
+  sourceOrigin: null,
+  isUploading: false,
+  uploadError: '',
+  uploadProgress: 0,
+  urlValue: '',
+  isVerifying: false,
+  urlMetadata: null,
+  urlVerified: false,
+  documentRuntimeCapabilities: null,
+  documentService: getDefaultDocumentService(),
+  documentModel: getDefaultDocumentModel(getDefaultDocumentService()),
+  documentModelSelected: false,
+})

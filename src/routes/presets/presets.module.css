@@ -1,0 +1,250 @@
+.container {
+  --create-accent-primary: var(--accent-blue);
+  --create-accent-primary-soft: rgba(124, 196, 255, 0.14);
+  --create-accent-secondary: #67d0ba;
+  --create-accent-secondary-soft: rgba(103, 208, 186, 0.14);
+  --create-accent-warm: #f0bc6a;
+  --create-accent-warm-soft: rgba(240, 188, 106, 0.16);
+  --create-accent-rose: #f39aa9;
+  --create-accent-rose-soft: rgba(243, 154, 169, 0.14);
+  --create-panel-bg: #18222e;
+  --create-panel-strong: #1d2a37;
+  --create-panel-muted: #13202b;
+  --create-panel-border: #395067;
+  --create-panel-border-soft: #2c3d50;
+  --create-panel-text: #e6eef8;
+  --create-panel-text-soft: #b5c3d1;
+  --z-wizard-progress: var(--z-sticky);
+  --wizard-progress-top: calc(var(--nav-height) + env(safe-area-inset-top) + var(--space-4));
+  --wizard-progress-scroll-margin: calc(var(--wizard-progress-top) + var(--space-8));
+  min-height: 100dvh;
+  padding: var(--space-5) var(--space-6) var(--space-8);
+  background: var(--bg-primary);
+}
+
+.inner {
+  max-width: 76rem;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.description {
+  margin: var(--space-2) 0 0;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.panel {
+  padding: var(--space-6);
+}
+
+.wizardStack {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.filterBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+}
+
+.presetList {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.presetCard {
+  padding: var(--space-5);
+}
+
+.presetCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.presetName {
+  margin: 0;
+  color: var(--create-panel-text);
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.presetMeta {
+  margin: var(--space-2) 0 0;
+  color: var(--create-panel-text-soft);
+  line-height: 1.5;
+}
+
+.timestampList {
+  flex-shrink: 0;
+  margin: 0;
+  color: var(--create-panel-text-soft);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  text-align: right;
+}
+
+.cardActions {
+  margin-top: var(--space-4);
+}
+
+.emptyState,
+.errorBox,
+.noticeBox {
+  margin-bottom: var(--space-4);
+}
+
+.emptyState {
+  padding: var(--space-4) var(--space-5);
+  border: 1px dashed var(--create-panel-border);
+  border-radius: var(--radius-lg);
+  background: var(--create-panel-strong);
+  color: var(--create-panel-text-soft);
+  line-height: 1.6;
+}
+
+.primaryButton,
+.secondaryButton,
+.dangerButton {
+  --action-min-height: 2.75rem;
+  --action-padding-inline: var(--space-5);
+  --action-radius: var(--radius-lg);
+  --action-shadow: none;
+  --action-hover-shadow: none;
+}
+
+.primaryButton {
+  --action-border-color: var(--accent-blue);
+  --action-background: var(--accent-blue);
+  --action-color: var(--bg-primary);
+  --action-hover-border-color: var(--accent-blue-light);
+  --action-hover-background: var(--accent-blue-light);
+  --action-hover-color: var(--bg-primary);
+}
+
+.secondaryButton {
+  --action-border-color: var(--create-panel-border);
+  --action-background: transparent;
+  --action-color: var(--create-panel-text);
+  --action-hover-border-color: var(--create-panel-border);
+  --action-hover-background: var(--create-panel-strong);
+  --action-hover-color: var(--create-panel-text);
+}
+
+.dangerButton {
+  --action-border-color: #f39aa9;
+  --action-background: transparent;
+  --action-color: #f39aa9;
+  --action-hover-border-color: #f6b0bc;
+  --action-hover-background: rgba(243, 154, 169, 0.12);
+  --action-hover-color: #f6b0bc;
+}
+
+.filterButtonActive {
+  --action-border-color: var(--accent-blue);
+  --action-background: rgba(124, 196, 255, 0.14);
+  --action-color: var(--text-primary);
+}
+
+.presetNameLabel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.presetNameLabelText {
+  color: var(--create-panel-text-soft);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.presetNameInput {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--create-panel-border);
+  border-radius: var(--radius-lg);
+  background: var(--create-panel-muted);
+  color: var(--create-panel-text);
+  font-size: 1rem;
+  line-height: 1.5;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.presetNameInput::placeholder {
+  color: var(--create-panel-text-soft);
+  opacity: 0.6;
+}
+
+.presetNameInput:focus {
+  border-color: var(--accent-blue);
+}
+
+.compatibilityGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+.compatibilityButton {
+  min-height: 7rem;
+  padding: var(--space-4);
+  text-align: left;
+}
+
+.compatibilityTitle {
+  display: block;
+  font-weight: 800;
+}
+
+.compatibilityText {
+  display: block;
+  margin-top: var(--space-2);
+  color: var(--create-panel-text-soft);
+  line-height: 1.45;
+}
+
+@media (max-width: 48rem) {
+  .container {
+    padding: var(--space-4) var(--space-4) var(--space-6);
+  }
+
+  .header,
+  .presetCardHeader {
+    flex-direction: column;
+  }
+
+  .timestampList {
+    text-align: left;
+  }
+
+  .compatibilityGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .primaryButton,
+  .secondaryButton,
+  .dangerButton {
+    width: 100%;
+  }
+}

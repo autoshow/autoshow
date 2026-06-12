@@ -1,7 +1,5 @@
-import { l } from '~/utils/logging'
-import { formatTimestamp } from '~/utils/audio'
-import type { TranscriptionSegment, DeepgramResponse, DeepgramWord } from '~/types'
-import { adjustTimestamp } from '../transcription-helpers'
+import type { DeepgramResponse,DeepgramWord,TranscriptionSegment } from '~/types'
+import { adjustTimestamp,formatTimestamp } from '../transcription-helpers'
 
 const normalizeSpeaker = (speaker: number | undefined): string | undefined => {
   if (speaker === undefined || speaker === null) return undefined
@@ -115,15 +113,6 @@ export const parseDeepgramOutput = (
     })
   }
 
-  const speakerSet = new Set(segments.map(seg => seg.speaker).filter(Boolean))
-
-  l('Parsed Deepgram transcript', {
-    utteranceCount: response.results.utterances?.length ?? 0,
-    channelCount: response.results.channels.length,
-    segmentCount: segments.length,
-    transcriptLength: fullText.length,
-    speakerCount: speakerSet.size
-  })
 
   return {
     text: fullText,

@@ -1,0 +1,39 @@
+{
+  "id": "verify-transcription-assembly-universal3pro",
+  "name": "Verify: AssemblyAI Universal-3-Pro Transcription",
+  "description": "Minimal verification test for AssemblyAI Universal-3-Pro transcription with speaker diarization",
+  "tags": [
+    "verify",
+    "transcription",
+    "assembly",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "assembly",
+    "model": "universal-3-pro"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

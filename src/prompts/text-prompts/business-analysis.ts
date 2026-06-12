@@ -1,10 +1,12 @@
-import type { PromptType, PromptConfig } from '~/types'
+import type { PromptConfig,PromptType } from '~/types'
 
 export const BUSINESS_ANALYSIS: Partial<Record<PromptType, PromptConfig>> = {
   competitiveAnalysis: {
     title: "Competitive Analysis",
     displayTitle: "Competitive Analysis Report",
     category: "Business Analysis",
+    inputTokens: 200,
+    outputTokens: 1200,
     renderType: 'text',
     schema: {
       type: 'string',
@@ -146,6 +148,8 @@ Summary of key competitive insights and recommended strategic focus areas for ma
     title: "Trend Analysis",
     displayTitle: "Trend Analysis Report",
     category: "Business Analysis",
+    inputTokens: 200,
+    outputTokens: 1000,
     renderType: 'text',
     schema: {
       type: 'string',
@@ -207,6 +211,8 @@ Strategic planning factors for 5+ year horizons
     title: "Meeting Action Items",
     displayTitle: "Meeting Action Items",
     category: "Business Analysis",
+    inputTokens: 200,
+    outputTokens: 600,
     renderType: 'text',
     schema: {
       type: 'string',

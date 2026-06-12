@@ -1,0 +1,68 @@
+.section,
+.sectionAlt {
+  padding: var(--space-8) var(--space-5);
+}
+
+.section {
+  background: var(--bg-primary);
+}
+
+.sectionAlt {
+  background: var(--bg-secondary);
+}
+
+.inner {
+  max-width: 75rem;
+  margin: 0 auto;
+}
+
+.innerNarrow {
+  max-width: 50rem;
+  margin: 0 auto;
+}
+
+.sectionHeader {
+  max-width: 44rem;
+  margin: 0 auto var(--space-7);
+  text-align: center;
+}
+
+.sectionHeaderCompact {
+  margin-bottom: var(--space-6);
+}
+
+.sectionTitle {
+  margin-bottom: var(--space-3);
+  font-size: clamp(2rem, 5vw, 2.75rem);
+  font-weight: 800;
+  line-height: 1.15;
+  color: var(--text-primary);
+}
+
+.accent {
+  color: var(--accent-blue);
+}
+
+.sectionSubtitle {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 48rem) {
+  .section,
+  .sectionAlt {
+    padding: var(--space-7) var(--space-4);
+  }
+
+  .sectionHeader {
+    margin-bottom: var(--space-6);
+  }
+}
+
+@media (max-width: 30rem) {
+  .section,
+  .sectionAlt {
+    padding: var(--space-6) var(--space-4);
+  }
+}

@@ -1,0 +1,104 @@
+.container {
+  padding: var(--space-2) 0;
+}
+
+.loadingState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  min-height: 8rem;
+  padding: var(--space-5);
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.loadingSpinner {
+  width: 1.75rem;
+  height: 1.75rem;
+  flex: 0 0 auto;
+  border: 0.1875rem solid var(--border-color);
+  border-top-color: var(--accent-blue);
+  border-radius: 50%;
+  animation: reviewSpinnerSpin 800ms linear infinite;
+}
+
+@keyframes reviewSpinnerSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loadingSpinner {
+    animation-duration: 1.6s;
+  }
+}
+
+.errorBox {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.retryButton {
+  flex-shrink: 0;
+  --action-min-height: 2.5rem;
+  --action-padding-inline: var(--space-4);
+  --action-font-size: 0.875rem;
+}
+
+.section {
+  margin-bottom: var(--space-5);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.sectionTitle {
+  margin: 0 0 var(--space-3);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.8rem;
+}
+
+.summaryRow {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  align-items: baseline;
+  font-size: 0.9rem;
+}
+
+.summaryRowTotal {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3) 0 var(--space-2);
+  border-top: 1px solid var(--border-color);
+  margin-top: var(--space-2);
+  align-items: baseline;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.summaryLabel {
+  flex-shrink: 0;
+  width: 9rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.summaryValue {
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}

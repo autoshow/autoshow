@@ -1,0 +1,43 @@
+{
+  "id": "verify-document-deapi",
+  "name": "Verify: DeAPI OCR",
+  "description": "Minimal verification test for deAPI document extraction with Nanonets_Ocr_S_F16",
+  "tags": [
+    "verify",
+    "document",
+    "deapi",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.png"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "document": {
+    "service": "deapi",
+    "model": "Nanonets_Ocr_S_F16"
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

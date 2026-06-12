@@ -1,0 +1,42 @@
+{
+  "id": "verify-tts-groq-orpheusv1",
+  "name": "Verify: Groq TTS",
+  "description": "Minimal verification test for Groq Orpheus text-to-speech",
+  "tags": [
+    "verify",
+    "tts",
+    "groq",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": true,
+    "service": "groq",
+    "voice": "autumn",
+    "model": "canopylabs/orpheus-v1-english"
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

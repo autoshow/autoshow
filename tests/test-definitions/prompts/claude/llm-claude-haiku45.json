@@ -1,0 +1,74 @@
+{
+  "id": "llm-claude-haiku45",
+  "name": "LLM: Claude Haiku 4.5",
+  "description": "Test Claude LLM service with claude-haiku-4-5-20251001 model",
+  "tags": [
+    "audio",
+    "llm",
+    "claude"
+  ],
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "claude",
+    "model": "claude-haiku-4-5-20251001",
+    "prompts": [
+      "shortSummary",
+      "mediumSummary",
+      "longSummary",
+      "bulletPoints",
+      "takeaways",
+      "faq",
+      "quotes",
+      "titles",
+      "shortChapters",
+      "mediumChapters",
+      "longChapters",
+      "facebook",
+      "instagram",
+      "linkedin",
+      "tiktok",
+      "x",
+      "poetryCollection",
+      "screenplay",
+      "shortStory",
+      "contentStrategy",
+      "emailNewsletter",
+      "seoArticle",
+      "pressRelease",
+      "courseCurriculum",
+      "questions",
+      "assessmentGenerator",
+      "flashcards",
+      "howToGuide",
+      "studyGuide",
+      "trainingManual",
+      "troubleshootingGuide",
+      "competitiveAnalysis",
+      "trendAnalysis",
+      "meetingActions",
+      "voiceReflection",
+      "goalSetting",
+      "careerPlan",
+      "progressAnalysis"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  },
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  }
+}

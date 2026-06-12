@@ -1,16 +1,9 @@
-.metadataCard {
-  background: var(--bg-secondary);
-  padding: 1.5rem;
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-}
-
 .metadataCardTitle {
   font-size: 1.125rem;
   font-weight: 600;
   color: var(--text-primary);
-  margin-bottom: 1rem;
-  padding-bottom: 0.75rem;
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -18,8 +11,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .metadataItem:last-child {
@@ -36,6 +29,7 @@
   font-size: 0.9rem;
   color: var(--text-primary);
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
   text-align: right;
   max-width: 60%;
   word-break: break-word;

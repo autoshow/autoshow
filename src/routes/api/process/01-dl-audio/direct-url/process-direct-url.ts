@@ -1,10 +1,14 @@
-import type { ProcessingOptions, IProgressTracker } from '~/types'
 import { convertDirectUrlToAudio } from '~/routes/api/process/01-dl-audio/direct-url/dl-direct-url'
-import { extractMetadataForDirectUrl, createDirectUrlMetadata } from '~/routes/api/process/01-dl-audio/direct-url/metadata-direct-url'
+import { createDirectUrlMetadata,extractMetadataForDirectUrl } from '~/routes/api/process/01-dl-audio/direct-url/metadata-direct-url'
 import { transcribe } from '~/routes/api/process/02-run-transcribe/run-transcribe'
-import { createOutputDirectory, runPostTranscriptionPipeline } from '../processing-helpers'
+import type { CompletedPipelineResult,IProgressTracker,ProcessingOptions } from '~/types'
+import { createOutputDirectory,runPostTranscriptionPipeline } from '../processing-helpers'
 
-export const processDirectUrl = async (options: ProcessingOptions, progressTracker: IProgressTracker, jobId: string): Promise<string> => {
+export const processDirectUrl = async (
+  options: ProcessingOptions,
+  progressTracker: IProgressTracker,
+  jobId: string
+): Promise<CompletedPipelineResult> => {
   progressTracker.startStep(1, 'Extracting video metadata')
 
   const metadata = extractMetadataForDirectUrl(options.url, options.urlDuration)

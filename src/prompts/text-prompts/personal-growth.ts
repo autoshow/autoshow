@@ -1,10 +1,12 @@
-import type { PromptType, PromptConfig } from '~/types'
+import type { PromptConfig,PromptType } from '~/types'
 
 export const PERSONAL_GROWTH: Partial<Record<PromptType, PromptConfig>> = {
   voiceReflection: {
     title: "Voice Reflection",
     displayTitle: "Personal Reflection",
     category: "Personal Growth",
+    inputTokens: 200,
+    outputTokens: 800,
     renderType: 'text',
     schema: {
       type: 'string',
@@ -38,6 +40,8 @@ The goals you've outlined are achievable with focused effort. Breaking them into
     title: "Goal Setting",
     displayTitle: "Goal Setting Plan",
     category: "Personal Growth",
+    inputTokens: 200,
+    outputTokens: 800,
     renderType: 'text',
     schema: {
       type: 'string',
@@ -89,6 +93,8 @@ Weekly check-ins, monthly progress reviews, quarterly deep assessments`
     title: "Career Plan",
     displayTitle: "Career Development Plan",
     category: "Personal Growth",
+    inputTokens: 200,
+    outputTokens: 1000,
     renderType: 'text',
     schema: {
       type: 'string',
@@ -155,6 +161,8 @@ Year 3: Strategic role transition or specialization
     title: "Progress Analysis",
     displayTitle: "Progress Analysis",
     category: "Personal Growth",
+    inputTokens: 200,
+    outputTokens: 800,
     renderType: 'text',
     schema: {
       type: 'string',

@@ -1,0 +1,39 @@
+{
+  "id": "verify-transcription-deepinfra-whisperv3turbo",
+  "name": "Verify: DeepInfra Whisper Transcription",
+  "description": "Minimal verification test for DeepInfra whisper-large-v3-turbo transcription",
+  "tags": [
+    "verify",
+    "transcription",
+    "deepinfra",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "deepinfra",
+    "model": "openai/whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

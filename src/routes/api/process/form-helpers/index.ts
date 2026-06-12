@@ -1,3 +1,5 @@
-export { parseProcessingFormData } from './parse-form-data'
 export { buildProcessingOptions } from './build-options'
-export { createAndDispatchJob, generateJobId } from './create-job'
+export { createAndDispatchJob } from './create-job'
+export { getLegacyUploadFieldError,parseProcessingFormData } from './parse-form-data'
+export { prepareProcessingOptions } from './prepare-options'
+export { enforceSafeProcessingSources } from './security'

@@ -1,10 +1,20 @@
-import { l, err } from '~/utils/logging'
-import { countTokens } from '~/utils/audio'
-import type { ProcessingOptions, VideoMetadata, TranscriptionResult, Step2Metadata, IProgressTracker } from '~/types'
-import { parseHappyScribeOutput, downloadTranscript } from './parse-happyscribe-output'
-import { createTranscription, pollTranscriptionStatus } from './create-transcription'
-import { createExport, pollExportStatus } from './create-export'
-import { formatTranscriptOutput } from '../transcription-helpers'
+import type { IProgressTracker,ProcessingOptions,Step2Metadata,TranscriptionResult,VideoMetadata } from '~/types'
+import { calculateActualCostUsd,countTokens,formatTranscriptOutput } from '../transcription-helpers'
+import { createExport,pollExportStatus } from './create-export'
+import { createTranscription,pollTranscriptionStatus } from './create-transcription'
+import { parseHappyScribeOutput } from './parse-happyscribe-output'
+
+const downloadTranscript = async (downloadUrl: string): Promise<string> => {
+  const response = await fetch(downloadUrl)
+
+  if (!response.ok) {
+    throw new Error(`Failed to download transcript: ${response.statusText}`)
+  }
+
+  const transcriptJson = await response.text()
+
+  return transcriptJson
+}
 
 const HAPPYSCRIBE_API_KEY = process.env['HAPPYSCRIBE_API_KEY']
 const HAPPYSCRIBE_ORGANIZATION_ID = process.env['HAPPYSCRIBE_ORGANIZATION_ID']
@@ -18,13 +28,11 @@ export const transcribeWithHappyScribe = async (
 ): Promise<{ result: TranscriptionResult, metadata: Step2Metadata }> => {
   try {
     if (!HAPPYSCRIBE_API_KEY) {
-      err('HAPPYSCRIBE_API_KEY not found in environment')
       progressTracker.error(2, 'Configuration error', 'HAPPYSCRIBE_API_KEY environment variable is required')
       throw new Error('HAPPYSCRIBE_API_KEY environment variable is required')
     }
 
     if (!HAPPYSCRIBE_ORGANIZATION_ID) {
-      err('HAPPYSCRIBE_ORGANIZATION_ID not found in environment')
       progressTracker.error(2, 'Configuration error', 'HAPPYSCRIBE_ORGANIZATION_ID environment variable is required')
       throw new Error('HAPPYSCRIBE_ORGANIZATION_ID environment variable is required')
     }
@@ -37,7 +45,7 @@ export const transcribeWithHappyScribe = async (
 
     progressTracker.updateStepProgress(2, 20, 'Waiting for transcription to complete')
 
-    await pollTranscriptionStatus(transcriptionId, HAPPYSCRIBE_API_KEY, progressTracker)
+    const pollResult = await pollTranscriptionStatus(transcriptionId, HAPPYSCRIBE_API_KEY, progressTracker)
 
     progressTracker.updateStepProgress(2, 70, 'Creating export')
 
@@ -64,27 +72,22 @@ export const transcribeWithHappyScribe = async (
 
     progressTracker.completeStep(2, 'Transcription complete')
 
+    const actualCostUsd = calculateActualCostUsd('happyscribe', model, pollResult.audioLengthInSeconds)
+
     const step2Metadata: Step2Metadata = {
       transcriptionService: 'happyscribe',
       transcriptionModel: model,
       processingTime,
-      tokenCount
-    }
-
-    l('HappyScribe transcription completed', {
-      processingTimeMs: processingTime,
       tokenCount,
-      transcriptLength: transcription.text.length,
-      segmentCount: transcription.segments.length,
-      outputPath
-    })
+      ...(pollResult.costInCents != null ? { totalCost: pollResult.costInCents } : {}),
+      ...(actualCostUsd != null ? { actualCostUsd } : {})
+    }
 
     return {
       result: transcription,
       metadata: step2Metadata
     }
   } catch (error) {
-    err('Failed to transcribe with HappyScribe', error)
     progressTracker.error(2, 'Transcription failed', error instanceof Error ? error.message : 'Unknown error')
     throw error
   }

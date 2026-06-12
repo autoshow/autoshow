@@ -14,11 +14,10 @@ IGNORE_PATHS=(
   ".gitignore"
   "new-*.md"
   "TODO.md"
-  "output"
+  "artifacts"
   ".output"
   ".vinxi"
   "docker-analysis-*.md"
-  "build-analysis"
   # "**/*.css"
   # "**/*.module.css"
 )

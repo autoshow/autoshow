@@ -1,0 +1,47 @@
+{
+  "id": "verify-video-deepinfra-wan21t2v13b",
+  "name": "Verify: DeepInfra Wan 2.1 Video",
+  "description": "Minimal verification test for DeepInfra Wan 2.1 text-to-video generation",
+  "tags": [
+    "verify",
+    "video",
+    "deepinfra",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": true,
+    "service": "deepinfra",
+    "model": "Wan-AI/Wan2.1-T2V-1.3B",
+    "prompts": [
+      "social"
+    ],
+    "size": "832x480",
+    "duration": 4,
+    "aspectRatio": "16:9"
+  }
+}

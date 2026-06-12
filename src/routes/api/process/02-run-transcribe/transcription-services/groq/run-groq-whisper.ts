@@ -1,9 +1,7 @@
-import OpenAI from 'openai'
-import { l, err } from '~/utils/logging'
-import { countTokens } from '~/utils/audio'
-import type { TranscriptionResult, Step2Metadata, IProgressTracker } from '~/types'
+import type { IProgressTracker,Step2Metadata,TranscriptionResult,VerboseTranscription } from '~/types'
+import { callOpenAICompatibleAudioTranscription } from '~/routes/api/process/shared/openai-compatible'
+import { calculateActualCostUsd,countTokens,formatTranscriptOutput } from '../transcription-helpers'
 import { parseGroqOutput } from './parse-groq-output'
-import { formatTranscriptOutput } from '../transcription-helpers'
 
 const GROQ_API_KEY = process.env['GROQ_API_KEY']
 
@@ -19,7 +17,6 @@ export const transcribeWithGroq = async (
 ): Promise<{ result: TranscriptionResult, metadata: Step2Metadata }> => {
   try {
     if (!GROQ_API_KEY) {
-      err('GROQ_API_KEY not found in environment')
       progressTracker?.error(2, 'Configuration error', 'GROQ_API_KEY environment variable is required')
       throw new Error('GROQ_API_KEY environment variable is required')
     }
@@ -31,28 +28,21 @@ export const transcribeWithGroq = async (
     }
 
     const startTime = Date.now()
-    const client = new OpenAI({
-      apiKey: GROQ_API_KEY,
-      baseURL: 'https://api.groq.com/openai/v1'
-    })
 
     progressTracker?.updateStepProgress(2, baseProgress + 20, 'Sending audio to Groq')
 
-    const audioFile = Bun.file(audioPath)
-    const audioBuffer = await audioFile.arrayBuffer()
-    const fileName = audioPath.split('/').pop() || 'audio.wav'
-    const audioFileObj = new File([audioBuffer], fileName, { type: 'audio/wav' })
-
-    const response = await client.audio.transcriptions.create({
-      file: audioFileObj,
+    const response = await callOpenAICompatibleAudioTranscription('groq', GROQ_API_KEY, {
+      filePath: audioPath,
       model,
-      response_format: 'verbose_json',
-      timestamp_granularities: ['segment']
+      responseFormat: 'verbose_json',
+      timestampGranularities: ['segment'],
+      mimeType: 'audio/wav'
     })
 
     progressTracker?.updateStepProgress(2, baseProgress + 80, 'Processing transcription results')
 
-    const transcription = parseGroqOutput(response, segmentOffsetMinutes)
+    const transcriptionResponse = response as VerboseTranscription
+    const transcription = parseGroqOutput(transcriptionResponse, segmentOffsetMinutes)
 
     const processingTime = Date.now() - startTime
     const tokenCount = countTokens(transcription.text)
@@ -66,29 +56,22 @@ export const transcribeWithGroq = async (
       progressTracker?.completeStep(2, 'Transcription complete')
     }
 
+    const audioDuration = transcriptionResponse.duration
+    const actualCostUsd = calculateActualCostUsd('groq', model, audioDuration)
+
     const metadata: Step2Metadata = {
       transcriptionService: 'groq',
       transcriptionModel: model,
       processingTime,
-      tokenCount
-    }
-
-    l('Groq transcription completed', {
-      processingTimeMs: processingTime,
       tokenCount,
-      transcriptLength: transcription.text.length,
-      segmentCount: transcription.segments.length,
-      outputPath,
-      segmentNumber,
-      totalSegments
-    })
+      actualCostUsd
+    }
 
     return {
       result: transcription,
       metadata
     }
   } catch (error) {
-    err('Failed to transcribe with Groq', error)
     progressTracker?.error(2, 'Transcription failed', error instanceof Error ? error.message : 'Unknown error')
     throw error
   }

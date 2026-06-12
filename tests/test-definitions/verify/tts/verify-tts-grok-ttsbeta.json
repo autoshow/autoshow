@@ -1,0 +1,42 @@
+{
+  "id": "verify-tts-grok-ttsbeta",
+  "name": "Verify: Grok TTS Beta",
+  "description": "Minimal verification test for Grok beta text-to-speech",
+  "tags": [
+    "verify",
+    "tts",
+    "grok",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": true,
+    "service": "grok",
+    "voice": "eve",
+    "model": "grok-tts-beta"
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}

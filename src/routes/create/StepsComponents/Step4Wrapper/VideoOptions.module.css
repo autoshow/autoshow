@@ -1,0 +1,28 @@
+.sizeGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.durationGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.optionHelpText {
+  margin-top: var(--space-3);
+  line-height: 1.5;
+}
+
+@media (max-width: 64rem) {
+  .sizeGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 30rem) {
+  .sizeGrid {
+    grid-template-columns: 1fr;
+  }
+}

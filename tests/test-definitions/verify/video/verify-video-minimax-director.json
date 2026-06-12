@@ -1,0 +1,46 @@
+{
+  "id": "verify-video-minimax-director",
+  "name": "Verify: MiniMax T2V Director Video",
+  "description": "Minimal verification test for MiniMax T2V-01-Director video generation",
+  "tags": [
+    "verify",
+    "video",
+    "minimax",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": false
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": true,
+    "service": "minimax",
+    "model": "T2V-01-Director",
+    "prompts": [
+      "social"
+    ],
+    "size": "720P",
+    "duration": 6
+  }
+}

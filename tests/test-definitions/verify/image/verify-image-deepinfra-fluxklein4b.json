@@ -1,0 +1,45 @@
+{
+  "id": "verify-image-deepinfra-fluxklein4b",
+  "name": "Verify: DeepInfra FLUX 2 Klein 4B",
+  "description": "Minimal verification test for DeepInfra FLUX image generation",
+  "tags": [
+    "verify",
+    "image",
+    "deepinfra",
+    "minimal",
+    "minimal-service"
+  ],
+  "input": {
+    "type": "local",
+    "path": "scripts/test/fixtures/input/1.mp3"
+  },
+  "transcription": {
+    "service": "groq",
+    "model": "whisper-large-v3-turbo"
+  },
+  "llm": {
+    "service": "groq",
+    "model": "openai/gpt-oss-20b",
+    "prompts": [
+      "shortSummary"
+    ]
+  },
+  "tts": {
+    "enabled": false
+  },
+  "image": {
+    "enabled": true,
+    "service": "deepinfra",
+    "model": "black-forest-labs/FLUX-2-klein-4b",
+    "prompts": [
+      "thumbnail"
+    ],
+    "aspectRatio": "1:1"
+  },
+  "music": {
+    "enabled": false
+  },
+  "video": {
+    "enabled": false
+  }
+}
